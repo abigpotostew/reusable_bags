@@ -13,7 +13,7 @@ local Vector2 = require 'src.vector2'
 
 local Actor = class:makeSubclass("Actor")
 
-Actor:makeInit(function(class, self, gridX, gridY)
+Actor:makeInit(function(class, self, x, y)
 	class.super:initWith(self)
 
 	self.typeName = "actor"
@@ -54,7 +54,7 @@ Actor.createSprite = Actor:makeMethod(function(self, animName, x, y, scaleX, sca
 	local sprite = display.newImage( debugTexturesImageSheet , debugTexturesSheetInfo:getFrameIndex(animName))
 	--self.sheet, self.sequenceData
     --sprite:setReferencePoint( display.TopLeftReferencePoint )
-	sprite:setReferencePoint(display.CenterReferencePoint) --center by default
+	sprite.anchorX, sprite.anchorY = 0.5, 0.5
 	sprite.owner = self
 	sprite.x, sprite.y = x, y
 	sprite:scale(scaleX, scaleY)
@@ -121,6 +121,30 @@ Actor.addPhysics = Actor:makeMethod(function(self, data)
     end    
 
 	physics.addBody(self.sprite, phys)
+end)
+
+Actor.addKinematicSensor = Actor:makeMethod(function(self, data)
+    data = data or {}
+
+	local scale = data.scale or 1
+	local mass = data.mass or 1
+
+	local phys = {
+		density = 1, --we don't care about density
+		friction = data.friction or 0.5,
+		bounce = data.bounce or 0.75,
+		filter = collision.MakeFilter(data.category or "food",
+			data.colliders or {"bag", "head"}),
+		isSensor = data.isSensor or true,
+        bodyType = data.bodyType or self.typeInfo.physics.bodyType or "kinematic"
+	}
+    --Optionally set a custom shape for the actor. Default uses sprite to shape it
+    if data.shape or self.typeInfo.physics.shape then
+        phys.shape = data.shape or self.typeInfo.physics.shape
+    end    
+
+	physics.addBody(self.sprite, phys)
+        
 end)
 
 Actor.addTimer = Actor:makeMethod(function(self, delay, callback, count)

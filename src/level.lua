@@ -13,9 +13,10 @@ physics.start(); physics.pause()
 local sprite = require "sprite"
 local class = require "src.class"
 local util = require"src.util"
+local fps = require"src.libs.fps"
 local collision = require "src.collision"
 
-collision.SetGroups{"bird", "ammo", "ammoExplosion", "ground", "hut"}
+collision.SetGroups{"bag", "food", "head", "ground", "wall"}
 
 local Level = class:makeSubclass("Level")
 
@@ -28,6 +29,12 @@ Level:makeInit(function(class, self)
 
 	-- forward declarations and other locals
     self.screenW, self.screenH, self.halfW = display.contentWidth, display.contentHeight, display.contentWidth*0.5
+    
+    self.timeline = {}
+	self.timers = {}
+	self.transitions = {}
+	self.listeners = {}
+	self.lastFrameTime = 0
 
 
     self.worldScale = display.contentWidth / self.width
@@ -40,6 +47,7 @@ Level:makeInit(function(class, self)
     
     
 	self.scene = storyboard.newScene()
+    self.scene.view = display.newGroup()
 	self.scene:addEventListener("createScene", self)
 	self.scene:addEventListener("enterScene", self)
 	self.scene:addEventListener("exitScene", self)
@@ -53,44 +61,92 @@ end)
 --------------------------------------------
 
 
+Level.PeriodicCheck = Level:makeMethod(function(self)
+	-- Remove birds that have left the screen (using a separate kill list so we don't step all over ourselves)
+--	local killList = {}
+--	local width, height = self:GetWorldViewSize()
+--	for i, inst in ipairs(self.birds) do
+--		if (inst.sprite) then
+--			local x = inst.sprite.x
+--			local y = inst.sprite.y
+--			if (x < -(width  * 2) or x > (width  * 3) or
+--				y < -(height * 3) or y > (height * 1)) then
+--				table.insert(killList, inst)
+--			end
+--		end
+--	end
+--	for i, inst in ipairs(killList) do
+--		self:RemoveBird(inst)
+--	end
 
------------------------------------------------------------------------------------------
--- BEGINNING OF YOUR IMPLEMENTATION
--- 
--- NOTE: Code outside of listener functions (below) will only be executed once,
---		 unless storyboard.removeScene() is called.
--- 
------------------------------------------------------------------------------------------
+--	-- Check for win/lose conditions
+--	local levelLost = true
+--	for i, hut in ipairs(self.huts) do
+--		if (hut:GetState() ~= "dead") then
+--			levelLost = false
+--			break
+--		end
+--	end
+
+--	local levelWon = (#self.timeline == 0 and #self.birds == 0)
+
+	if (levelLost) then
+		self:CreateTimer(2.0, function(event) gamestate.ChangeState("LevelLost") end)
+	elseif (levelWon) then
+		self:CreateTimer(2.0, function(event) gamestate.ChangeState("LevelWon") end)
+	else
+		self:CreateTimer(0.5, function(event) self:PeriodicCheck() end) -- Runs every 500ms (~15 frames)
+	end
+end)
+
+
+Level.ProcessTimeline = Level:makeMethod(function(self)
+	while #self.timeline ~= 0 do
+		local event = table.remove(self.timeline, 1)
+		local result = event()
+		if (type(result) == "number") then
+			self:CreateTimer(result, function() self:ProcessTimeline() end)
+			break
+		end
+	end
+end)
+
+Level.TimelineWait = Level:makeMethod(function(self, seconds)
+	table.insert(self.timeline, function() return seconds end)
+end)
 
 -- Called when the scene's view does not exist:
 Level.createScene = Level:makeMethod(function(self, event)
-	local group = self.view
+    print("Level:CreateScene")
+	local group = self.scene.view
+    
+    self.aspect = display.contentHeight / display.contentWidth
+	self.height = self.width * self.aspect
+    
+    self.worldScale = 1--display.contentWidth / self.width
+	self.worldOffset = { x = 0, y = 0}
+    
+    self.worldGroup = display.newGroup()
+	self.scene.view:insert(self.worldGroup)
+	self.worldGroup.xScale = self.worldScale
+	self.worldGroup.yScale = self.worldScale
+    
+    
+    
+    --start spawning debug guys
+    
+    
+    
+    
+    print(string.format("Screen Resolution: %i x %i", display.contentWidth, display.contentHeight))
+	print(string.format("Level Size: %i x %i", self.width, self.height))
+    
+    self:ProcessTimeline()
 
-	-- create a grey rectangle as the backdrop
-	local background = display.newRect( 0, 0, screenW, screenH )
-	background:setFillColor( 128 )
-	
-	-- make a crate (off-screen), position it, and rotate slightly
-	local crate = display.newImageRect( "images/crate.png", 90, 90 )
-	crate.x, crate.y = 160, -100
-	crate.rotation = 15
-	
-	-- add physics to the crate
-	physics.addBody( crate, { density=1.0, friction=0.3, bounce=0.3 } )
-	
-	-- create a grass object and add physics (with custom shape)
-	local grass = display.newImageRect( "images/grass.png", screenW, 82 )
-	grass:setReferencePoint( display.BottomLeftReferencePoint )
-	grass.x, grass.y = 0, display.contentHeight
-	
-	-- define a shape that's slightly shorter than image bounds (set draw mode to "hybrid" or "debug" to see)
-	local grassShape = { -halfW,-34, halfW,-34, halfW,34, -halfW,34 }
-	physics.addBody( grass, "static", { friction=0.3, shape=grassShape } )
-	
-	-- all display objects must be inserted into group
-	group:insert( background )
-	group:insert( grass)
-	group:insert( crate )
+	local performance = fps.new()
+	performance.group.alpha = 0.7
+    
+    self:PeriodicCheck()
 end)
 
 -- Called immediately after scene has moved onscreen:
@@ -103,9 +159,28 @@ end)
 
 -- Called when scene is about to move offscreen:
 Level.exitScene = Level:makeMethod(function(self, event)
-	local group = self.view
+	print("scene:exitScene")
 	
-	physics.stop()
+    physics.stop()
+    
+	for _, timerToStop in ipairs(self.timers) do
+		timer.cancel(timerToStop)
+	end
+	self.timers = {}
+
+	for _, transitionToStop in ipairs(self.transitions) do
+		transition.cancel(transitionToStop)
+	end
+	self.transitions = {}
+
+    for _, listener in ipairs(self.listeners) do
+    	if (listener.object and listener.object.removeEventListener) then
+    		listener.object:removeEventListener(listener.name, listener.listener)
+    	end
+    end
+    self.listeners = {}
+    
+    
 	
 end)
 
@@ -144,23 +219,23 @@ Level.GetWorldViewSize = Level:makeMethod(function(self)
 	return self.width, self.height
 end)
 
+
+Level.CreateTimer = Level:makeMethod(function(self, secondsDelay, onTimer)
+	table.insert(self.timers, timer.performWithDelay(secondsDelay * 1000, onTimer))
+end)
+
+Level.CreateListener = Level:makeMethod(function(self, object, name, listener)
+	table.insert(self.listeners, {object = object, name = name, listener = listener})
+	object:addEventListener(name, listener)
+end)
+
+Level.CreateTransition = Level:makeMethod(function(self, object, params)
+	table.insert(self.transitions, transition.to(object, params))
+end)
+
 -----------------------------------------------------------------------------------------
 -- END OF YOUR IMPLEMENTATION
------------------------------------------------------------------------------------------
-
--- "createScene" event is dispatched if scene's view does not exist
-scene:addEventListener( "createScene", scene )
-
--- "enterScene" event is dispatched whenever scene transition has finished
-scene:addEventListener( "enterScene", scene )
-
--- "exitScene" event is dispatched whenever before next scene's transition begins
-scene:addEventListener( "exitScene", scene )
-
--- "destroyScene" event is dispatched before view is unloaded, which can be
--- automatically unloaded in low memory situations, or explicitly via a call to
--- storyboard.purgeScene() or storyboard.removeScene().
-scene:addEventListener( "destroyScene", scene )
+----------------------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------------------
 
