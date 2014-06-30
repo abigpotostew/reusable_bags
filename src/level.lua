@@ -136,8 +136,9 @@ Level.SpawnBag = Level:makeMethod(function(self, bag_name, x, y)
     --table.insert(self.bags,b)
 end)
 
-Level.SpawnFood = Level:makeMethod(function(self, weight, x, y)
-    local f = Foods.CreateFood( x, y, "light", "apple", self)
+Level.SpawnFood = Level:makeMethod(function(self, weight, x, y, food_name)
+    food_name = food_name or "apple"
+    local f = Foods.CreateFood( x, y, "light", food_name, self)
     --table.insert(self.foods,f)
     f:addListener(f.sprite,"touch",self)
     --f.sprite:addEventListener("touch", self)
@@ -206,7 +207,9 @@ Level.createScene = Level:makeMethod(function(self, event)
     local paper_bag1 = self:SpawnBag("paper", 350, 350)
     local canvas_bag1 = self:SpawnBag("canvas", 600, 350)
     
-    local food1 = self:SpawnFood("light", 100, 250)
+    local food1 = self:SpawnFood("light", 100, 200)
+    local food2 = self:SpawnFood("light", 350, 200, "burrito")
+    local food3 = self:SpawnFood("light", 600, 200, "orange")
     
     
     print(string.format("Screen Resolution: %i x %i", display.contentWidth, display.contentHeight))
