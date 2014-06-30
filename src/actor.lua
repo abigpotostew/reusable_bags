@@ -11,12 +11,12 @@ local collision = require "src.collision"
 local physics = require 'physics'
 local Vector2 = require 'src.vector2'
 
-local Actor = class:makeSubclass("Actor")
+local Actor = class:makeSubclass("Bag")
 
-Actor:makeInit(function(class, self, x, y)
+Actor:makeInit(function(class, self, typeInfo)
 	class.super:initWith(self)
 
-	self.typeName = "actor"
+	self.typeName = typeInfo.typeName or "actor"
 
 	self.hitCount = 0
     self.health = 1
@@ -24,13 +24,11 @@ Actor:makeInit(function(class, self, x, y)
 	
 	-- POSITION access through sprite
     
-    local actorType={}
+    local actorType = typeInfo or {}
 	if actorType then
 		self.typeInfo = actorType
-	else
-		self.typeInfo = {}
-		self.typeInfo.hitHoldAnims = {}
 	end
+    
 	self.sprite = nil
 	self._timers = {}
 	self._listeners = {}
@@ -38,7 +36,6 @@ Actor:makeInit(function(class, self, x, y)
 	self.sheet = debugTexturesImageSheet
     
     self.group = nil
-    --self.grid = nil -- associated grid that this actor is in
 
 	return self
 end)
@@ -47,30 +44,32 @@ Actor.createSprite = Actor:makeMethod(function(self, animName, x, y, scaleX, sca
 	assert(animName, "You must provide an anim name when creating an actor sprite")
 	assert(x and y, "You must specify a position when creating an actor sprite")
 
-	scaleX = scaleX or 1
-	scaleY = scaleY or 1
+	scaleX = scaleX or self.typeInfo.scale or 1
+	scaleY = scaleY or self.typeInfo.scale or 1
 
 	--local sprite = spSprite.init(self.typeInfo.animSet, animName, events)
 	local sprite = display.newImage( debugTexturesImageSheet , debugTexturesSheetInfo:getFrameIndex(animName))
 	--self.sheet, self.sequenceData
     --sprite:setReferencePoint( display.TopLeftReferencePoint )
-	sprite.anchorX, sprite.anchorY = 0.5, 0.5
+	sprite.anchorX, sprite.anchorY = self.anchorX or 0.5, self.anchorY or  0.5
 	sprite.owner = self
 	sprite.x, sprite.y = x, y
 	sprite:scale(scaleX, scaleY)
 	sprite.radiousSprite = nil
-	sprite.gravityScale = 0.0
+	sprite.gravityScale = self.typeInfo.physics.gravityScale or 0.0
+    sprite.alpha = self.typeInfo.alpha or 1.0
 
 	return sprite
 end)
 
-Actor.createRectangleSprite = Actor:makeMethod(function(self,w,h,strokeWidth)
+Actor.createRectangleSprite = Actor:makeMethod(function(self,w,h,x,y,strokeWidth)
     assert(self.group,"Please initialize this actor's group before creating a sprite")
-    local x, y = self.X*sun.tileWidth, self.Y*sun.tileHeight
-    self.sprite = display.newRect(self.group, x-w/2, y-h/2, w, h)
+    x, y = x or 0, y or 0
+    self.sprite = display.newRect(self.group, x, y, w, h)
     self.sprite.actor = self
 	self.sprite:setFillColor(1,0,1)
 	self.sprite:setStrokeColor(1,0,1)    
+    self.sprite.anchorX, self.sprite.anchorY = self.typeInfo.anchorX or 0.5, self.typeInfo.anchorY or 0.5
     if strokeWidth then self.sprite.strokeWidth = strokeWidth end
 end)
 
@@ -118,34 +117,18 @@ Actor.addPhysics = Actor:makeMethod(function(self, data)
     --Optionally set a custom shape for the actor. Default uses sprite to shape it
     if data.shape or self.typeInfo.physics.shape then
         phys.shape = data.shape or self.typeInfo.physics.shape
-    end    
+    end
+    
+    --create a rectangular body if the spite is scaled
+    if not phys.shape and scale ~= 1.0 then
+        local hW = scale * 2*self.sprite.contentWidth
+        local hH = scale * 2*self.sprite.contentHeight
+        phys.shape = {hW, -hH, hW, hH, -hW, hH, -hW, -hH}
+    end
 
 	physics.addBody(self.sprite, phys)
 end)
 
-Actor.addKinematicSensor = Actor:makeMethod(function(self, data)
-    data = data or {}
-
-	local scale = data.scale or 1
-	local mass = data.mass or 1
-
-	local phys = {
-		density = 1, --we don't care about density
-		friction = data.friction or 0.5,
-		bounce = data.bounce or 0.75,
-		filter = collision.MakeFilter(data.category or "food",
-			data.colliders or {"bag", "head"}),
-		isSensor = data.isSensor or true,
-        bodyType = data.bodyType or self.typeInfo.physics.bodyType or "kinematic"
-	}
-    --Optionally set a custom shape for the actor. Default uses sprite to shape it
-    if data.shape or self.typeInfo.physics.shape then
-        phys.shape = data.shape or self.typeInfo.physics.shape
-    end    
-
-	physics.addBody(self.sprite, phys)
-        
-end)
 
 Actor.addTimer = Actor:makeMethod(function(self, delay, callback, count)
 	assert(delay and type(delay) == "number", "addTimer requires that delay be a number")

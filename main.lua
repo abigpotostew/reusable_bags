@@ -13,11 +13,16 @@ local storyboard = require "storyboard"
 
 
 --debug stuff
-debugTexturesSheetInfo = require("data.debug-textures")
-debugTexturesImageSheet = graphics.newImageSheet( "data/debug-textures.png", debugTexturesSheetInfo:getSheet() )
+debugTexturesSheetInfo = require("images.debug_image_sheet")
+debugTexturesImageSheet = graphics.newImageSheet( "images/debug_image_sheet.png", debugTexturesSheetInfo:getSheet() )
 --end debug stuff
 
 
 -- load menu screen
-storyboard.gotoScene( "src.menu" )
+--storyboard.gotoScene( "src.level" )
+local Level = require "src.level"
+local level_debug = Level:init()
 
+--storyboard.gotoScene('src.level',{params={level_debug}})
+level_debug:createScene()
+level_debug:enterScene()

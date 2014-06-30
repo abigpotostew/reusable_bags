@@ -9,6 +9,7 @@ local storyboard = require( "storyboard" )
 -- include Corona's "physics" library
 local physics = require "physics"
 physics.start(); physics.pause()
+physics.setDrawMode("hybrid")
 
 local sprite = require "sprite"
 local class = require "src.class"
@@ -16,7 +17,14 @@ local util = require"src.util"
 local fps = require"src.libs.fps"
 local collision = require "src.collision"
 
+local Actor = require 'src.actor'
+local Bags = require 'actors.bagTypes'
+local Foods = require 'actors.foodTypes'
+
 collision.SetGroups{"bag", "food", "head", "ground", "wall"}
+
+
+
 
 local Level = class:makeSubclass("Level")
 
@@ -29,6 +37,11 @@ Level:makeInit(function(class, self)
 
 	-- forward declarations and other locals
     self.screenW, self.screenH, self.halfW = display.contentWidth, display.contentHeight, display.contentWidth*0.5
+    self.width, self.height = self.screenW, self.screenH
+    
+    --Level actors:
+    self.bags = {}
+    self.foods = {}
     
     self.timeline = {}
 	self.timers = {}
@@ -36,9 +49,15 @@ Level:makeInit(function(class, self)
 	self.listeners = {}
 	self.lastFrameTime = 0
 
-
     self.worldScale = display.contentWidth / self.width
 	self.worldOffset = { x = 0, y = 0}
+
+    self.scene = storyboard.newScene()
+    self.scene.view = display.newGroup()
+	self.scene:addEventListener("createScene", self)
+	self.scene:addEventListener("enterScene", self)
+	self.scene:addEventListener("exitScene", self)
+	self.scene:addEventListener("destroyScene", self)
 
 	self.worldGroup = display.newGroup()
 	self.scene.view:insert(self.worldGroup)
@@ -46,12 +65,7 @@ Level:makeInit(function(class, self)
 	self.worldGroup.yScale = self.worldScale
     
     
-	self.scene = storyboard.newScene()
-    self.scene.view = display.newGroup()
-	self.scene:addEventListener("createScene", self)
-	self.scene:addEventListener("enterScene", self)
-	self.scene:addEventListener("exitScene", self)
-	self.scene:addEventListener("destroyScene", self)
+	
 
 	return self
 end)
@@ -115,6 +129,62 @@ Level.TimelineWait = Level:makeMethod(function(self, seconds)
 	table.insert(self.timeline, function() return seconds end)
 end)
 
+Level.SpawnBag = Level:makeMethod(function(self, bag_name, x, y)
+    local b = Bags.CreateBag(bag_name, x, y)
+    local world_group = self:GetWorldGroup()
+    world_group:insert(b.sprite)
+    b.group = world_group
+    table.insert(self.bags,b)
+end)
+
+Level.SpawnFood = Level:makeMethod(function(self, weight, x, y)
+    local f = Foods.CreateFood( x, y, "light", "apple")
+    local world_group = self:GetWorldGroup()
+    world_group:insert(f.sprite)
+    f.group = world_group
+    table.insert(self.foods,f)
+end)
+
+Level.AddGround = Level:makeMethod(function(self)
+	--[[local width, height = self:GetWorldViewSize()
+	local groundInfo = {}--display.newRect(0, 0, width, 22)
+	--ground:setReferencePoint(display.BottomLeftReferencePoint)
+    groundInfo.anchorX = 0.5
+    groundInfo.anchorY = 0.5
+	groundInfo.alpha = 1.0
+	groundInfo.typeName = "ground"
+    groundInfo.physics = {}
+    groundInfo.scale = 1
+	local halfWidth = width * 0.5
+    self.ground = Actor:init(groundInfo)
+    self.ground.group = self:GetWorldGroup()
+    --self.ground:createRectangleSprite(0,0, width,14)
+    self.ground:addPhysics({bounce=0.2, category='ground', colliders={"food"}, isSensor=false, bodyType="static"})
+	self:GetWorldGroup():insert(self.ground.sprite)--]]
+    
+    local width, height = self:GetWorldViewSize()
+	local ground = display.newRect(0, 0, width, 22)
+    ground.anchorX, ground.anchorY = 0.5, 0.5
+	ground.x = width/2
+	ground.y = height
+	ground.alpha = 1
+	ground.typeName = "ground"
+	local halfWidth = width * 0.5
+	local shape = {	-halfWidth, -14,
+					 halfWidth, -14,
+					 halfWidth,  14,
+					-halfWidth,  14 }
+	physics.addBody(ground, "static", {
+		shape = shape,
+		bounce = self.groundBounce,
+		friction = self.groundFriction,
+		filter = collision.MakeFilter("ground", {"food"})
+	})
+
+	self:GetWorldGroup():insert(ground)
+    
+end)
+
 -- Called when the scene's view does not exist:
 Level.createScene = Level:makeMethod(function(self, event)
     print("Level:CreateScene")
@@ -131,11 +201,14 @@ Level.createScene = Level:makeMethod(function(self, event)
 	self.worldGroup.xScale = self.worldScale
 	self.worldGroup.yScale = self.worldScale
     
-    
+    self:AddGround()
     
     --start spawning debug guys
+    local plastic_bag1 = self:SpawnBag("plastic", 100, 350)
+    local paper_bag1 = self:SpawnBag("paper", 350, 350)
+    local canvas_bag1 = self:SpawnBag("canvas", 600, 350)
     
-    
+    local food1 = self:SpawnFood("light", 0, 0)
     
     
     print(string.format("Screen Resolution: %i x %i", display.contentWidth, display.contentHeight))
@@ -239,4 +312,4 @@ end)
 
 -----------------------------------------------------------------------------------------
 
-return scene
+return Level

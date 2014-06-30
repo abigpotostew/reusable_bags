@@ -2,16 +2,32 @@
 <data version="1.0">
     <struct type="Settings">
         <key>fileFormatVersion</key>
-        <int>1</int>
-        <key>variation</key>
-        <string>main</string>
-        <key>verbose</key>
-        <false/>
+        <int>3</int>
+        <key>texturePackerVersion</key>
+        <string>3.3.2</string>
+        <key>fileName</key>
+        <string>/Users/stew/Documents/Code/Corona/reusable_bags/raw/images/debug_image_sheet.tps</string>
         <key>autoSDSettings</key>
-        <array/>
+        <array>
+            <struct type="AutoSDSettings">
+                <key>scale</key>
+                <double>1</double>
+                <key>extension</key>
+                <string></string>
+                <key>spriteFilter</key>
+                <string></string>
+                <key>acceptFractionalValues</key>
+                <false/>
+                <key>maxTextureSize</key>
+                <QSize>
+                    <key>width</key>
+                    <int>-1</int>
+                    <key>height</key>
+                    <int>-1</int>
+                </QSize>
+            </struct>
+        </array>
         <key>allowRotation</key>
-        <false/>
-        <key>quiet</key>
         <false/>
         <key>premultiplyAlpha</key>
         <false/>
@@ -45,6 +61,8 @@
         <uint>80</uint>
         <key>pngOptimizationLevel</key>
         <uint>0</uint>
+        <key>webpQualityLevel</key>
+        <uint>101</uint>
         <key>textureSubPath</key>
         <string></string>
         <key>textureFormat</key>
@@ -98,8 +116,6 @@
             <enum type="AndEngine::MinFilter">Linear</enum>
             <key>packageName</key>
             <string>Texture</string>
-            <key>javaFileName</key>
-            <filename>debug_image_sheet.java</filename>
             <key>wrap</key>
             <struct type="AndEngineWrap">
                 <key>s</key>
@@ -110,10 +126,21 @@
             <key>magFilter</key>
             <enum type="AndEngine::MagFilter">MagLinear</enum>
         </struct>
-        <key>dataFileName</key>
-        <filename>../../images/debug_image_sheet.lua</filename>
-        <key>mainExtension</key>
-        <string></string>
+        <key>dataFileNames</key>
+        <map type="GFileNameMap">
+            <key>java</key>
+            <struct type="DataFile">
+                <key>name</key>
+                <filename>debug_image_sheet.java</filename>
+            </struct>
+            <key>lua</key>
+            <struct type="DataFile">
+                <key>name</key>
+                <filename>../../images/debug_image_sheet.lua</filename>
+            </struct>
+        </map>
+        <key>multiPack</key>
+        <false/>
         <key>forceIdenticalLayout</key>
         <false/>
         <key>outputFormat</key>
@@ -127,6 +154,8 @@
         <true/>
         <key>trimSpriteNames</key>
         <false/>
+        <key>cleanTransparentPixels</key>
+        <true/>
         <key>globalSpriteSettings</key>
         <struct type="SpriteSettings">
             <key>scale</key>
@@ -143,12 +172,17 @@
             <enum type="SpriteSettings::TrimMode">Trim</enum>
             <key>heuristicMask</key>
             <false/>
+            <key>pivotPoint</key>
+            <enum type="SpriteSettings::PivotPoint">Center</enum>
         </struct>
         <key>fileList</key>
         <array>
             <filename>../../images/canvas_bag.png</filename>
             <filename>../../images/paper_bag.png</filename>
             <filename>../../images/plastic_bag.png</filename>
+            <filename>apple.png</filename>
+            <filename>burrito.png</filename>
+            <filename>orange.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>
