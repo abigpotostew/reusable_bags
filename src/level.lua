@@ -132,21 +132,15 @@ Level.TimelineWait = Level:makeMethod(function(self, seconds)
 end)
 
 Level.SpawnBag = Level:makeMethod(function(self, bag_name, x, y)
-    local b = Bags.CreateBag(bag_name, x, y)
-    local world_group = self:GetWorldGroup()
-    world_group:insert(b.sprite)
-    b.group = world_group
-    table.insert(self.bags,b)
+    local b = Bags.CreateBag(bag_name, x, y, self)
+    --table.insert(self.bags,b)
 end)
 
 Level.SpawnFood = Level:makeMethod(function(self, weight, x, y)
-    local f = Foods.CreateFood( x, y, "light", "apple")
-    local world_group = self:GetWorldGroup()
-    world_group:insert(f.sprite)
-    f.group = world_group
-    table.insert(self.foods,f)
-    
-    f.sprite:addEventListener("touch", self)
+    local f = Foods.CreateFood( x, y, "light", "apple", self)
+    --table.insert(self.foods,f)
+    f:addListener(f.sprite,"touch",self)
+    --f.sprite:addEventListener("touch", self)
 end)
 
 Level.AddGround = Level:makeMethod(function(self)
@@ -180,8 +174,8 @@ Level.AddGround = Level:makeMethod(function(self)
 					-halfWidth,  14 }
 	physics.addBody(ground, "static", {
 		shape = shape,
-		bounce = self.groundBounce,
-		friction = self.groundFriction,
+		bounce = 0.00001,
+		friction = 1,
 		filter = collision.MakeFilter("ground",{"food","bag"})
 	})
 
@@ -265,6 +259,8 @@ end)
 Level.touch = Level:makeMethod(function(self, event)
     if event.phase == "began" then
         event.target.joint = physics.newJoint( "touch", event.target, event.x, event.y )
+        event.target.joint.frequency = 1 --low frequency, makes it more floaty
+        event.target.joint.dampingRatio = 1 --max damping, doesn't bounce against joint
         display.getCurrentStage():setFocus( event.target )
     elseif event.phase == "moved" then
         event.target.joint:setTarget(event.x, event.y)

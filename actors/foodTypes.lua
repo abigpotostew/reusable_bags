@@ -43,6 +43,9 @@ local function SetDefaults(f)
 	f.scale = 0.25				-- How big the bird is compared to its normal anim size
 	f.weight = 2 		-- How many seconds the b.anims.hurt anim should be held for before returning to b.anims.normal
 	f.scoreScale = 1.0			-- How much to multiply scored points when hitting this bird
+    
+    f.foodType = "light"
+    f.typeName = "food"
 
 end
 
@@ -52,7 +55,7 @@ end
 Foods["light"] = function()
 	local f = newTypeInfo()
 	SetDefaults(f)
-    f.typeName = "light_food"
+    f.foodType = "light_food"
 	f.weight = 1
 	return f
 end
@@ -60,38 +63,38 @@ end
 Foods["lightmedium"] = function()
 	local f = newTypeInfo()
 	SetDefaults(f)
-    f.typeName = "lightmedium_food"
+    f.foodType = "lightmedium_food"
 	f.weight = 2
 	return f
 end
 Foods["medium"] = function()
 	local f = newTypeInfo()
 	SetDefaults(f)
-    f.typeName = "medium_food"
+    f.foodType = "medium_food"
 	f.weight = 3
 	return f
 end
 Foods["mediumheavy"] = function()
 	local f = newTypeInfo()
 	SetDefaults(f)
-    f.typeName = "mediumheavy_food"
+    f.foodType = "mediumheavy_food"
 	f.weight = 4
 	return f
 end
 Foods["heavy"] = function()
 	local f = newTypeInfo()
 	SetDefaults(f)
-    f.typeName = "heavy_food"
+    f.foodType = "heavy_food"
 	f.weight = 5
 	return f
 end
 
 
 
-Foods["CreateFood"] = function( x, y, weight, food_name, scale)
+Foods["CreateFood"] = function( x, y, weight, food_name, level, scale)
     local foodType = Foods[weight]()
     if scale then foodType.scale = scale end
-    return Food:init(x or 0, y or 0, foodType, food_name)
+    return Food:init(x or 0, y or 0, foodType, food_name, level)
 end
 
 

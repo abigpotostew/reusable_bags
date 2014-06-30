@@ -42,6 +42,9 @@ local function SetDefaults(b)
 	b.capacity = 13				-- How many physics hits a bird can take before it dies
 	b.weight = 0 		-- How many seconds the b.anims.hurt anim should be held for before returning to b.anims.normal
 	b.scoreScale = 1.0			-- How much to multiply scored points when hitting this bird
+    
+    b.typeName = "bag"
+    b.bagType = ""
 
 end
 
@@ -52,7 +55,7 @@ Bags["plastic"] = function()
 	local b = newTypeInfo()
 	SetDefaults(b)
     
-    b.typeName = "plastic"
+    b.bagType = "plastic"
 
 	b.sounds.hitHut = "smack_jaw.wav"	-- When a bird hits the player's base
 	b.sounds.hurt = "smack_bird01.wav"			-- When a bird hits something
@@ -75,15 +78,11 @@ Bags["paper"] = function()
 	local b = newTypeInfo()
 	SetDefaults(b)
     
-    b.typeName = "paper"
-
-	b.sounds.hitHut = "smack_jaw.wav"	-- When a bird hits the player's base
-	b.sounds.hurt = "smack_bird01.wav"			-- When a bird hits something
-	
+    b.bagType = "paper"
+    
 	b.physics.mass = 20.1
 	b.physics.bounce = 0.9
     
-    b.physics.category = 'bag'
 
 	b.scale = .25
 	b.capacity = 6
@@ -98,7 +97,7 @@ Bags["canvas"] = function()
 	local b = newTypeInfo()
 	SetDefaults(b)
     
-    b.typeName = "canvas"
+    b.bagType = "canvas"
 
 	b.sounds.hitHut = "smack_jaw.wav"	-- When a bird hits the player's base
 	b.sounds.hurt = "smack_bird01.wav"			-- When a bird hits something
@@ -106,7 +105,6 @@ Bags["canvas"] = function()
 	b.physics.mass = 20.1
 	b.physics.bounce = 0.9
     
-    b.physics.category = 'bag'
 
 	b.scale = .25
 	b.capacity = 12 -- Holy Angry bird! (dont want to die right away)
@@ -115,10 +113,10 @@ Bags["canvas"] = function()
 end
 
 
-Bags["CreateBag"] = function(bag_name, x, y, scale)
+Bags["CreateBag"] = function(bag_name, x, y, level, scale)
     local bagType = Bags[bag_name](scale)
     if scale then bagType.scale = scale end
-    return Bag:init(x or 0,y or 0, bagType)
+    return Bag:init(x or 0,y or 0, bagType, level)
 end
 
 

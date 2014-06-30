@@ -13,8 +13,10 @@ local Vector2 = require 'src.vector2'
 
 local Actor = class:makeSubclass("Bag")
 
-Actor:makeInit(function(class, self, typeInfo)
+Actor:makeInit(function(class, self, typeInfo, level)
 	class.super:initWith(self)
+    
+    self.level = level
 
 	self.typeName = typeInfo.typeName or "actor"
 
