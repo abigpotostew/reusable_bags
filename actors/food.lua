@@ -12,6 +12,7 @@ Food:makeInit(function(class, self, x, y, typeInfo, image_name)
     
     self.sprite = self:createSprite(image_name or 'apple', x or 0, y or 0)
     self:addPhysics()
+    self.sprite.gravityScale = typeInfo.physics.gravityScale
     
     return self
 end)

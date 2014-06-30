@@ -10,6 +10,7 @@ local storyboard = require( "storyboard" )
 local physics = require "physics"
 physics.start(); physics.pause()
 physics.setDrawMode("hybrid")
+physics.setGravity(0,0.6)
 
 local sprite = require "sprite"
 local class = require "src.class"
@@ -58,6 +59,7 @@ Level:makeInit(function(class, self)
 	self.scene:addEventListener("enterScene", self)
 	self.scene:addEventListener("exitScene", self)
 	self.scene:addEventListener("destroyScene", self)
+    --self.scene:addEventListener("touch", self)
 
 	self.worldGroup = display.newGroup()
 	self.scene.view:insert(self.worldGroup)
@@ -143,6 +145,8 @@ Level.SpawnFood = Level:makeMethod(function(self, weight, x, y)
     world_group:insert(f.sprite)
     f.group = world_group
     table.insert(self.foods,f)
+    
+    f.sprite:addEventListener("touch", self)
 end)
 
 Level.AddGround = Level:makeMethod(function(self)
@@ -178,7 +182,7 @@ Level.AddGround = Level:makeMethod(function(self)
 		shape = shape,
 		bounce = self.groundBounce,
 		friction = self.groundFriction,
-		filter = collision.MakeFilter("ground", {"food"})
+		filter = collision.MakeFilter("ground",{"food","bag"})
 	})
 
 	self:GetWorldGroup():insert(ground)
@@ -208,7 +212,7 @@ Level.createScene = Level:makeMethod(function(self, event)
     local paper_bag1 = self:SpawnBag("paper", 350, 350)
     local canvas_bag1 = self:SpawnBag("canvas", 600, 350)
     
-    local food1 = self:SpawnFood("light", 0, 0)
+    local food1 = self:SpawnFood("light", 100, 250)
     
     
     print(string.format("Screen Resolution: %i x %i", display.contentWidth, display.contentHeight))
@@ -255,6 +259,20 @@ Level.exitScene = Level:makeMethod(function(self, event)
     
     
 	
+end)
+
+
+Level.touch = Level:makeMethod(function(self, event)
+    if event.phase == "began" then
+        event.target.joint = physics.newJoint( "touch", event.target, event.x, event.y )
+        display.getCurrentStage():setFocus( event.target )
+    elseif event.phase == "moved" then
+        event.target.joint:setTarget(event.x, event.y)
+    elseif event.phase == "ended" then
+        event.target.joint:removeSelf()
+        display.getCurrentStage():setFocus( nil )
+    end 
+    
 end)
 
 -- If scene's view is removed, scene:destroyScene() will be called just prior to:

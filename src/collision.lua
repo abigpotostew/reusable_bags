@@ -4,7 +4,7 @@ Collision.collisionMasks = {}
 
 function Collision.SetGroups(groups)
 	for i, group in ipairs(groups) do
-		Collision.collisionMasks[group] = i
+		Collision.collisionMasks[group] = (i)*2
 	end
 end
 

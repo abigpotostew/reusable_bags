@@ -34,6 +34,7 @@ local function SetDefaults(b)
     b.physics.gravityScale = 0.0
     
     b.physics.bodyType = 'kinematic'
+    b.physics.isSensor = true
     
 
 	-- General Bird Info
