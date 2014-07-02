@@ -177,12 +177,12 @@
         </struct>
         <key>fileList</key>
         <array>
-            <filename>../../images/canvas_bag.png</filename>
-            <filename>../../images/paper_bag.png</filename>
-            <filename>../../images/plastic_bag.png</filename>
-            <filename>apple.png</filename>
-            <filename>burrito.png</filename>
-            <filename>orange.png</filename>
+            <filename>bag_canvas.png</filename>
+            <filename>bag_paper.png</filename>
+            <filename>bag_plastic.png</filename>
+            <filename>food_apple.png</filename>
+            <filename>food_burrito.png</filename>
+            <filename>food_orange.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

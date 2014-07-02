@@ -1,5 +1,7 @@
 local Util = setmetatable({}, nil)
 
+local _ = require "libs.underscore"
+
 Util.EPSILON = 0.00001
 
 function Util.DeepCopy(object)
@@ -202,7 +204,7 @@ end
 --------------------------------------------------------------
 
 --Concatenate array table B onto the end of array table A
-Util.arrayConcat = function(A,B)
+Util.arrayMerge = function(A,B)
     local iA = #A
     for i = 1, #B do
         A[i+iA] = B[i]
@@ -235,40 +237,6 @@ Util.arrayContains = function(A, obj, endA)
         if A[i]==obj then return true, i end
     end
     return false, nil
-end
-
---Return a new table with all mutually exclusive elements in A & B
-Util.getUniqueArray = function(A,B)
-    local unique = {}
-    local duplicatesInB = {} --indices of diplicates found in B
-    for i=1, #A do
-        local doesContain, indexB = Util.arrayContains(B, A[i])
-        if not doesContain then
-            table.insert(unique,A[i]) -- object A[i] is unique to A
-        else
-            table.insert(duplicatesInB, indexB) --B[indexB] is equal to A[i]
-        end
-    end
-    --All elements {in A and not in B} are in the unique table.
-    table.sort(duplicatesInB)
-    local prevStartI = 1
-    for i = 1, #duplicatesInB do
-        local startI, endI = prevStartI, duplicatesInB[i]-1
-        for j = startI, endI do
-            if not Util.arrayContains(A, B[j]) then
-                table.insert(unique,B[j])
-            end
-        end
-        prevStartI = endI+2 --skip over the duplicate object index
-    end
-    if prevStartI <= #B then
-        for i=prevStartI, #B do
-            if not Util.arrayContains(A, B[i]) then
-                table.insert(unique,B[i])
-            end
-        end
-    end
-    return unique
 end
 
 --returns new table of elements in A that aren't in B

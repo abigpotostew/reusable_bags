@@ -14,7 +14,8 @@ physics.setGravity(0,0.6)
 --local sprite = require "sprite"
 --local class = require "src.class"
 local util = require"src.util"
-local fps = require"src.libs.fps"
+local _ = require 'libs.underscore'
+local fps = require "libs.fps"
 local collision = require "src.collision"
 
 local Actor = require 'src.actor'
@@ -37,11 +38,22 @@ local function init(class, self)
 end
 --Level:makeInit(init)
 
-
+levelScene.GetFoodList = function(self, textureSheetInfo)
+    local list = _(textureSheetInfo.frameIndex):chain():keys()
+        :select(function(v) return string.find(v, "food_") end):value()
+    return list
+end
 
 -- Called when the scene's view does not exist:
 levelScene.create = function(self, event)
     print("Level:create")
+    
+    --debug stuff
+    debugTexturesSheetInfo = require("images.debug_image_sheet")
+    debugTexturesImageSheet = graphics.newImageSheet( "images/debug_image_sheet.png", debugTexturesSheetInfo:getSheet() )
+    --end debug stuff
+    
+    self.foodList = self:GetFoodList(debugTexturesSheetInfo)
     
     --Constructor-----------------------------
     -- forward declarations and other locals
@@ -61,9 +73,6 @@ levelScene.create = function(self, event)
     self.worldScale = display.contentWidth / self.width
 	self.worldOffset = { x = 0, y = 0}
 
-    --self.scene.view = display.newGroup()
-	
-    --self.scene:addEventListener("touch", self)
     
     -----------------------------------
     
@@ -91,9 +100,9 @@ levelScene.create = function(self, event)
     local paper_bag1 = self:SpawnBag("paper", 350, 350)
     local canvas_bag1 = self:SpawnBag("canvas", 600, 350)
     
-    local food1 = self:SpawnFood("light", 100, 200)
-    local food2 = self:SpawnFood("light", 350, 200, "burrito")
-    local food3 = self:SpawnFood("light", 600, 200, "orange")
+    local food1 = self:SpawnFood("light", 175, 200, self.foodList[math.random(#self.foodList)])-- "food_apple")
+    local food2 = self:SpawnFood("light", 425, 200, self.foodList[math.random(#self.foodList)])
+    local food3 = self:SpawnFood("light", 675, 200, self.foodList[math.random(#self.foodList)])
     
     
     print(string.format("Screen Resolution: %i x %i", display.contentWidth, display.contentHeight))
@@ -192,16 +201,7 @@ levelScene.PeriodicCheck = function(self)
 --		self:RemoveBird(inst)
 --	end
 
---	-- Check for win/lose conditions
---	local levelLost = true
---	for i, hut in ipairs(self.huts) do
---		if (hut:GetState() ~= "dead") then
---			levelLost = false
---			break
---		end
---	end
-
---	local levelWon = (#self.timeline == 0 and #self.birds == 0)
+--	-- Check for win/lose conditions here
 
 	if (levelLost) then
 		self:CreateTimer(2.0, function(event) gamestate.ChangeState("LevelLost") end)
@@ -262,7 +262,35 @@ levelScene.AddGround = function(self)
     self.ground:addPhysics({bounce=0.2, category='ground', colliders={"food"}, isSensor=false, bodyType="static"})
 	self:GetWorldGroup():insert(self.ground.sprite)--]]
     
+    
     local width, height = self:GetWorldViewSize()
+    local function createBoundary(x,y,w,h)
+        local boundary = display.newRect(x, y, w, h)
+        boundary.anchorX, boundary.anchorY = 0.5, 0.5
+        boundary.x = x
+        boundary.y = y
+        boundary.alpha = 1
+        boundary.typeName = "ground"
+        local halfWidth = w * 0.5
+        local halfHeight = h * 0.5
+        local shape = {	-halfWidth, -halfHeight,
+                         halfWidth, -halfHeight,
+                         halfWidth,  halfHeight,
+                        -halfWidth,  halfHeight }
+        physics.addBody(boundary, "static", {
+            shape = shape,
+            bounce = 0.00001,
+            friction = 1,
+            filter = collision.MakeFilter("ground",{"food","bag"})
+        })
+        self:GetWorldGroup():insert(boundary)
+    end
+    createBoundary(width/2,height,width,22) --ground
+    createBoundary(0,height/2,22,height) --left
+    createBoundary(width,height/2,22,height) --ceiling
+    createBoundary(width/2,0,width,22) --right
+    
+    --[[Ground
 	local ground = display.newRect(0, 0, width, 22)
     ground.anchorX, ground.anchorY = 0.5, 0.5
 	ground.x = width/2
@@ -280,9 +308,8 @@ levelScene.AddGround = function(self)
 		friction = 1,
 		filter = collision.MakeFilter("ground",{"food","bag"})
 	})
-
 	self:GetWorldGroup():insert(ground)
-    
+    --]]
 end
 --Level.AddGround = Level:makeMethod(AddGround)
 

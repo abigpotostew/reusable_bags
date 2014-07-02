@@ -15,7 +15,7 @@ Bag:makeInit(function(class, self, x, y, typeInfo, level)
     self.bagType = typeInfo.bagType
     
     
-    self.sprite = self:createSprite(string.format("%s_bag",self.bagType), x or 0, y or 0)
+    self.sprite = self:createSprite(string.format("bag_%s",self.bagType), x or 0, y or 0)
     self:addPhysics()
     self.sprite.gravityScale = 0
     local world_group = self.level:GetWorldGroup()

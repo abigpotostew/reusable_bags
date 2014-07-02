@@ -1,7 +1,7 @@
 --
 -- created with TexturePacker (http://www.codeandweb.com/texturepacker)
 --
--- $TexturePacker:SmartUpdate:3d9675e9a76ad85761fd8b5cdfc8a80f:db5f03c50b34b945f0a5374e187b9e8f:a8bb9f6fe1624449381316bb0c22d939$
+-- $TexturePacker:SmartUpdate:26d3b9694561d7587eb27458c3489187:9413a47c954d57af1fbcc18b3140e360:a8bb9f6fe1624449381316bb0c22d939$
 --
 -- local sheetInfo = require("mysheet")
 -- local myImageSheet = graphics.newImageSheet( "mysheet.png", sheetInfo:getSheet() )
@@ -15,23 +15,7 @@ SheetInfo.sheet =
     frames = {
     
         {
-            -- apple
-            x=598,
-            y=372,
-            width=254,
-            height=314,
-
-        },
-        {
-            -- burrito
-            x=4,
-            y=4,
-            width=494,
-            height=389,
-
-        },
-        {
-            -- canvas_bag
+            -- bag_canvas
             x=4,
             y=399,
             width=291,
@@ -39,7 +23,39 @@ SheetInfo.sheet =
 
         },
         {
-            -- orange
+            -- bag_paper
+            x=301,
+            y=399,
+            width=291,
+            height=422,
+
+        },
+        {
+            -- bag_plastic
+            x=504,
+            y=4,
+            width=291,
+            height=362,
+
+        },
+        {
+            -- food_apple
+            x=598,
+            y=372,
+            width=254,
+            height=314,
+
+        },
+        {
+            -- food_burrito
+            x=4,
+            y=4,
+            width=494,
+            height=389,
+
+        },
+        {
+            -- food_orange
             x=598,
             y=692,
             width=254,
@@ -50,22 +66,6 @@ SheetInfo.sheet =
             sourceWidth = 254,
             sourceHeight = 288
         },
-        {
-            -- paper_bag
-            x=301,
-            y=399,
-            width=291,
-            height=422,
-
-        },
-        {
-            -- plastic_bag
-            x=504,
-            y=4,
-            width=291,
-            height=362,
-
-        },
     },
     
     sheetContentWidth = 1024,
@@ -75,12 +75,12 @@ SheetInfo.sheet =
 SheetInfo.frameIndex =
 {
 
-    ["apple"] = 1,
-    ["burrito"] = 2,
-    ["canvas_bag"] = 3,
-    ["orange"] = 4,
-    ["paper_bag"] = 5,
-    ["plastic_bag"] = 6,
+    ["bag_canvas"] = 1,
+    ["bag_paper"] = 2,
+    ["bag_plastic"] = 3,
+    ["food_apple"] = 4,
+    ["food_burrito"] = 5,
+    ["food_orange"] = 6,
 }
 
 function SheetInfo:getSheet()
