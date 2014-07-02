@@ -333,5 +333,25 @@ Util.mixColors = function(c1,c2)
     return r3,g3,b3,alpha
 end
 
+Util.EnableDebugPhysicsShake = function(initialDrawState)
+    -- switches physics mode easily on device
+    initialDrawState = initialDrawState or "normal"
+    local hybridon = initialDrawState == "hybrid" or false
+    local physics = require "physics"
+    physics.setDrawMode(initialDrawState)
+    function jerk(e)
+            if (e.isShake) then
+                    hybridon = not hybridon
+                    if (hybridon) then
+                            physics.setDrawMode("hybrid")
+                    else
+                            physics.setDrawMode("normal")
+                    end
+            end
+            return true
+    end
+    Runtime:addEventListener("accelerometer",jerk)
+end
+
     
 return Util

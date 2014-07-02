@@ -8,21 +8,17 @@
 display.setStatusBar( display.HiddenStatusBar )
 require("mobdebug").start()
 
--- include the Corona "storyboard" module
-local storyboard = require "storyboard"
+local composer = require "composer"
+local Util = require "src.util"
 
+Util.EnableDebugPhysicsShake(true)
 
 --debug stuff
 debugTexturesSheetInfo = require("images.debug_image_sheet")
 debugTexturesImageSheet = graphics.newImageSheet( "images/debug_image_sheet.png", debugTexturesSheetInfo:getSheet() )
 --end debug stuff
 
+-- Enable multitouch
+system.activate("multitouch")
 
--- load menu screen
---storyboard.gotoScene( "src.level" )
-local Level = require "src.level"
-local level_debug = Level:init()
-
---storyboard.gotoScene('src.level',{params={level_debug}})
-level_debug:createScene()
-level_debug:enterScene()
+composer.gotoScene('src.level')

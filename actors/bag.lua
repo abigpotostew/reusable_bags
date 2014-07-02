@@ -22,13 +22,9 @@ Bag:makeInit(function(class, self, x, y, typeInfo, level)
     world_group:insert(self.sprite)
     self.group = world_group
     
-    self.sprite.collision = function(self, event)
-        --self:OnBagCollision(self, event) 
-    end
 	self.sprite:addEventListener("collision", self)
     
     return self
-    
 end)
 
 Bag.CanFitWeight = Bag:makeMethod(function(self, itemWeight)

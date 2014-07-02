@@ -13,17 +13,20 @@ local function createLayout(self)
         self.memory = display.newText("0", 0, 0, "Helvetica", 12)
         self.framerate = display.newText("0", 0, 0, "Helvetica", 12)
 
-		self.build:setReferencePoint(display.TopLeftReferencePoint)
+		--self.build:setReferencePoint(display.TopLeftReferencePoint)
+        self.build.anchorX, self.build.anchorY = 0,0 
 		self.build.y = 0
 
-		self.memory:setReferencePoint(display.TopLeftReferencePoint)
+		--self.memory:setReferencePoint(display.TopLeftReferencePoint)
+        self.memory.anchorX, self.memory.anchorY = 0,0
 		self.memory.y = self.build.y + self.build.height
 
-		self.framerate:setReferencePoint(display.TopLeftReferencePoint)
+		--self.framerate:setReferencePoint(display.TopLeftReferencePoint)
+        self.framerate.anchorX, self.framerate.anchorY = 0,0
 		self.framerate.y = self.memory.y + self.memory.height
 
-        self.memory:setTextColor(255,255,255)
-        self.framerate:setTextColor(255,255,255)
+        self.memory:setFillColor(1,1,1)
+        self.framerate:setFillColor(1,1,1)
 
         group:insert(self.build)
         group:insert(self.memory)
@@ -57,15 +60,18 @@ local function getLabelUpdater(self)
                 local minLastFps = minElement(lastFps)
 
                 self.build.text = string.format("Build: %s", (system.getInfo("build")/1000000))
-				self.build:setReferencePoint(display.TopLeftReferencePoint)
+				--self.build:setReferencePoint(display.TopLeftReferencePoint)
+                self.build.anchorX, self.build.anchorY = 0,0
 				self.build.x = 0
 
                 self.framerate.text = string.format("FPS %.0f (Min %.0f)", fps, minLastFps)
-				self.framerate:setReferencePoint(display.TopLeftReferencePoint)
+				--self.framerate:setReferencePoint(display.TopLeftReferencePoint)
+                self.framerate.anchorX, self.framerate.anchorY = 0,0
 				self.framerate.x = 0
 
                 self.memory.text = string.format("Tex: %.2fMB", (system.getInfo("textureMemoryUsed")/1000000))
-				self.memory:setReferencePoint(display.TopLeftReferencePoint)
+				--self.memory:setReferencePoint(display.TopLeftReferencePoint)
+                self.framerate.anchorX, self.framerate.anchorY = 0,0
 				self.memory.x = 0
 
         end

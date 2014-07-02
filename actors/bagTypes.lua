@@ -39,6 +39,7 @@ local function SetDefaults(b)
 
 	-- General Bird Info
 	b.scale = 0.4				-- How big the bird is compared to its normal anim size
+    b.collisionBoxScale = 0.5
 	b.capacity = 13				-- How many physics hits a bird can take before it dies
 	b.weight = 0 		-- How many seconds the b.anims.hurt anim should be held for before returning to b.anims.normal
 	b.scoreScale = 1.0			-- How much to multiply scored points when hitting this bird

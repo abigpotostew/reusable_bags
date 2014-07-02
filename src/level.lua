@@ -4,16 +4,15 @@
 --
 -----------------------------------------------------------------------------------------
 
-local storyboard = require( "storyboard" )
+local composer = require( "composer" )
 
 -- include Corona's "physics" library
 local physics = require "physics"
 physics.start(); physics.pause()
-physics.setDrawMode("hybrid")
 physics.setGravity(0,0.6)
 
-local sprite = require "sprite"
-local class = require "src.class"
+--local sprite = require "sprite"
+--local class = require "src.class"
 local util = require"src.util"
 local fps = require"src.libs.fps"
 local collision = require "src.collision"
@@ -25,18 +24,27 @@ local Foods = require 'actors.foodTypes'
 collision.SetGroups{"bag", "food", "head", "ground", "wall"}
 
 
+--local Level = class:makeSubclass("Level")
 
-
-local Level = class:makeSubclass("Level")
-
+local levelScene = composer.newScene()
 
 -------------------------------------------------------------------------------
 -- Constructor
-
-Level:makeInit(function(class, self)
+local function init(class, self)
 	class.super:initWith(self)
 
-	-- forward declarations and other locals
+	return self
+end
+--Level:makeInit(init)
+
+
+
+-- Called when the scene's view does not exist:
+levelScene.create = function(self, event)
+    print("Level:create")
+    
+    --Constructor-----------------------------
+    -- forward declarations and other locals
     self.screenW, self.screenH, self.halfW = display.contentWidth, display.contentHeight, display.contentWidth*0.5
     self.width, self.height = self.screenW, self.screenH
     
@@ -53,31 +61,120 @@ Level:makeInit(function(class, self)
     self.worldScale = display.contentWidth / self.width
 	self.worldOffset = { x = 0, y = 0}
 
-    self.scene = storyboard.newScene()
-    self.scene.view = display.newGroup()
-	self.scene:addEventListener("createScene", self)
-	self.scene:addEventListener("enterScene", self)
-	self.scene:addEventListener("exitScene", self)
-	self.scene:addEventListener("destroyScene", self)
+    --self.scene.view = display.newGroup()
+	
     --self.scene:addEventListener("touch", self)
-
-	self.worldGroup = display.newGroup()
-	self.scene.view:insert(self.worldGroup)
+    
+    -----------------------------------
+    
+    
+    
+    
+  
+	local sceneGroup = self.view
+    
+    self.aspect = display.contentHeight / display.contentWidth
+	self.height = self.width * self.aspect
+    
+    self.worldScale = 1--display.contentWidth / self.width
+	self.worldOffset = { x = 0, y = 0}
+    
+    self.worldGroup = display.newGroup()
+	sceneGroup:insert(self.worldGroup)
 	self.worldGroup.xScale = self.worldScale
 	self.worldGroup.yScale = self.worldScale
     
+    self:AddGround()
     
+    --start spawning debug guys
+    local plastic_bag1 = self:SpawnBag("plastic", 100, 350)
+    local paper_bag1 = self:SpawnBag("paper", 350, 350)
+    local canvas_bag1 = self:SpawnBag("canvas", 600, 350)
+    
+    local food1 = self:SpawnFood("light", 100, 200)
+    local food2 = self:SpawnFood("light", 350, 200, "burrito")
+    local food3 = self:SpawnFood("light", 600, 200, "orange")
+    
+    
+    print(string.format("Screen Resolution: %i x %i", display.contentWidth, display.contentHeight))
+	print(string.format("Level Size: %i x %i", self.width, self.height))
+    
+    self:ProcessTimeline()
+
+	local performance = fps.new()
+	performance.group.alpha = 0.7
+    
+    self:PeriodicCheck()
+end
+--Level.create = Level:makeMethod(create)
+
+-- Called immediately after scene has moved onscreen:
+levelScene.show = function(self, event)
+	local sceneGroup = self.view
+    
+    if event.phase == 'will' then
+        
+    elseif event.phase == 'did' then 
+        physics.start()
+        self.worldGroup = display.newGroup()
+        sceneGroup:insert(self.worldGroup)
+        self.worldGroup.xScale = self.worldScale
+        self.worldGroup.yScale = self.worldScale
+    end
 	
+	
+end
+--Level.show = Level:makeMethod(show)
 
-	return self
-end)
+-- Called when scene is about to move offscreen:
+levelScene.hide = function(self, event)
+	print("scene:hide")
+	
+    if event.phase == 'will' then
+        
+    elseif event.phase == 'did' then
+        physics.stop()
+    
+        for _, timerToStop in ipairs(self.timers) do
+            timer.cancel(timerToStop)
+        end
+        self.timers = {}
 
+        for _, transitionToStop in ipairs(self.transitions) do
+            transition.cancel(transitionToStop)
+        end
+        self.transitions = {}
+
+        for _, listener in ipairs(self.listeners) do
+            if (listener.object and listener.object.removeEventListener) then
+                listener.object:removeEventListener(listener.name, listener.listener)
+            end
+        end
+        self.listeners = {}
+    end
+    
+end
+--Level.hide = Level:makeMethod(hide)
+
+levelScene.touchListener = function(self, event)
+    
+    
+end
+--Level.touch = Level:makeMethod(touchListener)
+
+-- If scene's view is removed, scene:destroyScene() will be called just prior to:
+levelScene.destroyScene = function(self, event)
+	local group = self.view
+	
+	package.loaded[physics] = nil
+	physics = nil
+end
+--Level.destroy = Level:makeMethod(destroyScene)
 
 
 --------------------------------------------
 
-
-Level.PeriodicCheck = Level:makeMethod(function(self)
+levelScene.PeriodicCheck = function(self)
 	-- Remove birds that have left the screen (using a separate kill list so we don't step all over ourselves)
 --	local killList = {}
 --	local width, height = self:GetWorldViewSize()
@@ -113,10 +210,10 @@ Level.PeriodicCheck = Level:makeMethod(function(self)
 	else
 		self:CreateTimer(0.5, function(event) self:PeriodicCheck() end) -- Runs every 500ms (~15 frames)
 	end
-end)
+end
+--Level.PeriodicCheck = Level:makeMethod(PeriodicCheck)
 
-
-Level.ProcessTimeline = Level:makeMethod(function(self)
+levelScene.ProcessTimeline = function(self)
 	while #self.timeline ~= 0 do
 		local event = table.remove(self.timeline, 1)
 		local result = event()
@@ -125,26 +222,30 @@ Level.ProcessTimeline = Level:makeMethod(function(self)
 			break
 		end
 	end
-end)
+end
+--Level.ProcessTimeline = Level:makeMethod(ProcessTimeline)
 
-Level.TimelineWait = Level:makeMethod(function(self, seconds)
+levelScene.TimelineWait = function(self, seconds)
 	table.insert(self.timeline, function() return seconds end)
-end)
+end
+--Level.TimelineWait = Level:makeMethod(TimelineWait)
 
-Level.SpawnBag = Level:makeMethod(function(self, bag_name, x, y)
+levelScene.SpawnBag = function(self, bag_name, x, y)
     local b = Bags.CreateBag(bag_name, x, y, self)
     --table.insert(self.bags,b)
-end)
+end
+--Level.SpawnBag = Level:makeMethod(SpawnBag)
 
-Level.SpawnFood = Level:makeMethod(function(self, weight, x, y, food_name)
+levelScene.SpawnFood = function(self, weight, x, y, food_name)
     food_name = food_name or "apple"
     local f = Foods.CreateFood( x, y, "light", food_name, self)
     --table.insert(self.foods,f)
-    f:addListener(f.sprite,"touch",self)
+    --f:addListener(f.sprite,"touch",self) --moved to inside food
     --f.sprite:addEventListener("touch", self)
-end)
+end
+--Level.SpawnFood = Level:makeMethod(SpawnFood)
 
-Level.AddGround = Level:makeMethod(function(self)
+levelScene.AddGround = function(self)
 	--[[local width, height = self:GetWorldViewSize()
 	local groundInfo = {}--display.newRect(0, 0, width, 22)
 	--ground:setReferencePoint(display.BottomLeftReferencePoint)
@@ -182,146 +283,64 @@ Level.AddGround = Level:makeMethod(function(self)
 
 	self:GetWorldGroup():insert(ground)
     
-end)
+end
+--Level.AddGround = Level:makeMethod(AddGround)
 
--- Called when the scene's view does not exist:
-Level.createScene = Level:makeMethod(function(self, event)
-    print("Level:CreateScene")
-	local group = self.scene.view
-    
-    self.aspect = display.contentHeight / display.contentWidth
-	self.height = self.width * self.aspect
-    
-    self.worldScale = 1--display.contentWidth / self.width
-	self.worldOffset = { x = 0, y = 0}
-    
-    self.worldGroup = display.newGroup()
-	self.scene.view:insert(self.worldGroup)
-	self.worldGroup.xScale = self.worldScale
-	self.worldGroup.yScale = self.worldScale
-    
-    self:AddGround()
-    
-    --start spawning debug guys
-    local plastic_bag1 = self:SpawnBag("plastic", 100, 350)
-    local paper_bag1 = self:SpawnBag("paper", 350, 350)
-    local canvas_bag1 = self:SpawnBag("canvas", 600, 350)
-    
-    local food1 = self:SpawnFood("light", 100, 200)
-    local food2 = self:SpawnFood("light", 350, 200, "burrito")
-    local food3 = self:SpawnFood("light", 600, 200, "orange")
-    
-    
-    print(string.format("Screen Resolution: %i x %i", display.contentWidth, display.contentHeight))
-	print(string.format("Level Size: %i x %i", self.width, self.height))
-    
-    self:ProcessTimeline()
-
-	local performance = fps.new()
-	performance.group.alpha = 0.7
-    
-    self:PeriodicCheck()
-end)
-
--- Called immediately after scene has moved onscreen:
-Level.enterScene = Level:makeMethod(function(self, event)
-	local group = self.view
-	
-	physics.start()
-	
-end)
-
--- Called when scene is about to move offscreen:
-Level.exitScene = Level:makeMethod(function(self, event)
-	print("scene:exitScene")
-	
-    physics.stop()
-    
-	for _, timerToStop in ipairs(self.timers) do
-		timer.cancel(timerToStop)
-	end
-	self.timers = {}
-
-	for _, transitionToStop in ipairs(self.transitions) do
-		transition.cancel(transitionToStop)
-	end
-	self.transitions = {}
-
-    for _, listener in ipairs(self.listeners) do
-    	if (listener.object and listener.object.removeEventListener) then
-    		listener.object:removeEventListener(listener.name, listener.listener)
-    	end
-    end
-    self.listeners = {}
-    
-    
-	
-end)
-
-
-Level.touch = Level:makeMethod(function(self, event)
-    if event.phase == "began" then
-        event.target.joint = physics.newJoint( "touch", event.target, event.x, event.y )
-        event.target.joint.frequency = 1 --low frequency, makes it more floaty
-        event.target.joint.dampingRatio = 1 --max damping, doesn't bounce against joint
-        display.getCurrentStage():setFocus( event.target )
-    elseif event.phase == "moved" then
-        event.target.joint:setTarget(event.x, event.y)
-    elseif event.phase == "ended" then
-        event.target.joint:removeSelf()
-        display.getCurrentStage():setFocus( nil )
-    end 
-    
-end)
-
--- If scene's view is removed, scene:destroyScene() will be called just prior to:
-Level.destroyScene = Level:makeMethod(function(self, event)
-	local group = self.view
-	
-	package.loaded[physics] = nil
-	physics = nil
-end)
 
 -------------------------------------------------------------------------------
 -- Getters and utility functions
 
-Level.GetWorldGroup = Level:makeMethod(function(self)
+levelScene.GetWorldGroup = function(self)
 	return self.worldGroup
-end)
+end
+--Level.GetWorldGroup = Level:makeMethod(GetWorldGroup)
 
-Level.GetScreenGroup = Level:makeMethod(function(self)
+levelScene.GetScreenGroup = function(self)
 	return self.scene.view
-end)
+end
+--Level.GetScreenGroup = Level:makeMethod(GetScreenGroup)
 
-Level.GetWorldScale = Level:makeMethod(function(self)
+levelScene.GetWorldScale = function(self)
 	return self.worldScale
-end)
+end
+--Level.GetWorldScale = Level:makeMethod(GetWorldScale)
 
-Level.WorldToScreen = Level:makeMethod(function(self, x, y)
+levelScene.WorldToScreen = function(self, x, y)
 	return (x * self.worldScale + self.worldOffset.x), (y * self.worldScale + self.worldOffset.y)
-end)
+end
+--Level.WorldToScreen = Level:makeMethod(WorldToScreen)
 
-Level.ScreenToWorld = Level:makeMethod(function(self, x, y)
+levelScene.ScreenToWorld = function(self, x, y)
 	return ((x - self.worldOffset.x) / self.worldScale), ((y - self.worldOffset.y) / self.worldScale)
-end)
+end
+--Level.ScreenToWorld = Level:makeMethod(ScreenToWorld)
 
-Level.GetWorldViewSize = Level:makeMethod(function(self)
+levelScene.GetWorldViewSize = function(self)
 	return self.width, self.height
-end)
+end
+--Level.GetWorldViewSize = Level:makeMethod(GetWorldViewSize)
 
-
-Level.CreateTimer = Level:makeMethod(function(self, secondsDelay, onTimer)
+levelScene.CreateTimer = function(self, secondsDelay, onTimer)
 	table.insert(self.timers, timer.performWithDelay(secondsDelay * 1000, onTimer))
-end)
+end
+--Level.CreateTimer = Level:makeMethod(CreateTimer)
 
-Level.CreateListener = Level:makeMethod(function(self, object, name, listener)
+levelScene.CreateListener = function(self, object, name, listener)
 	table.insert(self.listeners, {object = object, name = name, listener = listener})
 	object:addEventListener(name, listener)
-end)
+end
+--Level.CreateListener = Level:makeMethod(CreateListener)
 
-Level.CreateTransition = Level:makeMethod(function(self, object, params)
+levelScene.CreateTransition = function(self, object, params)
 	table.insert(self.transitions, transition.to(object, params))
-end)
+end
+--Level.CreateTransition = Level:makeMethod(CreateTransition)
+
+
+--[[local GetScene = function(self)
+    return self.scene
+end
+Level.GetScene = Level:makeMethod(GetScene) --]]
 
 -----------------------------------------------------------------------------------------
 -- END OF YOUR IMPLEMENTATION
@@ -329,4 +348,9 @@ end)
 
 -----------------------------------------------------------------------------------------
 
-return Level
+levelScene:addEventListener("create", levelScene)
+levelScene:addEventListener("show", levelScene)
+levelScene:addEventListener("hide", levelScene)
+levelScene:addEventListener("destroy", levelScene)
+
+return levelScene

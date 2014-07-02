@@ -11,7 +11,7 @@ local collision = require "src.collision"
 local physics = require 'physics'
 local Vector2 = require 'src.vector2'
 
-local Actor = class:makeSubclass("Bag")
+local Actor = class:makeSubclass("Actor")
 
 Actor:makeInit(function(class, self, typeInfo, level)
 	class.super:initWith(self)
@@ -104,7 +104,7 @@ end)
 Actor.addPhysics = Actor:makeMethod(function(self, data)
 	data = data or {}
 
-	local scale = data.scale or self.typeInfo.scale
+	local scale = (data.scale or self.typeInfo.scale) * (data.collisionBoxScale or self.typeInfo.collisionBoxScale or 1.0)
 	local mass = data.mass or self.typeInfo.physics.mass
 
 	local phys = {
@@ -133,8 +133,7 @@ Actor.addPhysics = Actor:makeMethod(function(self, data)
     self.sprite.gravityScale = data.gravityScale or self.typeInfo.physics.gravityScale or 1.0
 end)
 
-
-Actor.addTimer = Actor:makeMethod(function(self, delay, callback, count)
+local function addTimer(self, delay, callback, count)
 	assert(delay and type(delay) == "number", "addTimer requires that delay be a number")
 	assert(callback and (
 		type(callback) == "function" or
@@ -143,7 +142,8 @@ Actor.addTimer = Actor:makeMethod(function(self, delay, callback, count)
 	assert(count == nil or type(count) == "number", "addTimer requires that count be nil or a number")
 
 	table.insert(self._timers, timer.performWithDelay(delay, callback, count))
-end)
+end
+Actor.addTimer = Actor:makeMethod(addTimer)
 
 Actor.addListener = Actor:makeMethod(function(self, object, name, callback)
 	assert(name and type(name) == "string", "addListener requires that name be a string")

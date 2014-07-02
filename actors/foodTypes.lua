@@ -41,6 +41,7 @@ local function SetDefaults(f)
 
 	-- General Food Info
 	f.scale = 0.25				-- How big the bird is compared to its normal anim size
+    f.collisionBoxScale = 0.75 --the physics collision box is basically scale * collisionBoxScale
 	f.weight = 2 		-- How many seconds the b.anims.hurt anim should be held for before returning to b.anims.normal
 	f.scoreScale = 1.0			-- How much to multiply scored points when hitting this bird
     
