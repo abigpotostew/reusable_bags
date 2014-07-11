@@ -18,4 +18,5 @@ Util.EnableDebugPhysicsShake(true)
 -- Enable multitouch
 system.activate("multitouch")
 
-composer.gotoScene('src.level')
+
+composer.gotoScene('src.levelScene', {params={level=require("levels.level1")}})
