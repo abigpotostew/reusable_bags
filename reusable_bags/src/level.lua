@@ -41,7 +41,13 @@ end
 levelScene.GetFoodList = function(self, textureSheetInfo)
     local list = _(textureSheetInfo.frameIndex):chain():keys()
         :select(function(v) return string.find(v, "food_") end):value()
-    return list
+        
+    local renamed_list = {}
+    _.each(list, function(i) 
+            local food_name = string.gsub(i, "food_", "")
+            table.insert(renamed_list, food_name )
+        end)
+    return renamed_list
 end
 
 -- Called when the scene's view does not exist:
@@ -72,13 +78,10 @@ levelScene.create = function(self, event)
 
     self.worldScale = display.contentWidth / self.width
 	self.worldOffset = { x = 0, y = 0}
+    
+    self.runtime = 0
 
-    
-    -----------------------------------
-    
-    
-    
-    
+    -----------
   
 	local sceneGroup = self.view
     
@@ -100,9 +103,12 @@ levelScene.create = function(self, event)
     local paper_bag1 = self:SpawnBag("paper", 350, 350)
     local canvas_bag1 = self:SpawnBag("canvas", 600, 350)
     
-    local food1 = self:SpawnFood("light", 175, 200, self.foodList[math.random(#self.foodList)])-- "food_apple")
-    local food2 = self:SpawnFood("light", 425, 200, self.foodList[math.random(#self.foodList)])
-    local food3 = self:SpawnFood("light", 675, 200, self.foodList[math.random(#self.foodList)])
+    for i=0, 4 do
+        self:SpawnFood(175+i*250, 200, self.foodList[math.random(#self.foodList)])
+    end
+    --local food1 = self:SpawnFood( 175, 200, self.foodList[math.random(#self.foodList)])
+    --local food2 = self:SpawnFood( 425, 200, self.foodList[math.random(#self.foodList)])
+    --local food3 = self:SpawnFood( 675, 200, self.foodList[math.random(#self.foodList)])
     
     
     print(string.format("Screen Resolution: %i x %i", display.contentWidth, display.contentHeight))
@@ -117,6 +123,27 @@ levelScene.create = function(self, event)
 end
 --Level.create = Level:makeMethod(create)
 
+levelScene.getDeltaTime = function(self)
+   local temp = system.getTimer()  --Get current game time in ms
+   local dt = (temp-self.runtime) / (33.333333333)  --60fps(16.666666667) or 30fps(33.333333333) as base
+   self.runtime = temp  --Store game time
+   return dt
+end
+
+levelScene.enterFrame = function(self, event)
+    local phase = event.phase
+    
+    local dt = self:getDeltaTime()
+    
+    _.each( self.bags, function(bag)
+        bag:update(dt)
+    end)
+end
+
+levelScene.key = function(self, event)
+    print (event.keyName)
+end
+
 -- Called immediately after scene has moved onscreen:
 levelScene.show = function(self, event)
 	local sceneGroup = self.view
@@ -129,6 +156,9 @@ levelScene.show = function(self, event)
         sceneGroup:insert(self.worldGroup)
         self.worldGroup.xScale = self.worldScale
         self.worldGroup.yScale = self.worldScale
+        
+        Runtime:addEventListener("enterFrame", self)
+        Runtime:addEventListener("key", self)
     end
 	
 	
@@ -232,16 +262,40 @@ end
 
 levelScene.SpawnBag = function(self, bag_name, x, y)
     local b = Bags.CreateBag(bag_name, x, y, self)
-    --table.insert(self.bags,b)
+    table.insert(self.bags,b)
 end
 --Level.SpawnBag = Level:makeMethod(SpawnBag)
 
-levelScene.SpawnFood = function(self, weight, x, y, food_name)
-    food_name = food_name or "apple"
-    local f = Foods.CreateFood( x, y, "light", food_name, self)
-    --table.insert(self.foods,f)
-    --f:addListener(f.sprite,"touch",self) --moved to inside food
-    --f.sprite:addEventListener("touch", self)
+-- removeActor - typically called by the actor itself
+----------------------------------------------
+levelScene.RemoveActor = function(self, actor)
+    local actorList
+    if actor.typeName == "food" then
+        actorList = self.foods
+    elseif actor.typeName == "bag" then
+        actorList = self.bags
+    end
+    _.reject(actorList, function(i) return i ~= actor end)
+    
+    actor:removeSelf()
+end
+
+levelScene.InsertFood = function(self, food)
+    table.insert(self.foods,food)
+end
+
+levelScene.SpawnFood = function(self, x, y, weight_or_name)
+    assert(weight_or_name, "Weight or food name required.")
+    local spawner_function = nil
+    if type(weight_or_name) == "string" then --by name
+        spawner_function = Foods.CreateFood_ByName
+    elseif type(weight_or_name) == "number" then
+        spawner_function = Foods.CreateFood_ByWeight
+    else
+        assert(false,"Error spawning food")
+    end
+    local f = spawner_function( x, y, weight_or_name, self )
+    self:InsertFood(f)
 end
 --Level.SpawnFood = Level:makeMethod(SpawnFood)
 

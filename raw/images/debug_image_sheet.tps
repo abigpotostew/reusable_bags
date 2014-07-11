@@ -183,6 +183,7 @@
             <filename>food_apple.png</filename>
             <filename>food_burrito.png</filename>
             <filename>food_orange.png</filename>
+            <filename>food_pizza.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

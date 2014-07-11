@@ -1,5 +1,9 @@
+local _ = require "libs.underscore"
+
 --food types definitions
 local Foods = setmetatable({}, nil)
+      Foods.by_name = setmetatable({}, nil)
+      Foods.by_weight = setmetatable({}, nil)
 
 local Food = require "actors.food"
 
@@ -10,7 +14,8 @@ end
 -------------------------------------------------------------------------------
 -- Bird Defaults
 
-local function SetDefaults(f)
+local function SetDefaults(f, params)
+    params = params or {}
 	-- Anims: What the food looks like
 	f.anims.normal = ""										-- What the bird b.anims.normally looks like
 	f.anims.hurt = ""										-- When the bird gets b.anims.hurt (hits anything for now)
@@ -26,33 +31,56 @@ local function SetDefaults(f)
 	f.sounds.death = "kung-fu.wav"		-- When a bird dies (all causes of b.anims.death for now)
 
 	-- Physics: How the bird acts in the physics simulator
-	f.physics.mass = 2.0		-- How much b.physics.mass the bird has in kilograms
-	f.physics.bounce = 0.0		-- How bouncy the bird is - 0.0 means no b.physics.bounce 1.0 means b.physics.bounce  away at full speed
-	f.physics.friction = 0.3	-- How much friction the bird has when sliding on things
-    f.physics.category = 'food'
-    f.physics.colliders = {'bag', 'food', 'ground'}
-    f.physics.gravityScale = 1.0
-    f.physics.angularDamping = 0.01
-    f.physics.linearDamping = 0.01
-    f.physics.isSensor = false
+	f.physics.mass = 2.0	 or params.mass	-- How much b.physics.mass the bird has in kilograms
+	f.physics.bounce = 0.0 or params.bounce		-- How bouncy the bird is - 0.0 means no b.physics.bounce 1.0 means b.physics.bounce  away at full speed
+	f.physics.friction = 0.3 or params.friction	-- How much friction the bird has when sliding on things
+    f.physics.category = 'food' or params.category
+    f.physics.colliders = {'bag', 'food', 'ground'} or params.colliders
+    f.physics.gravityScale = 1.0 or params.gravityScale
+    f.physics.angularDamping = 0.01 or params.angularDamping
+    f.physics.linearDamping = 0.01 or params.linearDamping
+    f.physics.isSensor = false or params.isSensor
+    f.physics.radius = params.radius or nil
     
-    f.physics.bodyType = 'dynamic'
+    f.physics.bodyType = 'dynamic' or params.bodyType
     
-
 	-- General Food Info
-	f.scale = 0.25				-- How big the bird is compared to its normal anim size
-    f.collisionBoxScale = 0.75 --the physics collision box is basically scale * collisionBoxScale
-	f.weight = 2 		-- How many seconds the b.anims.hurt anim should be held for before returning to b.anims.normal
-	f.scoreScale = 1.0			-- How much to multiply scored points when hitting this bird
+	f.scale = 0.25 or params.scale				-- How big the bird is compared to its normal anim size
+    f.collisionBoxScale = 0.75 or params.collisionBoxScale --the physics collision box is basically scale * collisionBoxScale
+	f.weight = 2 or params.weight 		-- How many seconds the b.anims.hurt anim should be held for before returning to b.anims.normal
+	f.scoreScale = 1.0 or params.scoreScale			-- How much to multiply scored points when hitting this bird
     
-    f.foodType = "light"
-    f.typeName = "food"
+    f.typeName = "food" or params.typeName
 
 end
+
+local function assemble_food(food_name, params)
+    local food_assembler = function()
+        local f = newTypeInfo()
+        SetDefaults(f, params)
+        f.name = food_name
+        return f
+    end
+    
+    Foods.by_name[food_name] = food_assembler
+    
+    local weight_bucket = Foods.by_weight[params.weight] or {}
+    table.insert(weight_bucket, food_assembler)
+    Foods.by_weight[params.weight] = weight_bucket
+end
+
+assemble_food("apple", { weight=3, radius = 100})
+
+assemble_food("orange", {weight=3, radius = 100})
+
+assemble_food("burrito", {weight=5})
+
+assemble_food("pizza", {weight=7, radius = 250})
 
 -------------------------------------------------------------------------------
 -- light weight foods,
 
+--[[
 Foods["light"] = function()
 	local f = newTypeInfo()
 	SetDefaults(f)
@@ -90,12 +118,42 @@ Foods["heavy"] = function()
 	return f
 end
 
+--]]
 
-
-Foods["CreateFood"] = function( x, y, weight, food_name, level, scale)
-    local foodType = Foods[weight]()
+local function spawn_food(x, y, foodType, food_name, level, scale)
+    assert(foodType, food_name, level, "Error in required params while spawning food")
     if scale then foodType.scale = scale end
     return Food:init(x or 0, y or 0, foodType, food_name, level)
+end
+
+Foods["CreateFood_ByName"] = function( x, y, food_name, level, scale)
+    local foodType = Foods.by_name[food_name]()
+    return spawn_food(x, y, foodType, food_name, level, scale)
+end
+
+Foods["CreateFood_ByWeight"] = function( x, y, weight, level, scale)
+    local weight_bucket = Foods.by_weight[weight]
+    local foodType = weight_bucket[math.random(#weight_bucket)]
+    local food_name = foodType.name
+    return spawn_food(x, y, foodType, food_name, level, scale)
+end
+
+
+Foods["GetFoodTypesList"] = function()
+    return _.values(Foods.by_name)
+end
+
+Foods["GetFoodWeightsList"] = function()
+    local weightset={}
+    local n=0
+
+    for k,v in pairs(tab) do
+        n=n+1
+        weightset[n]=k
+    end
+    table.sort(weightset)
+    
+    return weightset
 end
 
 

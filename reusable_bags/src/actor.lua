@@ -14,17 +14,15 @@ local Vector2 = require 'src.vector2'
 local Actor = class:makeSubclass("Actor")
 
 Actor:makeInit(function(class, self, typeInfo, level)
+    assert(level, "Level required to instance an actor")
 	class.super:initWith(self)
     
     self.level = level
 
 	self.typeName = typeInfo.typeName or "actor"
-
-	self.hitCount = 0
-    self.health = 1
-    self.originalHealth = self.health
 	
 	-- POSITION access through sprite
+    self.position = Vector2:init()
     
     local actorType = typeInfo or {}
 	if actorType then
@@ -49,10 +47,8 @@ Actor.createSprite = Actor:makeMethod(function(self, animName, x, y, scaleX, sca
 	scaleX = scaleX or self.typeInfo.scale or 1
 	scaleY = scaleY or self.typeInfo.scale or 1
 
-	--local sprite = spSprite.init(self.typeInfo.animSet, animName, events)
 	local sprite = display.newImage( debugTexturesImageSheet , debugTexturesSheetInfo:getFrameIndex(animName))
-	--self.sheet, self.sequenceData
-    --sprite:setReferencePoint( display.TopLeftReferencePoint )
+
 	sprite.anchorX, sprite.anchorY = self.anchorX or 0.5, self.anchorY or  0.5
 	sprite.owner = self
 	sprite.x, sprite.y = x, y
@@ -60,6 +56,8 @@ Actor.createSprite = Actor:makeMethod(function(self, animName, x, y, scaleX, sca
 	sprite.radiousSprite = nil
 	sprite.gravityScale = self.typeInfo.physics.gravityScale or 0.0
     sprite.alpha = self.typeInfo.alpha or 1.0
+    
+    self.position:set(x,y)
 
 	return sprite
 end)
@@ -81,6 +79,7 @@ Actor.removeSprite = Actor:makeMethod(function(self)
 		--TODO: may not be clearing event listeners properly here since above func is from other sprite class
 		self.sprite:removeSelf()
 		self.sprite.disposed = true
+        self.sprite = nil
 	else
 		print("WARNING: Attempting to remove a nonexistant or already-disposed sprite!")
 		print(debug.traceback())
@@ -99,9 +98,15 @@ Actor.removeSelf = Actor:makeMethod(function(self)
 		_listener.object:removeEventListener(_listener.name, _listener.callback)
 	end
 	self._timers = {}
+    
 end)
 
 Actor.addPhysics = Actor:makeMethod(function(self, data)
+        
+Actor.removePhysics = Actor:makeMethod(function(self)
+    physics.removeBody( self.sprite )
+end)
+        
 	data = data or {}
 
 	local scale = (data.scale or self.typeInfo.scale) * (data.collisionBoxScale or self.typeInfo.collisionBoxScale or 1.0)
@@ -114,18 +119,23 @@ Actor.addPhysics = Actor:makeMethod(function(self, data)
 		filter = collision.MakeFilter(data.category or self.typeInfo.physics.category,
 			data.colliders or self.typeInfo.physics.colliders or nil),
 		isSensor = data.isSensor or self.typeInfo.physics.isSensor or false,
-        bodyType = data.bodyType or self.typeInfo.physics.bodyType or "kinematic"
+        bodyType = data.bodyType or self.typeInfo.physics.bodyType or "kinematic",
+        radius = data.radius or self.typeInfo.physics.radius or nil
 	}
     --Optionally set a custom shape for the actor. Default uses sprite to shape it
     if data.shape or self.typeInfo.physics.shape then
         phys.shape = data.shape or self.typeInfo.physics.shape
     end
     
-    --create a rectangular body if the spite is scaled
+    --create a rectangular body if the sprite is scaled
     if not phys.shape and scale ~= 1.0 then
-        local hW = scale * 2*self.sprite.contentWidth
-        local hH = scale * 2*self.sprite.contentHeight
-        phys.shape = {hW, -hH, hW, hH, -hW, hH, -hW, -hH}
+        if phys.radius then
+            phys.radius = phys.radius * scale
+        else
+            local hW = scale * 2*self.sprite.contentWidth
+            local hH = scale * 2*self.sprite.contentHeight
+            phys.shape = {hW, -hH, hW, hH, -hW, hH, -hW, -hH}
+        end
     end
 
 	physics.addBody(self.sprite, phys.bodyType, phys)
@@ -156,6 +166,9 @@ Actor.addListener = Actor:makeMethod(function(self, object, name, callback)
 	object:addEventListener(name, callback)
 end)
 
+
+-- Sprite Event Commands get called during the various event phases for sprites animations:
+-- see http://docs.coronalabs.com/api/event/sprite/index.html
 Actor.ClearSpriteEventCommands = Actor:makeMethod(function(self)
 	self.state.spriteEventCommands = {}
 	self.state.spriteEventCommands["end"] = {}
@@ -178,6 +191,7 @@ Actor.ProcessSpriteEvent = Actor:makeMethod(function(self, event)
 		command()
 	end
 end)
+
 
 -- Call after the actor's sprite has been created
 Actor.SetupStateMachine = Actor:makeMethod(function(self)
@@ -205,23 +219,23 @@ Actor.y = Actor:makeMethod(function(self)
     return self.sprite.y
 end)
 
-Actor.pos = Actor:makeMethod(function(self)
+Actor.posVector = Actor:makeMethod(function(self)
 	assert(self.sprite,"Sprite mustn't be null when accessing pos")
 	return Vector2:init(self:x(),self:y())
 end)
 
-Actor.dispose = Actor:makeMethod(function(self)
-	if self.sprite then
-		self.sprite:removeSelf()
-		self.sprite = nil
-	end
+Actor.pos = Actor:makeMethod(function(self)
+    assert(self.sprite,"Sprite mustn't be null when accessing pos")
+	return self:x(), self:y()
 end)
 
---TODO: add more checks here
-Actor.canOverlapWith = Actor:makeMethod(function(self,actorOther)
-	if not actorOther then return false end
-	if actorOther.typeName == "building" then return false end
-	return true
+Actor.setPos = Actor:makeMethod(function(self, x, y)
+	assert(self.sprite,"Sprite mustn't be null when accessing pos")
+    if Vector2:isVector2(x) then
+        self.sprite.x, self.sprite.y = x.x, x.y
+    else
+        self.sprite.x, self.sprite.y = x, y
+    end
 end)
 
 Actor.update = Actor:makeMethod(function(self,...)

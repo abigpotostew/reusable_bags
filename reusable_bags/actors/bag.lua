@@ -24,6 +24,8 @@ Bag:makeInit(function(class, self, x, y, typeInfo, level)
     
 	self.sprite:addEventListener("collision", self)
     
+    self.timer = 0
+    
     return self
 end)
 
@@ -62,6 +64,13 @@ Bag.collision = Bag:makeMethod(function(self, event)
 	end
 end)
 
+local update = function(self, dt)
+    self.timer = self.timer + dt
+    --Update position for overall changes in bag position
+    --self.position:set(  )
+    self:setPos(self.position + {x = 0, y = -25*math.abs(math.sin(self.timer/10))})
+end
+Bag.update = Bag:makeMethod(update)
 
 
 return Bag

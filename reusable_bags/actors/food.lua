@@ -6,22 +6,61 @@ local Vector2 = require 'src.vector2'
 local Food = Actor:makeSubclass("Food")
 
 Food:makeInit(function(class, self, x, y, typeInfo, image_name, level)
+    assert(image_name, "Image required to instance food.")
 	class.super:initWith(self, typeInfo, level )
     
     self.weight = typeInfo.weight or 1 -- current weight in bag
     
-    self.foodType = typeInfo.foodType
-    
-    self.sprite = self:createSprite(image_name or 'apple', x or 0, y or 0)
+    self.sprite = self:createSprite("food_"..image_name, x or 0, y or 0)
     self:addPhysics()
     self.sprite.gravityScale = typeInfo.physics.gravityScale
     local world_group = self.level:GetWorldGroup()
     world_group:insert(self.sprite)
     self.group = world_group
     
+    self:SetupStateMachine()
+	self:SetupStates()
+	self.state:GoToState("normal")
+    
     self:addListener(self.sprite, "touch", self)
     
     return self
+end)
+
+Food.SetupStates = Food:makeMethod(function(self)
+
+	self.state:SetState("hurt", {
+		enter = function()
+			--self.sprite:play("hurt", false)
+			-- TODO: Hack, will stomp other changes - write a delay into the events queue
+			--self:addTimer(self.typeInfo.hurtDuration * 1000, function() self.state:GoToState("normal") end)
+		end
+	})
+
+	self.state:SetState("normal", {
+		enter = function()
+			--self.sprite:play("normal")
+		end
+		--onBirdHit = function(bird)
+		--	self.state:GoToState("hit")
+		--end
+	})
+
+	self.state:SetState("dying", {
+		enter = function()
+			--self.sprite:play("death", false)
+			--self:ClearSpriteEventCommands()
+			--self:AddSpriteEventCommand("end", function() self.state:GoToState("dead") end)
+		end
+	})
+
+	self.state:SetState("dead", {
+		enter = function()
+			--self:CreateExplosion("deathParticle")
+			self.level:RemoveActor(self)
+		end
+	})
+
 end)
 
 Food.GetWeight = Food:makeMethod(function(self)

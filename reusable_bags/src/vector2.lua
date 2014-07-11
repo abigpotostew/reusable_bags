@@ -135,5 +135,12 @@ Vector2.isVector2 = Vector2:makeMethod(function(self,obj)
 	return isVector2Equivalent(obj)
 end)
 
+Vector2.set = Vector2:makeMethod(function(self,x,y)
+    self.x, self.y = x or 0, y or 0
+end)
+
+Vector2.get = Vector2:makeMethod(function(self)
+    return self.x, self.y
+end)
 
 return Vector2

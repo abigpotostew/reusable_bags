@@ -1,3 +1,12 @@
+--[[
+
+A state machine manages states that each can have an enter, and exit function.
+A state can also have additional data attached.
+
+--]]
+
+
+
 local StateMachine = setmetatable({}, nil)
 
 local smprint = function(...)
@@ -15,6 +24,8 @@ function StateMachine.Create()
 	return machine
 end
 
+
+-- Calls the current states exit function, and the GoTo state's enter function
 function StateMachine:GoToState(state)
 	assert(state ~= nil and self.functions[state] ~= nil, "Bad target state for GoToState: " .. tostring(state))
 
@@ -49,6 +60,7 @@ function StateMachine:SetState(name, functions)
 	self.functions[name] = functions
 end
 
+-- Returns the state
 function StateMachine:GetState()
 	if (self.state == nil) then
 		return nil, nil
