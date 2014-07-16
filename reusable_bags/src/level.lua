@@ -15,10 +15,12 @@ local util = require"src.util"
 local _ = require 'libs.underscore'
 local fps = require "libs.fps"
 local collision = require "src.collision"
+local Vector2 = require 'src.vector2'
 
 local Actor = require 'src.actor'
 local Bags = require 'actors.bagTypes'
 local Foods = require 'actors.foodTypes'
+
 
 collision.SetGroups{"bag", "food", "head", "ground", "wall"}
 
@@ -32,21 +34,21 @@ local Level = class:makeSubclass("Level")
 local function init(class, self)
 	class.super:initWith(self)
     
-    --debug stuff
-    debugTexturesSheetInfo = require("images.debug_image_sheet")
-    debugTexturesImageSheet = graphics.newImageSheet( "images/debug_image_sheet.png", debugTexturesSheetInfo:getSheet() )
-    --end debug stuff
-    
-    self.foodList = self:GetFoodList(debugTexturesSheetInfo)
+    self.food_list = self:GetFoodNameList(self.texture_sheet)
     
     --Constructor-----------------------------
-    -- forward declarations and other locals
+    
+    self.worldGroup = display.newGroup()
+        self.worldGroup.xScale = self.worldScale
+        self.worldGroup.yScale = self.worldScale
+        
     self.screenW, self.screenH, self.halfW = display.contentWidth, display.contentHeight, display.contentWidth*0.5
     self.width, self.height = self.screenW, self.screenH
     
     --Level actors:
     self.bags = {}
     self.foods = {}
+    self.spawn_points = {}
     
     self.timeline = {}
 	self.timers = {}
@@ -63,7 +65,7 @@ local function init(class, self)
 end
 Level:makeInit(init)
 
-local GetFoodList = function(self, textureSheetInfo)
+local GetFoodNameList = function(self, textureSheetInfo)
     local list = _(textureSheetInfo.frameIndex):chain():keys()
         :select(function(v) return string.find(v, "food_") end):value()
         
@@ -74,7 +76,7 @@ local GetFoodList = function(self, textureSheetInfo)
         end)
     return renamed_list
 end
-Level.GetFoodList = Level:makeMethod(GetFoodList)
+Level.GetFoodNameList = Level:makeMethod(GetFoodNameList)
 
 
 -- Called when the scene's view does not exist:
@@ -104,17 +106,13 @@ local create = function(self, event, sceneGroup)
     local canvas_bag1 = self:SpawnBag("canvas", 600, 350)
     
     for i=0, 4 do
-        --self:SpawnFood(175+i*250, 200, self.foodList[math.random(#self.foodList)])
+        --self:SpawnFood(175+i*250, 200, self.food_list[math.random(#self.food_list)])
     end
-    --local food1 = self:SpawnFood( 175, 200, self.foodList[math.random(#self.foodList)])
-    --local food2 = self:SpawnFood( 425, 200, self.foodList[math.random(#self.foodList)])
-    --local food3 = self:SpawnFood( 675, 200, self.foodList[math.random(#self.foodList)])
+    --local food1 = self:SpawnFood( 175, 200, self.food_list[math.random(#self.food_list)])
+    --local food2 = self:SpawnFood( 425, 200, self.food_list[math.random(#self.food_list)])
+    --local food3 = self:SpawnFood( 675, 200, self.food_list[math.random(#self.food_list)])
     
-    local left_spawner = Actor:init({typeName="spawner"}, self)
-    left_spawner = Actor:init({typeName="spawner"}, self)
-    left_spawner.group = self:GetWorldGroup()
-    left_spawner:createRectangleSprite(15,50, 20, 50)
-    self.left_spawner = left_spawner
+    
     
     
     print(string.format("Screen Resolution: %i x %i", display.contentWidth, display.contentHeight))
@@ -148,26 +146,18 @@ local enterFrame = function(self, event)
 end
 Level.enterFrame = Level:makeMethod(enterFrame)
 
-local key = function(self, event)
-    print (event.keyName)
-end
-Level.key = Level:makeMethod(key)
+
 
 -- Called immediately after scene has moved onscreen:
 local show = function(self, event)
 	local sceneGroup = self.sceneGroup
     
     if event.phase == 'will' then
-        
+        sceneGroup:insert(self.worldGroup)
     elseif event.phase == 'did' then 
         physics.start()
-        self.worldGroup = display.newGroup()
-        sceneGroup:insert(self.worldGroup)
-        self.worldGroup.xScale = self.worldScale
-        self.worldGroup.yScale = self.worldScale
         
         Runtime:addEventListener("enterFrame", self)
-        Runtime:addEventListener("key", self)
     end
 	
 	
@@ -222,6 +212,18 @@ Level.destroy = Level:makeMethod(destroyScene)
 
 --------------------------------------------
 
+
+local CreateSpawner = function(self, x, y, directionX, directionY, force, w, h)
+    local spawner = Actor:init({typeName="spawner"}, self)
+    spawner.group = self:GetWorldGroup()
+    spawner:createRectangleSprite(w or 15,h or 50, x or 0, y or 0)
+    spawner.direction = Vector2:init(directionX, directionY)
+    spawner.force = force
+    table.insert(self.spawn_points, spawner)
+    return #self.spawn_points
+end
+Level.CreateSpawner = Level:makeMethod(CreateSpawner)
+
 local PeriodicCheck = function(self)
 	-- Remove birds that have left the screen (using a separate kill list so we don't step all over ourselves)
 --	local killList = {}
@@ -252,28 +254,9 @@ local PeriodicCheck = function(self)
 end
 Level.PeriodicCheck = Level:makeMethod(PeriodicCheck)
 
-local ProcessTimeline = function(self)
-	while #self.timeline ~= 0 do
-		local event = table.remove(self.timeline, 1)
-		local result = event()
-		if (type(result) == "number") then
-			self:CreateTimer(result, function() self:ProcessTimeline() end)
-			break
-		end
-	end
-end
-Level.ProcessTimeline = Level:makeMethod(ProcessTimeline)
 
-local TimelineWait = function(self, seconds)
-	table.insert(self.timeline, function() return seconds end)
-end
-Level.TimelineWait = Level:makeMethod(TimelineWait)
 
-local SpawnBag = function(self, bag_name, x, y)
-    local b = Bags.CreateBag(bag_name, x, y, self)
-    table.insert(self.bags,b)
-end
-Level.SpawnBag = Level:makeMethod(SpawnBag)
+
 
 -- removeActor
 ----------------------------------------------
@@ -281,12 +264,12 @@ local RemoveActor = function(self, actor)
     local actorList
     if actor.typeName == "food" then
         actorList = self.foods
+        actor:RemoveFoodSelf()
     elseif actor.typeName == "bag" then
         actorList = self.bags
+        actor:removeSelf()
     end
     _.reject(actorList, function(i) return i ~= actor end)
-    
-    actor:removeSelf()
 end
 Level.RemoveActor = Level:makeMethod(RemoveActor)
 
@@ -295,7 +278,9 @@ local InsertFood = function(self, food)
 end
 Level.InsertFood = Level:makeMethod(InsertFood)
 
-local SpawnFood = function(self, x, y, weight_or_name)
+
+--Set posY to nil to spawn food at the location of a food spawner and pass spawner id as second parameter
+local SpawnFood = function(self, weight_or_name, posX, posY, spawner_id)
     assert(weight_or_name, "Weight or food name required.")
     local spawner_function = nil
     if type(weight_or_name) == "string" then --by name
@@ -305,11 +290,32 @@ local SpawnFood = function(self, x, y, weight_or_name)
     else
         assert(false,"Error spawning food")
     end
+    local x, y = posX, posY
+    local spawner = spawner_id
+    if spawner then
+        spawner = self:GetSpawner(spawner_id)
+        x, y = spawner:pos()
+    end
+    
     local f = spawner_function( x, y, weight_or_name, self )
+        
+    if spawner then
+        f.sprite:applyForce( (spawner.direction * spawner.force):get(), f:pos() )
+    end
     self:InsertFood(f)
 end
 Level.SpawnFood = Level:makeMethod(SpawnFood)
---Level.SpawnFood = Level:makeMethod(SpawnFood)
+
+local SpawnRandomFood = function(self, posX, posY, spawner_id)
+    self:SpawnFood( self:GetRandomFoodName(), posX, posY, spawner_id)
+end
+Level.SpawnRandomFood = Level:makeMethod(SpawnRandomFood)
+
+local SpawnBag = function(self, bag_name, x, y)
+    local b = Bags.CreateBag(bag_name, x, y, self)
+    table.insert(self.bags,b)
+end
+Level.SpawnBag = Level:makeMethod(SpawnBag)
 
 local AddGround = function(self)
 	--[[local width, height = self:GetWorldViewSize()
@@ -383,6 +389,17 @@ Level.AddGround = Level:makeMethod(AddGround)
 -------------------------------------------------------------------------------
 -- Getters and utility functions
 -------------------------------------------------------------------------------
+local GetSpawner = function(self, idx)
+    assert( #self.spawn_points > 0, "Create a spawner before spawning food.")
+	return self.spawn_points[idx]
+end
+Level.GetSpawner = Level:makeMethod(GetSpawner)
+
+local GetRandomFoodName = function(self)
+    assert( self.food_list and #self.food_list > 0, "Required food name list before." )
+    return self.food_list[math.random(#self.food_list)]
+end
+Level.GetRandomFoodName = Level:makeMethod(GetRandomFoodName)
 
 local GetWorldGroup = function(self)
 	return self.worldGroup
@@ -434,24 +451,35 @@ Level.CreateTransition = Level:makeMethod(CreateTransition)
 -----------------------------------------------------------------------------------------
 -- Timeline functions
 ----------------------------------------------------------------------------------------
-
-Level.TimelineWait = Level:makeMethod(function(self, seconds)
+local TimelineWait = function(self, seconds)
 	table.insert(self.timeline, function() return seconds end)
-end)
+end
+Level.TimelineWait = Level:makeMethod(TimelineWait)
 
-Level.TimelineSpawnFood = Level:makeMethod(function(self, data)
+local TimelineSpawnFood = function(self, data)
 	if (data.wait ~= nil) then
 		self:TimelineWait(data.wait)
 	end
 
 	local function SpawnFood()
-		self:SpawnFood(data.x, data.y, data.foodName or data.weight)
+		self:SpawnFood( data.foodName or data.weight, data.x, data.y, data.spawner_id)
 	end
 
 	table.insert(self.timeline, SpawnFood)
-end)
+end
+Level.TimelineSpawnFood = Level:makeMethod(TimelineSpawnFood)
 
-
+local ProcessTimeline = function(self)
+	while #self.timeline ~= 0 do
+		local event = table.remove(self.timeline, 1)
+		local result = event()
+		if (type(result) == "number") then
+			self:CreateTimer(result, function() self:ProcessTimeline() end)
+			break
+		end
+	end
+end
+Level.ProcessTimeline = Level:makeMethod(ProcessTimeline)
 
 
 return Level

@@ -101,12 +101,12 @@ Actor.removeSelf = Actor:makeMethod(function(self)
     
 end)
 
-Actor.addPhysics = Actor:makeMethod(function(self, data)
-        
 Actor.removePhysics = Actor:makeMethod(function(self)
     physics.removeBody( self.sprite )
 end)
-        
+
+Actor.addPhysics = Actor:makeMethod(function(self, data)
+    assert(self.sprite, "Actor:addPhysics() - Must have a sprite to add physics to")
 	data = data or {}
 
 	local scale = (data.scale or self.typeInfo.scale) * (data.collisionBoxScale or self.typeInfo.collisionBoxScale or 1.0)
@@ -243,5 +243,6 @@ Actor.update = Actor:makeMethod(function(self,...)
         self.updateFunc(self,unpack(arg))
     end
 end)
+
 
 return Actor

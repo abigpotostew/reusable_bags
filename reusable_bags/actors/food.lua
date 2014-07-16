@@ -73,16 +73,32 @@ local touch = function(self,event)
         event.target.joint.frequency = 2 --low frequency, makes it more floaty
         event.target.joint.dampingRatio = 1 --max damping, doesn't bounce against joint
         display.getCurrentStage():setFocus( event.target )
+        event.target.has_focus = true
     elseif event.phase == "moved" then
+        if not event.target.joint then --we may have removed another food and finger slid to this food
+            return false
+        end
         event.target.joint:setTarget(event.x, event.y)
     elseif event.phase == "ended" then
-        if not event.target.joint then
-            print('oh god')
-        end
+        event.target.has_focus = false
         event.target.joint:removeSelf()
+        event.target.joint = nil
         display.getCurrentStage():setFocus( nil )
     end 
+    return true
 end
 Food.touch = Food:makeMethod(touch)
+
+local RemoveFoodSelf = function(self)
+    if self.sprite.joint then
+        self.sprite.joint:removeSelf()
+    end
+    if self.sprite.has_focus then
+        display.getCurrentStage():setFocus( nil )
+        self.sprite.has_focus = false
+    end
+    self.sprite:removeSelf()
+end
+Food.RemoveFoodSelf = Food:makeMethod(RemoveFoodSelf)
 
 return Food

@@ -38,7 +38,7 @@ Bag.AddItem = Bag:makeMethod(function(self, item)
     
     self.weight = item.weight + self.weight
     
-    item:removeSelf()
+    self.level:RemoveActor(item)
 end)
 
 Bag.collision = Bag:makeMethod(function(self, event)
