@@ -3,24 +3,25 @@
  DebugLevel 
  * a child class for Level which enables debug features
  * Usage: 
-   local debug_level = require('src.debug.debug_level'):init()
-
+   local debug_level = require('src.debug.debug_level'):new() -- or just ()
 
 -----------------------------------------------------------------------------]]
 local Level = require "src.level"
 local fps = require "libs.fps"
 
-local DebugLevel = Level:makeSubclass("DebugLevel")
+local DebugLevel = Level:extends()
 
-local function init(class, self, ...)
+function DebugLevel:init(...)
     
     debugTexturesSheetInfo = require("images.debug_image_sheet")
     debugTexturesImageSheet = graphics.newImageSheet( "images/debug_image_sheet.png", debugTexturesSheetInfo:getSheet() )
     self.texture_sheet = debugTexturesSheetInfo
     
-	class.super:initWith(self, unpack(arg))
+    --Construct parent class
+	self:super('init', unpack(arg))
     
     self:EnableDebugKeys()
+    self:EnableDebugPhysicsShake()
     
     self:AddKeyReleaseEvent("s", function(event)
         self:SpawnRandomFood(nil,nil,1)
@@ -31,9 +32,8 @@ local function init(class, self, ...)
     
 	return self
 end
-DebugLevel:makeInit(init)
 
-local key = function(self, event)
+function DebugLevel:key (event)
     local key_name = event.keyName
     if self.keys_down[key_name] then --key release event
         self.keys_down[key_name] = nil
@@ -47,24 +47,49 @@ local key = function(self, event)
         self.keys_down[key_name] = true
     end
 end
-DebugLevel.key = DebugLevel:makeMethod(key)
 
-local EnableDebugKeys = function(self, event)
+function DebugLevel:EnableDebugKeys (event)
     self.keys_down = {}
     
     self.key_events = {}
     
     Runtime:addEventListener("key", self)
 end
-DebugLevel.EnableDebugKeys = DebugLevel:makeMethod(EnableDebugKeys)
 
-local AddKeyReleaseEvent = function(self, key, event)
+function DebugLevel:AddKeyReleaseEvent (key, event)
     if not self.key_events[key] then
         self.key_events[key] = {}
     end
     
     table.insert(self.key_events[key], event)
 end
-DebugLevel.AddKeyReleaseEvent = DebugLevel:makeMethod(AddKeyReleaseEvent)
+
+
+function DebugLevel:EnableDebugPhysicsShake (initialDrawState)
+    -- switches physics mode easily on device
+    initialDrawState = initialDrawState or "normal"
+    local hybrid_on = initialDrawState == "hybrid" or false
+    local physics = require "physics"
+    physics.setDrawMode(initialDrawState)
+    local function jerk(e)
+        if (e.isShake) then
+                hybrid_on = not hybrid_on
+                if hybrid_on then
+                        physics.setDrawMode("hybrid")
+                else
+                        physics.setDrawMode("normal")
+                end
+        end
+        return true
+    end
+    Runtime:addEventListener ("accelerometer",jerk)
+end
+
+
+function DebugLevel:create (event, scene_group)
+    self:super("create", event, scene_group)
+    
+end
+
 
 return DebugLevel
