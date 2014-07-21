@@ -1,7 +1,7 @@
 local debug_level = require "src.debug.debug_level"
 local levelDefaults = require "levels.defaults"
 
-local l = debug_level:init()
+local l = debug_level()
 levelDefaults(l)
 
 local spawner = l:CreateSpawner(15,150, 1, 0, 10000)

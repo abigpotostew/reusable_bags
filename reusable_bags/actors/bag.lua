@@ -1,13 +1,14 @@
 --bag
 
 
-local Actor = require"src.actor"
+local Actor = require "src.actor"
 local Vector2 = require 'src.vector2'
 
-local Bag = Actor:makeSubclass("Bag")
+local Bag = Actor:extends()
 
-Bag:makeInit(function(class, self, x, y, typeInfo, level)
-	class.super:initWith(self, typeInfo, level )
+
+function Bag:init(x, y, typeInfo, level)
+	self:super("init", typeInfo, level )
     
     self.capacity = typeInfo.capacity or 1
     self.weight = typeInfo.weight or 0 -- current weight in bag
@@ -26,22 +27,22 @@ Bag:makeInit(function(class, self, x, y, typeInfo, level)
     
     self.timer = 0
     
-    return self
-end)
+    --return self
+end
 
-Bag.CanFitWeight = Bag:makeMethod(function(self, itemWeight)
+function Bag:CanFitWeight (itemWeight)
     return ((itemWeight + self.weight) <= self.capacity)
-end)
+end
 
-Bag.AddItem = Bag:makeMethod(function(self, item)
+function Bag:AddItem (item)
     assert(item and item.typeName == "food", "item must be an food actor")
     
     self.weight = item.weight + self.weight
     
     self.level:RemoveActor(item)
-end)
+end
 
-Bag.collision = Bag:makeMethod(function(self, event)
+function Bag:collision (event)
 
 	if (event.phase == "ended") then
 		return
@@ -62,15 +63,14 @@ Bag.collision = Bag:makeMethod(function(self, event)
 	elseif otherName then
 		print("Bag hit unknown named object: " .. otherName)
 	end
-end)
+end
 
-local update = function(self, dt)
+function Bag:update(dt)
     self.timer = self.timer + dt
     --Update position for overall changes in bag position
     --self.position:set(  )
     self:setPos(self.position + {x = 0, y = -25*math.abs(math.sin(self.timer/10))})
 end
-Bag.update = Bag:makeMethod(update)
 
 
 return Bag

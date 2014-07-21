@@ -123,7 +123,7 @@ end
 local function spawn_food(x, y, foodType, food_name, level, scale)
     assert(foodType, food_name, level, "Error in required params while spawning food")
     if scale then foodType.scale = scale end
-    return Food:init(x or 0, y or 0, foodType, food_name, level)
+    return Food(x or 0, y or 0, foodType, food_name, level)
 end
 
 Foods["CreateFood_ByName"] = function( x, y, food_name, level, scale)

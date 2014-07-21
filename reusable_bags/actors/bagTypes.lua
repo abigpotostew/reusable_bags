@@ -117,7 +117,7 @@ end
 Bags["CreateBag"] = function(bag_name, x, y, level, scale)
     local bagType = Bags[bag_name](scale)
     if scale then bagType.scale = scale end
-    return Bag:init(x or 0,y or 0, bagType, level)
+    return Bag(x or 0,y or 0, bagType, level)
 end
 
 

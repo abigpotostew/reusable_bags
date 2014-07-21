@@ -1,13 +1,13 @@
 --generic food class
 
-local Actor = require"src.actor"
+local Actor = require "src.actor"
 local Vector2 = require 'src.vector2'
 
-local Food = Actor:makeSubclass("Food")
+local Food = Actor:extends()
 
-Food:makeInit(function(class, self, x, y, typeInfo, image_name, level)
-    assert(image_name, "Image required to instance food.")
-	class.super:initWith(self, typeInfo, level )
+function Food:init (x, y, typeInfo, image_name, level)
+    assert(image_name, "Image required to instance function Food:")
+	self:super("init", typeInfo, level )
     
     self.weight = typeInfo.weight or 1 -- current weight in bag
     
@@ -24,10 +24,10 @@ Food:makeInit(function(class, self, x, y, typeInfo, image_name, level)
     
     self:addListener(self.sprite, "touch", self)
     
-    return self
-end)
+    --return self
+end
 
-Food.SetupStates = Food:makeMethod(function(self)
+function Food:SetupStates ()
 
 	self.state:SetState("hurt", {
 		enter = function()
@@ -63,13 +63,13 @@ Food.SetupStates = Food:makeMethod(function(self)
 		end
 	})
 
-end)
+end
 
-Food.GetWeight = Food:makeMethod(function(self)
+function Food:GetWeight ()
     return self.weight
-end)
+end
 
-local touch = function(self,event)
+function Food:touch (event)
     if event.phase == "began" then
         event.target.joint = physics.newJoint( "touch", event.target, event.x, event.y )
         event.target.joint.frequency = 2 --low frequency, makes it more floaty
@@ -91,9 +91,8 @@ local touch = function(self,event)
     end 
     return true
 end
-Food.touch = Food:makeMethod(touch)
 
-local RemoveFoodSelf = function(self)
+function Food:RemoveFoodSelf ()
     if self.sprite.joint then
         self.sprite.joint:removeSelf()
         self.sprite.joint = nil
@@ -104,6 +103,5 @@ local RemoveFoodSelf = function(self)
     end
     self.sprite:removeSelf()
 end
-Food.RemoveFoodSelf = Food:makeMethod(RemoveFoodSelf)
 
 return Food

@@ -30,7 +30,7 @@ function DebugLevel:init(...)
     local performance = fps.new()
 	performance.group.alpha = 0.7
     
-	return self
+	--return self
 end
 
 function DebugLevel:key (event)
@@ -48,23 +48,22 @@ function DebugLevel:key (event)
     end
 end
 
+-- Turn on keyboard event listeners
 function DebugLevel:EnableDebugKeys (event)
     self.keys_down = {}
-    
     self.key_events = {}
-    
     Runtime:addEventListener("key", self)
 end
 
+-- Attach a listener function to a key release event
 function DebugLevel:AddKeyReleaseEvent (key, event)
     if not self.key_events[key] then
         self.key_events[key] = {}
     end
-    
     table.insert(self.key_events[key], event)
 end
 
-
+-- Toggle debug physics drawing when device is shaken
 function DebugLevel:EnableDebugPhysicsShake (initialDrawState)
     -- switches physics mode easily on device
     initialDrawState = initialDrawState or "normal"

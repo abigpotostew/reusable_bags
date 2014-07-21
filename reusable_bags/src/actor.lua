@@ -5,18 +5,17 @@ Actor
 
 --local spSprite = require "src.libs.swiftping.sp_sprite"
 local stateMachine = require "src.stateMachine"
-local class = require "src.class"
+local LCS = require "libs.LCS"
 local util = require "src.util"
 local _ = require "libs.underscore"
 local collision = require "src.collision"
 local physics = require 'physics'
 local Vector2 = require 'src.vector2'
 
-local Actor = class:makeSubclass("Actor")
+local Actor = LCS.class()
 
-Actor:makeInit(function(class, self, typeInfo, level)
+function Actor:init(typeInfo, level)
     assert(level, "Level required to instance an actor")
-	class.super:initWith(self)
     
     self.level = level
 
@@ -38,10 +37,10 @@ Actor:makeInit(function(class, self, typeInfo, level)
     
     self.group = nil
 
-	return self
-end)
+	--return self
+end
 
-Actor.createSprite = Actor:makeMethod(function(self, animName, x, y, scaleX, scaleY, events)
+function Actor:createSprite(animName, x, y, scaleX, scaleY, events)
 	assert(animName, "You must provide an anim name when creating an actor sprite")
 	assert(x and y, "You must specify a position when creating an actor sprite")
 
@@ -61,9 +60,9 @@ Actor.createSprite = Actor:makeMethod(function(self, animName, x, y, scaleX, sca
     self.position:set(x,y)
 
 	return sprite
-end)
+end
 
-Actor.createRectangleSprite = Actor:makeMethod(function(self,w,h,x,y,strokeWidth)
+function Actor:createRectangleSprite (w,h,x,y,strokeWidth)
     assert(self.group,"Please initialize this actor's group before creating a sprite")
     x, y = x or 0, y or 0
     self.sprite = display.newRect(self.group, x, y, w, h)
@@ -72,9 +71,9 @@ Actor.createRectangleSprite = Actor:makeMethod(function(self,w,h,x,y,strokeWidth
 	self.sprite:setStrokeColor(1,0,1)    
     self.sprite.anchorX, self.sprite.anchorY = self.typeInfo.anchorX or 0.5, self.typeInfo.anchorY or 0.5
     if strokeWidth then self.sprite.strokeWidth = strokeWidth end
-end)
+end
 
-Actor.removeSprite = Actor:makeMethod(function(self)
+function Actor:removeSprite ()
 	if (self.sprite and self.sprite.disposed == nil or self.sprite.disposed == false) then
 		--self.sprite:clearEventListeners()
 		--TODO: may not be clearing event listeners properly here since above func is from other sprite class
@@ -85,9 +84,9 @@ Actor.removeSprite = Actor:makeMethod(function(self)
 		print("WARNING: Attempting to remove a nonexistant or already-disposed sprite!")
 		print(debug.traceback())
 	end
-end)
+end
 
-Actor.removeSelf = Actor:makeMethod(function(self)
+function Actor:removeSelf ()
 	self:removeSprite()
 
 	for _, _timer in ipairs(self._timers) do
@@ -100,13 +99,13 @@ Actor.removeSelf = Actor:makeMethod(function(self)
 	end
 	self._timers = {}
     
-end)
+end
 
-Actor.removePhysics = Actor:makeMethod(function(self)
+function Actor:removePhysics ()
     physics.removeBody( self.sprite )
-end)
+end
 
-Actor.addPhysics = Actor:makeMethod(function(self, data)
+function Actor:addPhysics (data)
     assert(self.sprite, "Actor:addPhysics() - Must have a sprite to add physics to")
 	data = data or {}
 
@@ -142,9 +141,9 @@ Actor.addPhysics = Actor:makeMethod(function(self, data)
 	physics.addBody(self.sprite, phys.bodyType, phys)
     
     self.sprite.gravityScale = data.gravityScale or self.typeInfo.physics.gravityScale or 1.0
-end)
+end
 
-local function addTimer(self, delay, callback, count)
+function Actor:addTimer( delay, callback, count)
 	assert(delay and type(delay) == "number", "addTimer requires that delay be a number")
 	assert(callback and (
 		type(callback) == "function" or
@@ -154,9 +153,8 @@ local function addTimer(self, delay, callback, count)
 
 	table.insert(self._timers, timer.performWithDelay(delay, callback, count))
 end
-Actor.addTimer = Actor:makeMethod(addTimer)
 
-Actor.addListener = Actor:makeMethod(function(self, object, name, callback)
+function Actor:addListener (object, name, callback)
 	assert(name and type(name) == "string", "addListener requires that name be a string")
 	assert(callback and (
 		type(callback) == "function" or
@@ -165,89 +163,89 @@ Actor.addListener = Actor:makeMethod(function(self, object, name, callback)
 
 	table.insert(self._listeners, {object = object, name = name, callback = callback})
 	object:addEventListener(name, callback)
-end)
+end
 
-Actor.removeListener = Actor:makeMethod(function(self,listener)
+function Actor:removeListener (listener)
     _.reject(self._listeners, function(i) return i.name ~= actor end)
-end)
+end
 
 
 -- Sprite Event Commands get called during the various event phases for sprites animations:
 -- see http://docs.coronalabs.com/api/event/sprite/index.html
-Actor.ClearSpriteEventCommands = Actor:makeMethod(function(self)
+function Actor:ClearSpriteEventCommands ()
 	self.state.spriteEventCommands = {}
 	self.state.spriteEventCommands["end"] = {}
 	self.state.spriteEventCommands["loop"] = {}
 	self.state.spriteEventCommands["next"] = {}
 	self.state.spriteEventCommands["prepare"] = {}
-end)
+end
 
-Actor.AddSpriteEventCommand = Actor:makeMethod(function(self, eventName, command)
+function Actor:AddSpriteEventCommand (eventName, command)
 	self.state.spriteEventCommands[eventName] = self.state.spriteEventCommands[eventName] or {}
 	table.insert(self.state.spriteEventCommands[eventName], command)
-end)
+end
 
 -- Commands called may add new commands, so before we call anything, reassign to an empty list
-Actor.ProcessSpriteEvent = Actor:makeMethod(function(self, event)
+function Actor:ProcessSpriteEvent (event)
 	local commands = self.state.spriteEventCommands[event.phase]
 	self.state.spriteEventCommands[event.phase] = {}
 
 	for _, command in ipairs(commands) do
 		command()
 	end
-end)
+end
 
 
 -- Call after the actor's sprite has been created
-Actor.SetupStateMachine = Actor:makeMethod(function(self)
+function Actor:SetupStateMachine ()
 	self.state = stateMachine.Create()
 	self:ClearSpriteEventCommands()
 	self.sprite:addEventListener("sprite", function(event) self:ProcessSpriteEvent(event) end)
-end)
+end
 
-Actor.GetState = Actor:makeMethod(function(self)
+function Actor:GetState ()
 	if (self.state ~= nil) then
 		local stateName, _ = self.state:GetState()
 		return stateName
 	else
 		return nil
 	end
-end)
+end
 
-Actor.x = Actor:makeMethod(function(self)
+function Actor:x ()
     assert(self.sprite,"Sprite mustn't be null when accessing x position")
     return self.sprite.x
-end)
+end
 
-Actor.y = Actor:makeMethod(function(self)
+function Actor:y ()
     assert(self.sprite,"Sprite mustn't be null when accessing y position")
     return self.sprite.y
-end)
+end
 
-Actor.posVector = Actor:makeMethod(function(self)
+function Actor:posVector ()
 	assert(self.sprite,"Sprite mustn't be null when accessing pos")
 	return Vector2:init(self:x(),self:y())
-end)
+end
 
-Actor.pos = Actor:makeMethod(function(self)
+function Actor:pos ()
     assert(self.sprite,"Sprite mustn't be null when accessing pos")
 	return self:x(), self:y()
-end)
+end
 
-Actor.setPos = Actor:makeMethod(function(self, x, y)
+function Actor:setPos (x, y)
 	assert(self.sprite,"Sprite mustn't be null when accessing pos")
     if Vector2:isVector2(x) then
         self.sprite.x, self.sprite.y = x.x, x.y
     else
         self.sprite.x, self.sprite.y = x, y
     end
-end)
+end
 
-Actor.update = Actor:makeMethod(function(self,...)
+function Actor:update (...)
     if self.updateFunc then
         self.updateFunc(self,unpack(arg))
     end
-end)
+end
 
 
 return Actor

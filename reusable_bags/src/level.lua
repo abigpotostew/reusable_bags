@@ -1,8 +1,8 @@
------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
 --
 -- level.lua
 --
------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
 
 
 -- include Corona's "physics" library
@@ -61,7 +61,7 @@ function Level:init()
 	self.lastFrameTime = 0
     self.runtime = 0
     
-	return self
+	--return self
 end
 
 function Level:GetFoodNameList (textureSheetInfo)
@@ -189,7 +189,7 @@ end
 
 
 function Level:CreateSpawner (x, y, directionX, directionY, force, w, h)
-    local spawner = Actor:init({typeName="spawner"}, self)
+    local spawner = Actor({typeName="spawner"}, self)
     spawner.group = self:GetWorldGroup()
     spawner:createRectangleSprite(w or 15,h or 50, x or 0, y or 0)
     spawner.direction = Vector2:init(directionX, directionY)
