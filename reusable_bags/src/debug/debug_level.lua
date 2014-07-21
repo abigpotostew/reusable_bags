@@ -2,10 +2,13 @@
 
  DebugLevel 
  * a child class for Level which enables debug features
+ * Usage: 
+   local debug_level = require('src.debug.debug_level'):init()
 
 
 -----------------------------------------------------------------------------]]
 local Level = require "src.level"
+local fps = require "libs.fps"
 
 local DebugLevel = Level:makeSubclass("DebugLevel")
 
@@ -22,6 +25,9 @@ local function init(class, self, ...)
     self:AddKeyReleaseEvent("s", function(event)
         self:SpawnRandomFood(nil,nil,1)
     end)
+    
+    local performance = fps.new()
+	performance.group.alpha = 0.7
     
 	return self
 end

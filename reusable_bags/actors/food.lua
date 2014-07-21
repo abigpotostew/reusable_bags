@@ -48,6 +48,8 @@ Food.SetupStates = Food:makeMethod(function(self)
 
 	self.state:SetState("dying", {
 		enter = function()
+            --pizza 
+            --self.
 			--self.sprite:play("death", false)
 			--self:ClearSpriteEventCommands()
 			--self:AddSpriteEventCommand("end", function() self.state:GoToState("dead") end)
@@ -81,8 +83,10 @@ local touch = function(self,event)
         event.target.joint:setTarget(event.x, event.y)
     elseif event.phase == "ended" then
         event.target.has_focus = false
-        event.target.joint:removeSelf()
-        event.target.joint = nil
+        if event.target.joint then
+            event.target.joint:removeSelf()
+            event.target.joint = nil
+        end
         display.getCurrentStage():setFocus( nil )
     end 
     return true
@@ -92,6 +96,7 @@ Food.touch = Food:makeMethod(touch)
 local RemoveFoodSelf = function(self)
     if self.sprite.joint then
         self.sprite.joint:removeSelf()
+        self.sprite.joint = nil
     end
     if self.sprite.has_focus then
         display.getCurrentStage():setFocus( nil )

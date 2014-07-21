@@ -7,6 +7,7 @@ Actor
 local stateMachine = require "src.stateMachine"
 local class = require "src.class"
 local util = require "src.util"
+local _ = require "libs.underscore"
 local collision = require "src.collision"
 local physics = require 'physics'
 local Vector2 = require 'src.vector2'
@@ -164,6 +165,10 @@ Actor.addListener = Actor:makeMethod(function(self, object, name, callback)
 
 	table.insert(self._listeners, {object = object, name = name, callback = callback})
 	object:addEventListener(name, callback)
+end)
+
+Actor.removeListener = Actor:makeMethod(function(self,listener)
+    _.reject(self._listeners, function(i) return i.name ~= actor end)
 end)
 
 

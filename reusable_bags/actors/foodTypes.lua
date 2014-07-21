@@ -33,7 +33,7 @@ local function SetDefaults(f, params)
 	-- Physics: How the bird acts in the physics simulator
 	f.physics.mass = 2.0	 or params.mass	-- How much b.physics.mass the bird has in kilograms
 	f.physics.bounce = 0.0 or params.bounce		-- How bouncy the bird is - 0.0 means no b.physics.bounce 1.0 means b.physics.bounce  away at full speed
-	f.physics.friction = 0.3 or params.friction	-- How much friction the bird has when sliding on things
+	f.physics.friction = 1 or params.friction	-- How much friction the bird has when sliding on things
     f.physics.category = 'food' or params.category
     f.physics.colliders = {'bag', 'food', 'ground'} or params.colliders
     f.physics.gravityScale = 1.0 or params.gravityScale

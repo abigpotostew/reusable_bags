@@ -13,7 +13,6 @@ physics.setGravity(0,0.6)
 local class = require "src.class"
 local util = require"src.util"
 local _ = require 'libs.underscore'
-local fps = require "libs.fps"
 local collision = require "src.collision"
 local Vector2 = require 'src.vector2'
 
@@ -36,29 +35,29 @@ local function init(class, self)
     
     self.food_list = self:GetFoodNameList(self.texture_sheet)
     
-    --Constructor-----------------------------
-    
-    self.worldGroup = display.newGroup()
-        self.worldGroup.xScale = self.worldScale
-        self.worldGroup.yScale = self.worldScale
-        
+    -- Display constants
     self.screenW, self.screenH, self.halfW = display.contentWidth, display.contentHeight, display.contentWidth*0.5
     self.width, self.height = self.screenW, self.screenH
+    self.world_scale = display.contentWidth / self.width
+	self.world_offset = Vector2:init(0, 0)
+    
+    
+    self.world_group = display.newGroup()
+    self.world_group.xScale, self.world_group.yScale = self.world_scale, self.world_scale
     
     --Level actors:
     self.bags = {}
     self.foods = {}
     self.spawn_points = {}
     
+    -- Use CreateX() functions for these tables.
     self.timeline = {}
 	self.timers = {}
 	self.transitions = {}
 	self.listeners = {}
-	self.lastFrameTime = 0
-
-    self.worldScale = display.contentWidth / self.width
-	self.worldOffset = { x = 0, y = 0}
     
+    -- level runtime:
+	self.lastFrameTime = 0
     self.runtime = 0
     
 	return self
@@ -90,13 +89,13 @@ local create = function(self, event, sceneGroup)
     self.aspect = display.contentHeight / display.contentWidth
 	self.height = self.width * self.aspect
     
-    self.worldScale = 1--display.contentWidth / self.width
-	self.worldOffset = { x = 0, y = 0}
+    self.world_scale = 1--display.contentWidth / self.width
+	self.world_offset = { x = 0, y = 0}
     
-    self.worldGroup = display.newGroup()
-	sceneGroup:insert(self.worldGroup)
-	self.worldGroup.xScale = self.worldScale
-	self.worldGroup.yScale = self.worldScale
+    self.world_group = display.newGroup()
+	sceneGroup:insert(self.world_group)
+	self.world_group.xScale = self.world_scale
+	self.world_group.yScale = self.world_scale
     
     self:AddGround()
     
@@ -120,8 +119,7 @@ local create = function(self, event, sceneGroup)
     
     self:ProcessTimeline()
 
-	local performance = fps.new()
-	performance.group.alpha = 0.7
+	
     
     self:PeriodicCheck()
 end
@@ -153,7 +151,7 @@ local show = function(self, event)
 	local sceneGroup = self.sceneGroup
     
     if event.phase == 'will' then
-        sceneGroup:insert(self.worldGroup)
+        sceneGroup:insert(self.world_group)
     elseif event.phase == 'did' then 
         physics.start()
         
@@ -261,17 +259,27 @@ Level.PeriodicCheck = Level:makeMethod(PeriodicCheck)
 -- removeActor
 ----------------------------------------------
 local RemoveActor = function(self, actor)
-    local actorList
     if actor.typeName == "food" then
-        actorList = self.foods
-        actor:RemoveFoodSelf()
+        self:RemoveFoodActor(actor)
     elseif actor.typeName == "bag" then
-        actorList = self.bags
-        actor:removeSelf()
+        self:RemoveBagActor(actor)
     end
-    _.reject(actorList, function(i) return i ~= actor end)
 end
 Level.RemoveActor = Level:makeMethod(RemoveActor)
+
+local RemoveFoodActor = function(self, food)
+    assert(food.typeName == "food", "Required food actor")
+    food:RemoveFoodSelf()
+    self.foods = _.select(self.foods, function(i) return i ~= food end)
+end
+Level.RemoveFoodActor = Level:makeMethod(RemoveFoodActor)
+
+local RemoveBagActor = function(self, bag)
+    assert(bag.typeName == "bag", "Required bag actor")
+    bag:removeSelf()
+    self.bags = _.select(self.bags, function(i) return i ~= bag end)
+end
+Level.RemoveBagActor = Level:makeMethod(RemoveBagActor)
 
 local InsertFood = function(self, food)
     table.insert(self.foods,food)
@@ -402,7 +410,7 @@ end
 Level.GetRandomFoodName = Level:makeMethod(GetRandomFoodName)
 
 local GetWorldGroup = function(self)
-	return self.worldGroup
+	return self.world_group
 end
 Level.GetWorldGroup = Level:makeMethod(GetWorldGroup)
 
@@ -412,17 +420,17 @@ end
 Level.GetScreenGroup = Level:makeMethod(GetScreenGroup)
 
 local GetWorldScale = function(self)
-	return self.worldScale
+	return self.world_scale
 end
 Level.GetWorldScale = Level:makeMethod(GetWorldScale)
 
 local WorldToScreen = function(self, x, y)
-	return (x * self.worldScale + self.worldOffset.x), (y * self.worldScale + self.worldOffset.y)
+	return (x * self.world_scale + self.world_offset.x), (y * self.world_scale + self.world_offset.y)
 end
 Level.WorldToScreen = Level:makeMethod(WorldToScreen)
 
 local ScreenToWorld = function(self, x, y)
-	return ((x - self.worldOffset.x) / self.worldScale), ((y - self.worldOffset.y) / self.worldScale)
+	return ((x - self.world_offset.x) / self.world_scale), ((y - self.world_offset.y) / self.world_scale)
 end
 Level.ScreenToWorld = Level:makeMethod(ScreenToWorld)
 

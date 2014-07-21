@@ -10,6 +10,8 @@ require("mobdebug").start()
 
 math.randomseed(os.time())
 
+require("src.my_lcs_test")
+
 local composer = require "composer"
 local Util = require "src.util"
 
