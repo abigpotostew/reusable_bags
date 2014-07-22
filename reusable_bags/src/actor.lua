@@ -6,7 +6,7 @@ Actor
 --local spSprite = require "src.libs.swiftping.sp_sprite"
 local stateMachine = require "src.stateMachine"
 local LCS = require "libs.LCS"
-local util = require "src.util"
+local util = require "src.utils.util"
 local _ = require "libs.underscore"
 local collision = require "src.collision"
 local physics = require 'physics'
@@ -22,7 +22,7 @@ function Actor:init(typeInfo, level)
 	self.typeName = typeInfo.typeName or "actor"
 	
 	-- POSITION access through sprite
-    self.position = Vector2:init()
+    self.position = Vector2()
     
     local actorType = typeInfo or {}
 	if actorType then
@@ -57,7 +57,7 @@ function Actor:createSprite(animName, x, y, scaleX, scaleY, events)
 	sprite.gravityScale = self.typeInfo.physics.gravityScale or 0.0
     sprite.alpha = self.typeInfo.alpha or 1.0
     
-    self.position:set(x,y)
+    self.position:Set(x,y)
 
 	return sprite
 end
@@ -224,7 +224,7 @@ end
 
 function Actor:posVector ()
 	assert(self.sprite,"Sprite mustn't be null when accessing pos")
-	return Vector2:init(self:x(),self:y())
+	return Vector2(self:x(),self:y())
 end
 
 function Actor:pos ()
@@ -234,7 +234,7 @@ end
 
 function Actor:setPos (x, y)
 	assert(self.sprite,"Sprite mustn't be null when accessing pos")
-    if Vector2:isVector2(x) then
+    if Vector2.isVector2(x) then
         self.sprite.x, self.sprite.y = x.x, x.y
     else
         self.sprite.x, self.sprite.y = x, y

@@ -68,7 +68,6 @@ end
 function Bag:update(dt)
     self.timer = self.timer + dt
     --Update position for overall changes in bag position
-    --self.position:set(  )
     self:setPos(self.position + {x = 0, y = -25*math.abs(math.sin(self.timer/10))})
 end
 

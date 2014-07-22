@@ -1,4 +1,4 @@
-local util = require "src.util"
+local util = require "src.utils.util"
 
 local Class = {}
 Class.super = nil

@@ -51,14 +51,14 @@ local function isA(thing,kind)
 end
 
 -- tostring
-local function __tostring(self,...)
+--[[local function __tostring(self,...)
   if self.describe then return self:describe(...) end
   local is = isA(self)
   if is then
     return ('%s: <%s>'):format(is,_register[is][self].__system.__addr)
   end
   return tostring(self)
-end
+end ]]--
 
 -- Base metatable
 local baseClassMt = {

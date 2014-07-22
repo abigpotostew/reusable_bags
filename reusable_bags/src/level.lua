@@ -11,7 +11,7 @@ physics.start(); physics.pause()
 physics.setGravity(0,0.6)
 
 local LCS = require('libs.LCS') 
-local util = require"src.util"
+local util = require"src.utils.util"
 local _ = require 'libs.underscore'
 local collision = require "src.collision"
 local Vector2 = require 'src.vector2'
@@ -39,7 +39,7 @@ function Level:init()
     self.halfW      = display.contentWidth*0.5
     self.width, self.height = self.screenW, self.screenH
     self.world_scale = display.contentWidth / self.width
-	self.world_offset = Vector2:init(0, 0)
+	self.world_offset = Vector2(0, 0)
     
     
     self.world_group = display.newGroup()
@@ -57,9 +57,6 @@ function Level:init()
 	self.transitions = {}
 	self.listeners = {}
     
-    -- level runtime:
-	self.lastFrameTime = 0
-    self.runtime = 0
     
 	--return self
 end
@@ -107,18 +104,10 @@ function Level:create (event, sceneGroup)
     self:PeriodicCheck()
 end
 
-function Level:getDeltaTime()
-   local temp = system.getTimer()  --Get current game time in ms
-   local dt = (temp-self.runtime) / (33.333333333)  
-   --60fps(16.666666667) or 30fps(33.333333333) as base
-   self.runtime = temp  --Store game time
-   return dt
-end
-
 function Level:enterFrame (event)
     local phase = event.phase
     
-    local dt = self:getDeltaTime()
+    local dt = Time:DeltaTime()
     
     _.each( self.bags, function(bag)
         bag:update(dt)
@@ -135,7 +124,6 @@ function Level:show (event)
         sceneGroup:insert(self.world_group)
     elseif event.phase == 'did' then 
         physics.start()
-        
         Runtime:addEventListener("enterFrame", self)
     end
 	
@@ -192,7 +180,7 @@ function Level:CreateSpawner (x, y, directionX, directionY, force, w, h)
     local spawner = Actor({typeName="spawner"}, self)
     spawner.group = self:GetWorldGroup()
     spawner:createRectangleSprite(w or 15,h or 50, x or 0, y or 0)
-    spawner.direction = Vector2:init(directionX, directionY)
+    spawner.direction = Vector2(directionX, directionY)
     spawner.force = force
     table.insert(self.spawn_points, spawner)
     return #self.spawn_points
@@ -279,7 +267,7 @@ function Level:SpawnFood (weight_or_name, posX, posY, spawner_id)
     local f = spawner_function( x, y, weight_or_name, self )
         
     if spawner then
-        f.sprite:applyForce( (spawner.direction * spawner.force):get(), 
+        f.sprite:applyForce( (spawner.direction * spawner.force):Get(), 
                              f:pos() )
     end
     self:InsertFood(f)
@@ -292,6 +280,7 @@ end
 function Level:SpawnBag (bag_name, x, y)
     local b = Bags.CreateBag(bag_name, x, y, self)
     table.insert(self.bags,b)
+    return b
 end
 
 function Level:AddGround ()

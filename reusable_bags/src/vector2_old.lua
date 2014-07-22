@@ -1,5 +1,5 @@
 local class = require "src.class"
-local util = require "src.util"
+local util = require "src.utils.util"
 
 local Vector2 = class:makeSubclass("Vector2")
 

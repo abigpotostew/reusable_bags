@@ -9,7 +9,10 @@ display.setStatusBar( display.HiddenStatusBar )
 
 require("mobdebug").start()
 
+-- Time stuff, these only need to be called once:
 math.randomseed(os.time())
+Time = require "src.utils.time"
+Runtime:addEventListener("enterFrame", Time)
 
 local composer = require "composer"
 
