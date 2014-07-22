@@ -66,9 +66,8 @@ function Bag:collision (event)
 end
 
 function Bag:update(dt)
-    self.timer = self.timer + dt
     --Update position for overall changes in bag position
-    self:setPos(self.position + {x = 0, y = -25*math.abs(math.sin(self.timer/10))})
+    self:setPos(self.position + {x = 0, y = -25*math.abs(math.sin(Time:ElapsedTime()/10))})
 end
 
 
