@@ -17,6 +17,6 @@ Runtime:addEventListener("enterFrame", Time)
 local composer = require "composer"
 
 -- Enable multitouch
-system.activate("multitouch")
+--system.activate("multitouch")
 
 composer.gotoScene('src.levelScene', {params={level=require("levels.level1")}})

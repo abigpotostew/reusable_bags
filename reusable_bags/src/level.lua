@@ -112,6 +112,14 @@ function Level:enterFrame (event)
     _.each( self.bags, function(bag)
         bag:update(dt)
     end)
+
+    if self.physics_to_remove then
+        _.each( self.physics_to_remove, function(actor)
+            physics.removeBody(actor.sprite)
+        end)
+        self.physics_to_remove = nil
+    end
+
 end
 
 
@@ -119,6 +127,7 @@ end
 -- Called immediately after scene has moved onscreen:
 function Level:show (event)
 	local sceneGroup = self.sceneGroup
+    
     
     if event.phase == 'will' then
         sceneGroup:insert(self.world_group)
@@ -240,6 +249,14 @@ function Level:RemoveBagActor (bag)
     bag:removeSelf()
     self.bags = _.select(self.bags, function(i) return i ~= bag end)
 end
+
+function Level:RemoveActorPhysics (actor)
+    if not self.physics_to_remove then
+        self.physics_to_remove = {}
+    end
+    table.insert(self.physics_to_remove, actor)
+end
+
 
 function Level:InsertFood (food)
     table.insert(self.foods,food)

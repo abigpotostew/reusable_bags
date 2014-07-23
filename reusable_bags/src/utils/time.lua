@@ -25,10 +25,12 @@ end
 -- Call once per frame
 ----------------------------------------------------------------------------------
 function Time:enterFrame()
-    self.frame_count = self.frame_count + self.fps
     
     local temp_time = self:TotalRuntime()  --Get current game time in ms
-    self.delta_time = (temp_time-self.last_frame_time) / (self.ms_per_frame)  
+    self.delta_time = (temp_time-self.last_frame_time) / (self.ms_per_frame) 
+    
+    self.frame_count = self.frame_count + self.fps * self.delta_time/1000
+    
     --60fps(16.666666667) or 30fps(33.333333333) as base
     self.last_frame_time = temp_time  --Store game time
 end

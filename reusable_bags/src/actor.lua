@@ -143,7 +143,9 @@ function Actor:addPhysics (data)
     self.sprite.gravityScale = data.gravityScale or self.typeInfo.physics.gravityScale or 1.0
 end
 
-function Actor:addTimer( delay, callback, count)
+
+--TODO: Timers are never removes from _timers
+function Actor:AddTimer( delay, callback, count)
 	assert(delay and type(delay) == "number", "addTimer requires that delay be a number")
 	assert(callback and (
 		type(callback) == "function" or
@@ -245,6 +247,11 @@ function Actor:update (...)
     if self.updateFunc then
         self.updateFunc(self,unpack(arg))
     end
+end
+
+function Actor:SetState(state)
+    assert(self.state, "Actor:SetState(): requires state machine member.")
+    self.state:GoToState(state)
 end
 
 

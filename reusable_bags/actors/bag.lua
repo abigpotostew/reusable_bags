@@ -3,6 +3,7 @@
 
 local Actor = require "src.actor"
 local Vector2 = require 'src.vector2'
+local Food = require "actors.food"
 
 local Bag = Actor:extends()
 
@@ -37,9 +38,13 @@ end
 function Bag:AddItem (item)
     assert(item and item.typeName == "food", "item must be an food actor")
     
+    item.bag_target = {}
+    item.bag_target.x, item.bag_target.y = self:pos() 
+    item:SetState(Food.states.BAG_COLLISION_STATE)
+    
     self.weight = item.weight + self.weight
     
-    self.level:RemoveActor(item)
+    --self.level:RemoveActor(item)
 end
 
 function Bag:collision (event)
@@ -57,7 +62,7 @@ function Bag:collision (event)
 	end
 
 	if (otherName == "food") then
-		if self:CanFitWeight (otherOwner:GetWeight()) then
+		if not other.removed and self:CanFitWeight (otherOwner:GetWeight()) then
             self:AddItem(otherOwner)
         end
 	elseif otherName then

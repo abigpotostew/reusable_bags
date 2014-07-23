@@ -3,7 +3,9 @@
 local Actor = require "src.actor"
 local Vector2 = require 'src.vector2'
 
-local Food = Actor:extends()
+local food_states = {BAG_COLLISION_STATE="bag_collision"}
+
+local Food = Actor:extends({states = food_states})
 
 function Food:init (x, y, typeInfo, image_name, level)
     assert(image_name, "Image required to instance function Food:")
@@ -29,11 +31,27 @@ end
 
 function Food:SetupStates ()
 
-	self.state:SetState("hurt", {
+	self.state:SetState(self.states.BAG_COLLISION_STATE, {
 		enter = function()
+            self.removed = true
 			--self.sprite:play("hurt", false)
 			-- TODO: Hack, will stomp other changes - write a delay into the events queue
 			--self:addTimer(self.typeInfo.hurtDuration * 1000, function() self.state:GoToState("normal") end)
+            self:CancelTouch()
+            --get velocity
+            local vx, vy = self.sprite:getLinearVelocity()
+            local target = self.bag_target
+            if not target then
+                target.x, target.y = self:pos()
+            end
+            --cancel physics
+            self.level:RemoveActorPhysics(self)
+            --transition sprite using velocity towards bag.
+            local on_complete = function(event)
+                self.level:RemoveActor(self)
+            end
+            
+            transition.to( self.sprite, {time=500, transition=easing.outQuart, xScale=0.00001,yScale=0.00001, x=target.x,y=target.y, onComplete=on_complete} )
 		end
 	})
 
@@ -82,15 +100,22 @@ function Food:touch (event)
         end
         event.target.joint:setTarget(event.x, event.y)
     elseif event.phase == "ended" then
-        event.target.has_focus = false
-        if event.target.joint then
-            event.target.joint:removeSelf()
-            event.target.joint = nil
-        end
-        display.getCurrentStage():setFocus( nil )
+        self:CancelTouch()
     end 
     return true
 end
+
+function Food:CancelTouch()
+    if self.sprite.joint then
+        self.sprite.joint:removeSelf()
+        self.sprite.joint = nil
+    end
+    if self.sprite.has_focus then
+        display.getCurrentStage():setFocus( nil )
+        self.sprite.has_focus = false
+    end
+end
+
 
 function Food:RemoveFoodSelf ()
     if self.sprite.joint then
