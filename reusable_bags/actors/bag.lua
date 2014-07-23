@@ -5,8 +5,9 @@ local Actor = require "src.actor"
 local Vector2 = require 'src.vector2'
 local Food = require "actors.food"
 
-local Bag = Actor:extends()
+local bag_states = {FOOD_COLLISION_STATE="food_collision"}
 
+local Bag = Actor:extends({states = bag_states})
 
 function Bag:init(x, y, typeInfo, level)
 	self:super("init", typeInfo, level )
@@ -25,6 +26,10 @@ function Bag:init(x, y, typeInfo, level)
     self.group = world_group
     
 	self.sprite:addEventListener("collision", self)
+    
+    self:SetupStateMachine()
+	self:SetupStates()
+	self.state:GoToState("normal")
     
     self.timer = 0
     
@@ -75,5 +80,41 @@ function Bag:update(dt)
     self:setPos(self.position + {x = 0, y = -25*math.abs(math.sin(Time:ElapsedTime()/10))})
 end
 
+
+function Food:SetupStates ()
+
+	self.state:SetState(self.states.BAG_COLLISION_STATE, {
+		enter = function()
+            
+		end
+	})
+
+	self.state:SetState("normal", {
+		enter = function()
+			--self.sprite:play("normal")
+		end
+		--onBirdHit = function(bird)
+		--	self.state:GoToState("hit")
+		--end
+	})
+
+	self.state:SetState("dying", {
+		enter = function()
+            --pizza 
+            --self.
+			--self.sprite:play("death", false)
+			--self:ClearSpriteEventCommands()
+			--self:AddSpriteEventCommand("end", function() self.state:GoToState("dead") end)
+		end
+	})
+
+	self.state:SetState("dead", {
+		enter = function()
+			--self:CreateExplosion("deathParticle")
+			self.level:RemoveActor(self)
+		end
+	})
+
+end
 
 return Bag

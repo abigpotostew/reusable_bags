@@ -42,6 +42,7 @@ function Food:SetupStates ()
             local vx, vy = self.sprite:getLinearVelocity()
             local target = self.bag_target
             if not target then
+                target = {}
                 target.x, target.y = self:pos()
             end
             --cancel physics
