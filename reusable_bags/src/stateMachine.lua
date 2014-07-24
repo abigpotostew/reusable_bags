@@ -26,7 +26,7 @@ end
 
 
 -- Calls the current states exit function, and the GoTo state's enter function
-function StateMachine:GoToState(state)
+function StateMachine:GoToState(state, ...)
 	assert(state ~= nil and self.functions[state] ~= nil, "Bad target state for GoToState: " .. tostring(state))
 
 	if (self.state == state) then
@@ -37,7 +37,7 @@ function StateMachine:GoToState(state)
 	if (self.state ~= nil) then
 		smprint("SM: Attempting transition: " .. self.state .. " -> " .. state)
 		local exitFunc = self.functions[self.state].exit
-		if (exitFunc ~= nil and exitFunc() == false) then
+		if (exitFunc ~= nil and exitFunc(unpack(arg)) == false) then
 			smprint("SM: Transition blocked by current state")
 			return false
 		end
@@ -51,7 +51,7 @@ function StateMachine:GoToState(state)
 
 	-- Tail call, as states may reenter this function immediately
 	smprint("SM: Calling enter function for new state")
-	local enterFunc = self.functions[self.state].enter()
+	local enterFunc = self.functions[self.state].enter(unpack(arg))
 
 	return true
 end

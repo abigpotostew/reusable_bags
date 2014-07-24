@@ -5,7 +5,7 @@ local Actor = require "src.actor"
 local Vector2 = require 'src.vector2'
 local Food = require "actors.food"
 
-local bag_states = {FOOD_COLLISION_STATE="food_collision"}
+local bag_states = {NORMAL="normal",FOOD_COLLISION_STATE="food_collision", BAG_FULL="bag_full"}
 
 local Bag = Actor:extends({states = bag_states})
 
@@ -67,9 +67,7 @@ function Bag:collision (event)
 	end
 
 	if (otherName == "food") then
-		if not other.removed and self:CanFitWeight (otherOwner:GetWeight()) then
-            self:AddItem(otherOwner)
-        end
+        self.state:GoToState(self.states.FOOD_COLLISION_STATE, otherOwner)
 	elseif otherName then
 		print("Bag hit unknown named object: " .. otherName)
 	end
@@ -81,38 +79,33 @@ function Bag:update(dt)
 end
 
 
-function Food:SetupStates ()
+function Bag:SetupStates ()
 
-	self.state:SetState(self.states.BAG_COLLISION_STATE, {
+	self.state:SetState(self.states.NORMAL, {
 		enter = function()
             
 		end
 	})
 
-	self.state:SetState("normal", {
-		enter = function()
-			--self.sprite:play("normal")
-		end
-		--onBirdHit = function(bird)
-		--	self.state:GoToState("hit")
-		--end
-	})
+    self.state:SetState(self.states.FOOD_COLLISION_STATE, {
+        enter = function(food)
+            if food.removed then return end --i dont think i need this
 
-	self.state:SetState("dying", {
-		enter = function()
-            --pizza 
-            --self.
-			--self.sprite:play("death", false)
-			--self:ClearSpriteEventCommands()
-			--self:AddSpriteEventCommand("end", function() self.state:GoToState("dead") end)
-		end
-	})
+            if self:CanFitWeight (food:GetWeight()) then
+                self:AddItem(food)
+            end
+        end
+            
+    })
+    
 
-	self.state:SetState("dead", {
+	self.state:SetState(self.states.BAG_FULL, {
 		enter = function()
-			--self:CreateExplosion("deathParticle")
-			self.level:RemoveActor(self)
-		end
+			--set
+		end,
+        exit= function()
+            return false --can't ever leave this state
+        end
 	})
 
 end
