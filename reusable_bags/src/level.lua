@@ -21,7 +21,7 @@ local Bags = require 'actors.bagTypes'
 local Foods = require 'actors.foodTypes'
 
 
-collision.SetGroups{"bag", "food", "head", "ground", "wall"}
+collision.SetGroups{"bag", "food", "head", "ground", "wall", "nothing"}
 
 
 local Level = LCS.class()
@@ -50,6 +50,7 @@ function Level:init()
     self.bags = {}
     self.foods = {}
     self.spawn_points = {}
+    self.actors = {}
     
     -- Use the Create[X]() functions for these tables.
     self.timeline = {}
@@ -260,6 +261,10 @@ end
 
 function Level:InsertFood (food)
     table.insert(self.foods,food)
+end
+
+function Level:InsertActor (a)
+    table.insert(self.actors,a)
 end
 
 

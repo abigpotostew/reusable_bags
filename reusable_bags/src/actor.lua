@@ -54,7 +54,7 @@ function Actor:createSprite(animName, x, y, scaleX, scaleY, events)
 	sprite.x, sprite.y = x, y
 	sprite:scale(scaleX, scaleY)
 	sprite.radiousSprite = nil
-	sprite.gravityScale = self.typeInfo.physics.gravityScale or 0.0
+	sprite.gravityScale = (self.typeInfo.physics and self.typeInfo.physics.gravityScale) or 0.0
     sprite.alpha = self.typeInfo.alpha or 1.0
     
     self.position:Set(x,y)
@@ -71,6 +71,18 @@ function Actor:createRectangleSprite (w,h,x,y,strokeWidth)
 	self.sprite:setStrokeColor(1,0,1)    
     self.sprite.anchorX, self.sprite.anchorY = self.typeInfo.anchorX or 0.5, self.typeInfo.anchorY or 0.5
     if strokeWidth then self.sprite.strokeWidth = strokeWidth end
+end
+
+function Actor:buildRectangleSprite (group,w,h,x,y,strokeWidth)
+    assert(group,"Please initialize group before creating a sprite")
+    x, y = x or 0, y or 0
+    local sprite = display.newRect(group, x, y, w, h)
+    sprite.actor = self
+	sprite:setFillColor(1,0,1)
+	sprite:setStrokeColor(1,0,1)    
+    sprite.anchorX, sprite.anchorY = self.typeInfo.anchorX or 0.5, self.typeInfo.anchorY or 0.5
+    if strokeWidth then sprite.strokeWidth = strokeWidth end
+    return sprite
 end
 
 function Actor:removeSprite ()
