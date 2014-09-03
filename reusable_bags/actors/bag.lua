@@ -38,6 +38,8 @@ function Bag:init(x, y, typeInfo, level)
     --return self
 end
 
+--This isn't creating sensor to the proper size
+--sensor should be slightly bigger than the bag
 function Bag:addCollisionSensor()
     local collider = Actor(self.typeInfo, self.level)
     collider.group = self.group
