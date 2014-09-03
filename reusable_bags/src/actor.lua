@@ -31,6 +31,7 @@ function Actor:init(typeInfo, level)
     
 	self.sprite = nil
 	self._timers = {}
+    self._transitions = {}
 	self._listeners = {}
 	
 	self.sheet = debugTexturesImageSheet
@@ -62,11 +63,12 @@ function Actor:createSprite(animName, x, y, scaleX, scaleY, events)
 	return sprite
 end
 
+--???
 function Actor:createRectangleSprite (w,h,x,y,strokeWidth)
     assert(self.group,"Please initialize this actor's group before creating a sprite")
     x, y = x or 0, y or 0
     self.sprite = display.newRect(self.group, x, y, w, h)
-    self.sprite.actor = self
+    self.sprite.owner = self
 	self.sprite:setFillColor(1,0,1)
 	self.sprite:setStrokeColor(1,0,1)    
     self.sprite.anchorX, self.sprite.anchorY = self.typeInfo.anchorX or 0.5, self.typeInfo.anchorY or 0.5
@@ -77,7 +79,7 @@ function Actor:buildRectangleSprite (group,w,h,x,y,strokeWidth)
     assert(group,"Please initialize group before creating a sprite")
     x, y = x or 0, y or 0
     local sprite = display.newRect(group, x, y, w, h)
-    sprite.actor = self
+    sprite.owner = self
 	sprite:setFillColor(1,0,1)
 	sprite:setStrokeColor(1,0,1)    
     sprite.anchorX, sprite.anchorY = self.typeInfo.anchorX or 0.5, self.typeInfo.anchorY or 0.5
@@ -99,13 +101,16 @@ function Actor:removeSprite ()
 end
 
 function Actor:removeSelf ()
+    transition.cancel ( self.sprite )
+    self._transitions = {}
+    
 	self:removeSprite()
 
 	for _, _timer in ipairs(self._timers) do
 		timer.cancel(_timer)
 	end
 	self._timers = {}
-
+    
 	for _, _listener in ipairs(self._listeners) do
 		_listener.object:removeEventListener(_listener.name, _listener.callback)
 	end
@@ -122,6 +127,7 @@ function Actor:addPhysics (data)
 	data = data or {}
 
 	local scale = (data.scale or self.typeInfo.scale) * (data.collisionBoxScale or self.typeInfo.collisionBoxScale or 1.0)
+    self.phys_body_scale = scale
 	local mass = data.mass or self.typeInfo.physics.mass
 
 	local phys = {
@@ -166,6 +172,19 @@ function Actor:AddTimer( delay, callback, count)
 	assert(count == nil or type(count) == "number", "addTimer requires that count be nil or a number")
 
 	table.insert(self._timers, timer.performWithDelay(delay, callback, count))
+end
+
+--
+function Actor:AddTransition( data, target )
+    assert(data and data.time, "Actor:AddTransition(): requires data and time params")
+    local ref = transition.to ( target or self.sprite, data )
+    table.insert ( self._transitions, ref )
+    return ref
+end
+
+function Actor:CancelTransition (ref)
+    _.reject ( self._transitions, function(i) return i==ref end )
+    transition.cancel ( ref )
 end
 
 function Actor:addListener (object, name, callback)

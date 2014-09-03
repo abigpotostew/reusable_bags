@@ -8,7 +8,7 @@
 -- include Corona's "physics" library
 local physics = require "physics"
 physics.start(); physics.pause()
-physics.setGravity(0,0.6)
+physics.setGravity(0,0)--0.6)
 
 local LCS = require('libs.LCS') 
 local util = require"src.utils.util"
@@ -185,13 +185,18 @@ end
 
 --------------------------------------------
 
-
-function Level:CreateSpawner (x, y, directionX, directionY, force, w, h)
+--params: x, y, directionX, data.directionY, speed, angular_velocity, w, h
+function Level:CreateSpawner (data)
+    assert(data.directionX and
+           data.directionY and
+           data.speed,
+           "required directionX and directionY and speed when creating spawner")
     local spawner = Actor({typeName="spawner"}, self)
     spawner.group = self:GetWorldGroup()
-    spawner:createRectangleSprite(w or 15,h or 50, x or 0, y or 0)
-    spawner.direction = Vector2(directionX, directionY)
-    spawner.force = force
+    spawner:createRectangleSprite(data.w or 15,data.h or 50, data.x or 0, data.y or 0)
+    local direction = Vector2(data.directionX, data.directionY)
+    spawner.velocity = direction * data.speed
+    spawner.angular_velocity = data.angular_velocity or 0
     table.insert(self.spawn_points, spawner)
     return #self.spawn_points
 end
@@ -289,8 +294,8 @@ function Level:SpawnFood (weight_or_name, posX, posY, spawner_id)
     local f = spawner_function( x, y, weight_or_name, self )
         
     if spawner then
-        f.sprite:applyForce( (spawner.direction * spawner.force):Get(), 
-                             f:pos() )
+        f.sprite.angularVelocity = spawner.angular_velocity
+        f.sprite:setLinearVelocity ( spawner.velocity:Get() )
     end
     self:InsertFood(f)
 end
@@ -299,10 +304,20 @@ function Level:SpawnRandomFood (posX, posY, spawner_id)
     self:SpawnFood( self:GetRandomFoodName(), posX, posY, spawner_id)
 end
 
+function Level:collision (event)
+    
+end
+
 function Level:SpawnBag (bag_name, x, y)
     local b = Bags.CreateBag(bag_name, x, y, self)
+    b.sprite:addEventListener("collision", self)
+    
     table.insert(self.bags,b)
     return b
+end
+
+function Level:SetBagCount (bag_count)
+    self.bag_count = bag_count
 end
 
 function Level:AddGround ()

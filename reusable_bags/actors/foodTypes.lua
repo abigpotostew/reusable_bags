@@ -36,7 +36,7 @@ local function SetDefaults(f, params)
 	f.physics.friction = 1 or params.friction	-- How much friction the bird has when sliding on things
     f.physics.category = 'food' or params.category
     f.physics.colliders = {'bag', 'food', 'ground'} or params.colliders
-    f.physics.gravityScale = 1.0 or params.gravityScale
+    f.physics.gravityScale = 0.0 or params.gravityScale
     f.physics.angularDamping = 0.01 or params.angularDamping
     f.physics.linearDamping = 0.01 or params.linearDamping
     f.physics.isSensor = false or params.isSensor

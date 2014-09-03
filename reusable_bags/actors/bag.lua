@@ -25,6 +25,8 @@ function Bag:init(x, y, typeInfo, level)
     world_group:insert(self.sprite)
     self.group = world_group
     
+    self:addCollisionSensor()
+    
 	self.sprite:addEventListener("collision", self)
     
     self:SetupStateMachine()
@@ -34,6 +36,24 @@ function Bag:init(x, y, typeInfo, level)
     self.timer = 0
     
     --return self
+end
+
+function Bag:addCollisionSensor()
+    local collider = Actor(self.typeInfo, self.level)
+    collider.group = self.group
+    collider:createRectangleSprite (
+        self.phys_body_scale * 2*self.sprite.contentWidth, 
+        self.phys_body_scale * 2*self.sprite.contentHeight, 
+        self:pos() ) -- returns x,y
+    
+    collider:addPhysics({bodyType="dynamic"})
+    
+    local joint = physics.newJoint ("weld",
+        self.sprite, collider.sprite, self:pos() )
+    joint.dampingRatio = 1
+    joint.frequency = 10000000
+    
+    self.collision_sensor = {joint=joint, collider=collider}
 end
 
 function Bag:CanFitWeight (itemWeight)
@@ -75,8 +95,10 @@ end
 
 function Bag:update(dt)
     --Update position for overall changes in bag position
-    self:setPos(self.position + {x = 0, y = -25*math.abs(math.sin(Time:ElapsedTime()/10))})
+    --self:setPos(self.position + {x = 0, y = -25*math.abs(math.sin(Time:ElapsedTime()/10))})
 end
+
+
 
 
 function Bag:SetupStates ()
