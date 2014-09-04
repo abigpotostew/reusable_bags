@@ -6,7 +6,7 @@ local l = debug_level()
 levelDefaults(l)
 
 
-local spawner = l:CreateSpawner({x=110, y=100, directionX=0, directionY=1, speed=40, angular_velocity=0.1})
+local spawner = l:CreateSpawner({x=600, y=100, directionX=0, directionY=1, speed=40, angular_velocity=20})
 
 l:SetBagCount ( 3 ) --required
 

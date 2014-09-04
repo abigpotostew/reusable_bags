@@ -150,8 +150,8 @@ function Actor:addPhysics (data)
         if phys.radius then
             phys.radius = phys.radius * scale
         else
-            local hW = scale * 2*self.sprite.contentWidth
-            local hH = scale * 2*self.sprite.contentHeight
+            local hW = scale * 2 * self.sprite.contentWidth
+            local hH = scale * 2 * self.sprite.contentHeight
             phys.shape = {hW, -hH, hW, hH, -hW, hH, -hW, -hH}
         end
     end

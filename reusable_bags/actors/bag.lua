@@ -27,8 +27,6 @@ function Bag:init(x, y, typeInfo, level)
     
     self:addCollisionSensor()
     
-	self.sprite:addEventListener("collision", self)
-    
     self:SetupStateMachine()
 	self:SetupStates()
 	self.state:GoToState("normal")
@@ -44,11 +42,11 @@ function Bag:addCollisionSensor()
     local collider = Actor(self.typeInfo, self.level)
     collider.group = self.group
     collider:createRectangleSprite (
-        self.phys_body_scale * 2*self.sprite.contentWidth, 
-        self.phys_body_scale * 2*self.sprite.contentHeight, 
+         self.typeInfo.collisionBoxScale*self.sprite.contentWidth, 
+         self.typeInfo.collisionBoxScale*self.sprite.contentHeight, 
         self:pos() ) -- returns x,y
     
-    collider:addPhysics({bodyType="dynamic"})
+    collider:addPhysics({bodyType="dynamic", isSensor=true, scale=1.0, collisionBoxScale=1.0})
     
     local joint = physics.newJoint ("weld",
         self.sprite, collider.sprite, self:pos() )
@@ -56,6 +54,8 @@ function Bag:addCollisionSensor()
     joint.frequency = 10000000
     
     self.collision_sensor = {joint=joint, collider=collider}
+    
+	collider.sprite:addEventListener("collision", self)
 end
 
 function Bag:CanFitWeight (itemWeight)

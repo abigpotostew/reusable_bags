@@ -42,7 +42,7 @@ local function SetDefaults(f, params)
     f.physics.isSensor = false or params.isSensor
     f.physics.radius = params.radius or nil
     
-    f.physics.bodyType = 'dynamic' or params.bodyType
+    f.physics.bodyType = 'kinematic' or params.bodyType
     
 	-- General Food Info
 	f.scale = 0.25 or params.scale				-- How big the bird is compared to its normal anim size
