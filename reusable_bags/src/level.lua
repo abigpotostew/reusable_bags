@@ -8,6 +8,7 @@
 -- include Corona's "physics" library
 local physics = require "physics"
 physics.start(); physics.pause()
+physics.setContinuous( false )
 physics.setGravity(0,0)--0.6)
 
 local LCS = require('libs.LCS') 
@@ -288,7 +289,7 @@ function Level:SpawnFood (weight_or_name, posX, posY, spawner_id)
     local spawner = spawner_id
     if spawner then
         spawner = self:GetSpawner(spawner_id)
-        x, y = spawner:pos()
+        x, y = spawner:Pos()
     end
     
     local f = spawner_function( x, y, weight_or_name, self )

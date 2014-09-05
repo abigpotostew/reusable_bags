@@ -33,6 +33,9 @@ function Bag:init(x, y, typeInfo, level)
     
     self.timer = 0
     
+    
+    self.sprite:addEventListener("touch", self)
+    
     --return self
 end
 
@@ -44,12 +47,12 @@ function Bag:addCollisionSensor()
     collider:createRectangleSprite (
          self.typeInfo.collisionBoxScale*self.sprite.contentWidth, 
          self.typeInfo.collisionBoxScale*self.sprite.contentHeight, 
-        self:pos() ) -- returns x,y
+        self:Pos() ) -- returns x,y
     
     collider:addPhysics({bodyType="dynamic", isSensor=true, scale=1.0, collisionBoxScale=1.0})
     
     local joint = physics.newJoint ("weld",
-        self.sprite, collider.sprite, self:pos() )
+        self.sprite, collider.sprite, self:Pos() )
     joint.dampingRatio = 1
     joint.frequency = 10000000
     
@@ -66,13 +69,18 @@ function Bag:AddItem (item)
     assert(item and item.typeName == "food", "item must be an food actor")
     
     item.bag_target = {}
-    item.bag_target.x, item.bag_target.y = self:pos() 
+    item.bag_target.x, item.bag_target.y = self:Pos() 
     item:SetState(Food.states.BAG_COLLISION_STATE)
     
     self.weight = item.weight + self.weight
     
     --self.level:RemoveActor(item)
 end
+
+
+-----------------------------------------------------------------------------------------
+-- Events for bag
+----------------------------------------------------------------------------------------
 
 function Bag:collision (event)
 
@@ -89,10 +97,26 @@ function Bag:collision (event)
 	end
 
 	if (otherName == "food") then
+        Log:Verbose (self)
         self.state:GoToState(self.states.FOOD_COLLISION_STATE, otherOwner)
 	elseif otherName then
-		print("Bag hit unknown named object: " .. otherName)
+		Log:Verbose("Bag hit unknown named object: " .. otherName)
 	end
+end
+
+function Bag:touch (event)
+    local body = event.target
+    local bag = body.owner
+    if event.phase == "began" then
+        display.getCurrentStage():setFocus (body)
+        body.has_focus = true
+    elseif event.phase == "moved" then
+        --body:setLinearVelocity (20,0)--*Time.s_per_frame,
+        bag:SetPos (event.x, bag:y())
+    elseif event.phase == "ended" then
+        display.getCurrentStage():setFocus (nil)
+        event.target.has_focus = false
+    end
 end
 
 function Bag:update(dt)
@@ -113,10 +137,14 @@ function Bag:SetupStates ()
 
     self.state:SetState(self.states.FOOD_COLLISION_STATE, {
         enter = function(food)
-            if food.removed then return end --i dont think i need this
-
+            if food.removed then 
+                return
+            end --i dont think i need this
+        
             if self:CanFitWeight (food:GetWeight()) then
                 self:AddItem(food)
+            else
+                print("bag " .. self.id .. " full")
             end
         end
             

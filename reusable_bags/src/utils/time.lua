@@ -7,6 +7,7 @@ local LCS = require "libs.LCS"
 
 local Time = LCS.class.abstract({
         fps             = display.fps,          -- constant
+        s_per_frame     = 1/display.fps,        --constant
         ms_per_frame    = 1/display.fps * 1000, -- constant
         elapsed_time    = system.getTimer(),    -- initial time, mutable
         frame_count     = 0,                    -- number of frame since app started

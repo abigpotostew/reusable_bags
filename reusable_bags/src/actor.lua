@@ -14,6 +14,8 @@ local Vector2 = require 'src.vector2'
 
 local Actor = LCS.class()
 
+
+
 function Actor:init(typeInfo, level)
     assert(level, "Level required to instance an actor")
     
@@ -37,8 +39,29 @@ function Actor:init(typeInfo, level)
 	self.sheet = debugTexturesImageSheet
     
     self.group = nil
+    
+    self.id = self:GetActorID()
+    
+    Log:Verbose ("Creating new actor "..self.typeName.."$"..self.id)
 
 	--return self
+end
+
+function Actor:__tostring()
+    return self.typeName .. "$" .. self.id
+end
+
+-- Single global table for id's for each actor type
+local actor_typenames = {}
+
+function Actor:GetActorID ()
+    if actor_typenames[self.typeName] == nil then
+        actor_typenames[self.typeName] = 1
+    end
+       
+    local new_id = actor_typenames[self.typeName]
+    actor_typenames[self.typeName] = new_id + 1
+    return new_id
 end
 
 function Actor:createSprite(animName, x, y, scaleX, scaleY, events)
@@ -116,6 +139,7 @@ function Actor:removeSelf ()
 	end
 	self._timers = {}
     
+    print("Actor: Deleting actor "..self.actorType.."$"..self.id)
 end
 
 function Actor:removePhysics ()
@@ -260,12 +284,12 @@ function Actor:posVector ()
 	return Vector2(self:x(),self:y())
 end
 
-function Actor:pos ()
+function Actor:Pos ()
     assert(self.sprite,"Sprite mustn't be null when accessing pos")
 	return self:x(), self:y()
 end
 
-function Actor:setPos (x, y)
+function Actor:SetPos (x, y)
 	assert(self.sprite,"Sprite mustn't be null when accessing pos")
     if Vector2.isVector2(x) then
         self.sprite.x, self.sprite.y = x.x, x.y

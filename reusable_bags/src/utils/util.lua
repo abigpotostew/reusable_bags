@@ -30,14 +30,19 @@ if ( system.getInfo("environment") == "device" ) then
 	print("Print now going silent. With Love, util.lua")
    print = function() end
 else
-	print = function(message)
+	print = function(...)
 		local info = debug.getinfo(2)
 		local source_file = info.source
 		local debug_path = source_file:match('%a+.lua')
         if debug_path then 
             debug_path = debug_path  ..' ['.. info.currentline ..']'
         end
-		original_print(((debug_path and (debug_path..": ")) or "")..tostring(message))
+        local pre_msg = ((debug_path and (debug_path..": ")) or "")
+        local msg = ""
+        for i,v in ipairs(arg) do
+            msg = msg .. tostring(v) .. "\t"
+        end
+		original_print(pre_msg.."\t"..msg)
 	end
 end
 
