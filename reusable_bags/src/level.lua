@@ -22,7 +22,7 @@ local Bags = require 'actors.bagTypes'
 local Foods = require 'actors.foodTypes'
 
 
-collision.SetGroups{"bag", "food", "head", "ground", "wall", "nothing"}
+collision.SetGroups{"bag", "food", "head", "bag_collider", "ground", "wall", "nothing"}
 
 
 local Level = LCS.class()
@@ -312,7 +312,6 @@ end
 function Level:SpawnBag (bag_name, x, y)
     local b = Bags.CreateBag(bag_name, x, y, self)
     b.sprite:addEventListener("collision", self)
-    
     table.insert(self.bags,b)
     return b
 end

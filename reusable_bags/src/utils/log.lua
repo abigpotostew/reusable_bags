@@ -10,7 +10,6 @@
 local LCS = require "libs.LCS"
 
 local Log = LCS.class.abstract({
-        log_level       = 1,
         DEBUG           = 0,    -- Prints everything
         VERBOSE         = 1,    -- Print most things
         WARNING          = 2,   -- Prints errors & warnings
@@ -25,6 +24,8 @@ local level_names = {
                       [Log.FATAL]   = "Fatal",
                       [Log.SILENT]  = "Silent",
                      }
+                     
+local current_log_level = Log.VERBOSE
 
 function Log:init()
     -- Intentionally left blank, Log is an static class.
@@ -32,18 +33,30 @@ end
 
 -- Prepends "filename[line_number]:" before a print message
 local function debug_print(...)
-    local info = debug.getinfo(2)
+    local info = debug.getinfo(5) -- Back up frames in stack
     local source_file = info.source
     local debug_path = source_file:match('%a+.lua')
     if debug_path then 
         debug_path = debug_path  ..' ['.. info.currentline ..']'
     end
     local pre_msg = ((debug_path and (debug_path..": ")) or "")
-    local msg = ""
+    local msg = ''
     for i,v in ipairs(arg) do
         msg = msg .. tostring(v) .. "\t"
     end
-    print(pre_msg.."\t"..msg)
+    print(pre_msg.." "..msg)
+end
+
+local function log (log_level, ...)
+    if log_level >= current_log_level then
+        arg.n=nil
+        debug_print('['..level_names [log_level]..']', unpack(arg))
+    end
+end
+
+local function log_arg (log_level, arg_table)
+    arg_table.n=nil
+    log (log_level, unpack(arg_table))
 end
 
 ----------------------------------------------------------------------------------
@@ -56,35 +69,23 @@ end
 
 function Log:SetLogLevel (log_level)
     assert (type(log_level)=="number", "Log.lua: Incorrect Log level")
-    self.log_level = log_level
-end
-
-function Log:Log (log_level, ...)
-    if log_level >= self.log_level then
-        arg.n=nil
-        debug_print('['..self:LevelName (log_level)..']', unpack(arg))
-    end
-end
-
-function Log:LogArg (log_level, arg_table)
-    arg_table.n=nil
-    self:Log (log_level, unpack(arg_table))
+    current_log_level = log_level
 end
 
 function Log:Debug(...)
-    self:LogArg (self.DEBUG, arg)
+    log_arg (self.DEBUG, arg)
 end
 function Log:Verbose(...)
-    self:LogArg (self.VERBOSE, arg)
+    log_arg (self.VERBOSE, arg)
 end
 function Log:Warning(...)
-    self:LogArg (self.WARNING, arg)
+    log_arg (self.WARNING, arg)
 end
 function Log:Fatal(...)
-    self:LogArg(self.FATAL, arg)
+    log_arg(self.FATAL, arg)
 end
 function Log:Silent(...)
-    self:LogArg(self.SILENT, arg)
+    log_arg(self.SILENT, arg)
 end
 
 -- override print() function to improve performance when running on device

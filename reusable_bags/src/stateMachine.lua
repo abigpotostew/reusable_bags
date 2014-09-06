@@ -11,7 +11,7 @@ local StateMachine = setmetatable({}, nil)
 
 local smprint = function(...)
 	if (arg ~= nil) then
-		Log:Debug(unpack(arg))
+		--Log:Debug(unpack(arg))
 	end
 end
 

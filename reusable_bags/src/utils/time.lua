@@ -21,6 +21,9 @@ function Time:init()
     -- Intentionally left blank, Time is an static class.
 end
 
+function Time:describe()
+    print ( string.format("FPS: %d\t Elapsed Time: %4d", self.fps, self:ElapsedTime() ) )
+end
 ----------------------------------------------------------------------------------
 -- Corona Time event listener
 -- Call once per frame

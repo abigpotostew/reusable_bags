@@ -18,6 +18,7 @@ local Actor = LCS.class()
 
 function Actor:init(typeInfo, level)
     assert(level, "Level required to instance an actor")
+    assert (typeInfo and type(typeInfo)=="table", "Actor(): requires typeInfo in constructor")
     
     self.level = level
 
@@ -42,12 +43,12 @@ function Actor:init(typeInfo, level)
     
     self.id = self:GetActorID()
     
-    Log:Verbose ("Creating new actor "..self.typeName.."$"..self.id)
+    Log:Debug ("Creating new actor "..self.typeName.."$"..self.id)
 
 	--return self
 end
 
-function Actor:__tostring()
+function Actor:describe()
     return self.typeName .. "$" .. self.id
 end
 
@@ -201,14 +202,25 @@ end
 --
 function Actor:AddTransition( data, target )
     assert(data and data.time, "Actor:AddTransition(): requires data and time params")
+    local complete_listener = data.onComplete
+    data.onComplete = function(event)
+        _.reject ( self._transitions, function(i) return i==ref end )
+        if complete_listener then complete_listener(event) end
+    end
     local ref = transition.to ( target or self.sprite, data )
     table.insert ( self._transitions, ref )
     return ref
-end
+end 
 
 function Actor:CancelTransition (ref)
     _.reject ( self._transitions, function(i) return i==ref end )
     transition.cancel ( ref )
+end
+
+function Actor:CancelAllTransions ()
+    transition.cancel (self.sprite)
+    self._transitions = nil
+    self._transitions = {}
 end
 
 function Actor:addListener (object, name, callback)

@@ -30,7 +30,7 @@ local function SetDefaults(b)
 	b.physics.bounce = 0.3		-- How bouncy the bird is - 0.0 means no b.physics.bounce 1.0 means b.physics.bounce  away at full speed
 	b.physics.friction = 0.3	-- How much friction the bird has when sliding on things
     b.physics.category = 'bag'
-    b.physics.colliders = {'food'}
+    b.physics.colliders = {'bag_collider'}
     b.physics.gravityScale = 0.0
     
     b.physics.bodyType = 'kinematic'

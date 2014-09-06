@@ -15,7 +15,7 @@ Time = require "src.utils.time"
 Runtime:addEventListener("enterFrame", Time)
 
 Log = require "src.utils.log"
-Log:SetLogLevel (Log.VERBOSE)
+Log:SetLogLevel (Log.DEBUG)
 
 -- Put GLOBAL table in _G
 require "src.globals"

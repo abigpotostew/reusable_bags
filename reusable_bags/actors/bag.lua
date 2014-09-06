@@ -5,7 +5,7 @@ local Actor = require "src.actor"
 local Vector2 = require 'src.vector2'
 local Food = require "actors.food"
 
-local bag_states = {NORMAL="normal",FOOD_COLLISION_STATE="food_collision", BAG_FULL="bag_full"}
+local bag_states = {NORMAL="normal",FOOD_COLLISION_STATE="food_collision", BAG_FULL="bag_full", BAG_COLLISION_STATE="bag_collision"}
 
 local Bag = Actor:extends({states = bag_states})
 
@@ -27,6 +27,10 @@ function Bag:init(x, y, typeInfo, level)
     
     self:addCollisionSensor()
     
+    --Store the position under the food spawner
+    self.original_position = Vector2(x,y)
+    self.last_bag_collision = -1
+    
     self:SetupStateMachine()
 	self:SetupStates()
 	self.state:GoToState("normal")
@@ -39,17 +43,27 @@ function Bag:init(x, y, typeInfo, level)
     --return self
 end
 
+function Bag:describe()
+    return self.typeName .. "$" .. self.id
+end
+
 --This isn't creating sensor to the proper size
 --sensor should be slightly bigger than the bag
 function Bag:addCollisionSensor()
-    local collider = Actor(self.typeInfo, self.level)
+    local collider = Actor({typeName="bag_collider",physics={}}, self.level)
     collider.group = self.group
     collider:createRectangleSprite (
          self.typeInfo.collisionBoxScale*self.sprite.contentWidth, 
          self.typeInfo.collisionBoxScale*self.sprite.contentHeight, 
         self:Pos() ) -- returns x,y
     
-    collider:addPhysics({bodyType="dynamic", isSensor=true, scale=1.0, collisionBoxScale=1.0})
+    collider:addPhysics({
+            bodyType="dynamic", 
+            isSensor=true, 
+            scale=1.0, 
+            collisionBoxScale=1.0, 
+            category = "bag_collider",
+            colliders= {"food", "bag"} })
     
     local joint = physics.newJoint ("weld",
         self.sprite, collider.sprite, self:Pos() )
@@ -70,7 +84,7 @@ function Bag:AddItem (item)
     
     item.bag_target = {}
     item.bag_target.x, item.bag_target.y = self:Pos() 
-    item:SetState(Food.states.BAG_COLLISION_STATE)
+    item:SetState(Food.states.BAG_COLLISION_STATE, self)
     
     self.weight = item.weight + self.weight
     
@@ -96,9 +110,28 @@ function Bag:collision (event)
 		otherName = otherOwner.typeName
 	end
 
+    ---------------------------
+    -- FOOD COLLISION
+    ---------------------------
 	if (otherName == "food") then
-        Log:Verbose (self.id)
+        Log:Debug (self:describe().." colliding with "..otherOwner:describe())
         self.state:GoToState(self.states.FOOD_COLLISION_STATE, otherOwner)
+        
+    ---------------------------
+    -- BAG COLLISION
+    ---------------------------
+    elseif otherName == "bag" then
+        --SELF IS THE ONE THAT MOVES INTO THE STATIONARY BAG
+        --swap positions of bags
+        local other_bag = otherOwner
+        --Prevent the other
+        if self.last_bag_collision ~= other_bag.id then
+            Log:Debug (self:describe().." colliding with "..other_bag:describe())
+            self.last_bag_collision = other_bag.id
+            other_bag.last_bag_collision = self.id
+            self.state:GoToState(self.states.BAG_COLLISION_STATE, other_bag)
+        end
+        
 	elseif otherName then
 		Log:Verbose("Bag hit unknown named object: " .. otherName)
 	end
@@ -111,9 +144,9 @@ function Bag:touch (event)
         display.getCurrentStage():setFocus (body)
         body.has_focus = true
     elseif event.phase == "moved" then
-        --body:setLinearVelocity (20,0)--*Time.s_per_frame,
         bag:SetPos (event.x, bag:y())
     elseif event.phase == "ended" then
+        self:SlideToPosition (self.original_position:Get())
         display.getCurrentStage():setFocus (nil)
         event.target.has_focus = false
     end
@@ -124,7 +157,15 @@ function Bag:update(dt)
     --self:setPos(self.position + {x = 0, y = -25*math.abs(math.sin(Time:ElapsedTime()/10))})
 end
 
-
+function Bag:SlideToPosition (x, y, onComplete)
+    self:AddTransition ({
+            x = x,
+            y = y,
+            time=500,
+            transition=easing.inOutSine,
+            tag="bag_slide",
+            onComplete = onComplete })
+end
 
 
 function Bag:SetupStates ()
@@ -143,13 +184,28 @@ function Bag:SetupStates ()
         
             if self:CanFitWeight (food:GetWeight()) then
                 self:AddItem(food)
+                
+                self.state:GoToState(self.states.NORMAL)
             else
-                print("bag " .. self.id .. " full")
+                self.state:GoToState(self.states.BAG_FULL)
+                print(self:describe().." full!")
             end
         end
             
     })
     
+    self.state:SetState(self.states.BAG_COLLISION_STATE, {
+		enter = function(other_bag)
+            local tmp = other_bag.original_position
+            other_bag.original_position = self.original_position
+			self.original_position = tmp
+            self:SlideToPosition (self.original_position:Get())
+            self.state:GoToState(self.states.NORMAL)
+		end,
+        exit= function()
+            
+        end
+	})
 
 	self.state:SetState(self.states.BAG_FULL, {
 		enter = function()
