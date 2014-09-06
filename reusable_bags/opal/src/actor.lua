@@ -1,16 +1,14 @@
 --[[
-Project Sunlight
-Actor
+Generic Actor
 ]]--
 
---local spSprite = require "src.libs.swiftping.sp_sprite"
-local stateMachine = require "src.stateMachine"
-local LCS = require "libs.LCS"
-local util = require "src.utils.util"
-local _ = require "libs.underscore"
-local collision = require "src.collision"
+local stateMachine = require "opal.src.stateMachine"
+local LCS = require "opal.libs.LCS"
+local util = require "opal.src.utils.util"
+local _ = require "opal.libs.underscore"
+local collision = require "opal.src.collision"
 local physics = require 'physics'
-local Vector2 = require 'src.vector2'
+local Vector2 = require 'opal.src.vector2'
 
 local Actor = LCS.class()
 

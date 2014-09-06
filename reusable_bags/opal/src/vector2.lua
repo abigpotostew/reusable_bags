@@ -1,5 +1,5 @@
 -- Vector2.lua
-local LCS = require "libs.LCS"
+local LCS = require "opal.libs.LCS"
 
 local EPSILON = 0.00001
 

@@ -3,7 +3,7 @@
 -- 
 ----------------------------------------------------------------------------------
 
-local LCS = require "libs.LCS"
+local LCS = require "opal.libs.LCS"
 
 local Time = LCS.class.abstract({
         fps             = display.fps,          -- constant

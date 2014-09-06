@@ -1,6 +1,6 @@
 local Util = setmetatable({}, nil)
 
-local _ = require "libs.underscore"
+local _ = require "opal.libs.underscore"
 
 Util.EPSILON = 0.00001
 
@@ -269,6 +269,5 @@ Util.mixColors = function(c1,c2)
     
     return r3,g3,b3,alpha
 end
-
     
 return Util

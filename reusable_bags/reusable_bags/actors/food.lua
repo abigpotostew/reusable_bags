@@ -1,7 +1,7 @@
 --generic food class
 
-local Actor = require "src.actor"
-local Vector2 = require 'src.vector2'
+local Actor = require "opal.src.actor"
+local Vector2 = require 'opal.src.vector2'
 
 local food_states = {BAG_COLLISION_STATE="bag_collision"}
 

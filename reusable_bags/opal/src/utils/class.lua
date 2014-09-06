@@ -1,4 +1,4 @@
-local util = require "src.utils.util"
+local util = require "opal.src.utils.util"
 
 local Class = {}
 Class.super = nil

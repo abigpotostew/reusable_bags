@@ -1,11 +1,11 @@
-local _ = require "libs.underscore"
+local _ = require "opal.libs.underscore"
 
 --food types definitions
 local Foods = setmetatable({}, nil)
       Foods.by_name = setmetatable({}, nil)
       Foods.by_weight = setmetatable({}, nil)
 
-local Food = require "actors.food"
+local Food = require "reusable_bags.actors.food"
 
 local function newTypeInfo()
     return {physics={}, anims={}, sounds={}}

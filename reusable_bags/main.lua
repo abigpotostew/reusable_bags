@@ -11,18 +11,20 @@ require("mobdebug").start()
 
 -- Time stuff, these only need to be called once:
 math.randomseed(os.time())
-Time = require "src.utils.time"
+Time = require "opal.src.utils.time"
 Runtime:addEventListener("enterFrame", Time)
 
-Log = require "src.utils.log"
+Log = require "opal.src.utils.log"
 Log:SetLogLevel (Log.DEBUG)
 
+OAssert = require "opal.src.utils.assert"
+
 -- Put GLOBAL table in _G
-require "src.globals"
+require "opal.src.globals"
 
 local composer = require "composer"
 
 -- Enable multitouch
 --system.activate("multitouch")
 
-composer.gotoScene('src.levelScene', {params={level=require("levels.level1")}})
+composer.gotoScene('opal.src.levelScene', {params={level=require("reusable_bags.levels.level1")}})

@@ -11,18 +11,13 @@ physics.start(); physics.pause()
 physics.setContinuous( false )
 physics.setGravity(0,0)--0.6)
 
-local LCS = require('libs.LCS') 
-local util = require"src.utils.util"
-local _ = require 'libs.underscore'
-local collision = require "src.collision"
-local Vector2 = require 'src.vector2'
+local LCS = require ('opal.libs.LCS') 
+local util = require "opal.src.utils.util"
+local _ = require 'opal.libs.underscore'
+local collision = require "opal.src.collision"
+local Vector2 = require 'opal.src.vector2'
 
-local Actor = require 'src.actor'
-local Bags = require 'actors.bagTypes'
-local Foods = require 'actors.foodTypes'
-
-
-collision.SetGroups{"bag", "food", "head", "bag_collider", "ground", "wall", "nothing"}
+local Actor = require 'opal.src.actor'
 
 
 local Level = LCS.class()
@@ -32,7 +27,7 @@ local Level = LCS.class()
 function Level:init()
     --Possibly call super init here
     
-    self.food_list = self:GetFoodNameList(self.texture_sheet)
+    
     
     -- Display constants
     self.screenW    = display.contentWidth 
@@ -48,9 +43,6 @@ function Level:init()
     self.world_group.yScale = self.world_scale
     
     --Level actors:
-    self.bags = {}
-    self.foods = {}
-    self.spawn_points = {}
     self.actors = {}
     
     -- Use the Create[X]() functions for these tables.
@@ -58,22 +50,9 @@ function Level:init()
 	self.timers = {}
 	self.transitions = {}
 	self.listeners = {}
-    
-    
-	--return self
+
 end
 
-function Level:GetFoodNameList (textureSheetInfo)
-    local list = _(textureSheetInfo.frameIndex):chain():keys()
-        :select(function(v) return string.find(v, "food_") end):value()
-        
-    local renamed_list = {}
-    _.each(list, function(i) 
-            local food_name = string.gsub(i, "food_", "")
-            table.insert(renamed_list, food_name )
-        end)
-    return renamed_list
-end
 
 
 -- Called when the scene's view does not exist:
@@ -111,9 +90,9 @@ function Level:enterFrame (event)
     
     local dt = Time:DeltaTime()
     
-    _.each( self.bags, function(bag)
-        bag:update(dt)
-    end)
+    --_.each( self.bags, function(bag)
+    --    bag:update(dt)
+    --end)
 
     if self.physics_to_remove then
         _.each( self.physics_to_remove, function(actor)
@@ -125,11 +104,9 @@ function Level:enterFrame (event)
 end
 
 
-
 -- Called immediately after scene has moved onscreen:
 function Level:show (event)
 	local sceneGroup = self.sceneGroup
-    
     
     if event.phase == 'will' then
         sceneGroup:insert(self.world_group)
@@ -137,8 +114,6 @@ function Level:show (event)
         physics.start()
         Runtime:addEventListener("enterFrame", self)
     end
-	
-	
 end
 
 -- Called when scene is about to move offscreen:
@@ -186,21 +161,6 @@ end
 
 --------------------------------------------
 
---params: x, y, directionX, data.directionY, speed, angular_velocity, w, h
-function Level:CreateSpawner (data)
-    assert(data.directionX and
-           data.directionY and
-           data.speed,
-           "required directionX and directionY and speed when creating spawner")
-    local spawner = Actor({typeName="spawner"}, self)
-    spawner.group = self:GetWorldGroup()
-    spawner:createRectangleSprite(data.w or 15,data.h or 50, data.x or 0, data.y or 0)
-    local direction = Vector2(data.directionX, data.directionY)
-    spawner.velocity = direction * data.speed
-    spawner.angular_velocity = data.angular_velocity or 0
-    table.insert(self.spawn_points, spawner)
-    return #self.spawn_points
-end
 
 function Level:PeriodicCheck()
 	-- Remove birds that have left the screen (using a separate kill list so we don't step all over ourselves)
@@ -238,23 +198,9 @@ end
 -- removeActor
 ----------------------------------------------
 function Level:RemoveActor (actor)
-    if actor.typeName == "food" then
-        self:RemoveFoodActor(actor)
-    elseif actor.typeName == "bag" then
-        self:RemoveBagActor(actor)
-    end
-end
-
-function Level:RemoveFoodActor (food)
-    assert(food.typeName == "food", "Required food actor")
-    food:RemoveFoodSelf()
-    self.foods = _.select(self.foods, function(i) return i ~= food end)
-end
-
-function Level:RemoveBagActor (bag)
-    assert(bag.typeName == "bag", "Required bag actor")
-    bag:removeSelf()
-    self.bags = _.select(self.bags, function(i) return i ~= bag end)
+    local a = self.actors[actor.typeName][actor.id]
+    a:removeSelf()
+    self.actors[actor.typeName][actor.id] = nil
 end
 
 function Level:RemoveActorPhysics (actor)
@@ -264,142 +210,34 @@ function Level:RemoveActorPhysics (actor)
     table.insert(self.physics_to_remove, actor)
 end
 
-
-function Level:InsertFood (food)
-    table.insert(self.foods,food)
-end
-
 function Level:InsertActor (a)
-    table.insert(self.actors,a)
+    if not self.actors[a.typeName] then
+        self.actors[a.typeName] = {}
+    end
+    self.actors[a.typeName][a.id] = a
 end
 
-
---Set posY to nil to spawn food at the location of a food spawner and pass spawner id as second parameter
-function Level:SpawnFood (weight_or_name, posX, posY, spawner_id)
-    assert(weight_or_name, "Weight or food name required.")
-    local spawner_function = nil
-    if type(weight_or_name) == "string" then --by name
-        spawner_function = Foods.CreateFood_ByName
-    elseif type(weight_or_name) == "number" then
-        spawner_function = Foods.CreateFood_ByWeight
-    else
-        assert(false,"Error spawning food")
-    end
-    local x, y = posX, posY
-    local spawner = spawner_id
-    if spawner then
-        spawner = self:GetSpawner(spawner_id)
-        x, y = spawner:Pos()
-    end
+function Level:GetActor (type_name, id)
+    local actor_list = self.actors[type_name]
+    OAssert (actor_list, "Level:GetActor(): Actor doesn't exist")
+    local actor = actor_list[id]
+    OAssert (actor, "Level:GetActor(): Actor doesn't exist")
     
-    local f = spawner_function( x, y, weight_or_name, self )
-        
-    if spawner then
-        f.sprite.angularVelocity = spawner.angular_velocity
-        f.sprite:setLinearVelocity ( spawner.velocity:Get() )
-    end
-    self:InsertFood(f)
+    return actor
 end
 
-function Level:SpawnRandomFood (posX, posY, spawner_id)
-    self:SpawnFood( self:GetRandomFoodName(), posX, posY, spawner_id)
-end
+
 
 function Level:collision (event)
     
-end
-
-function Level:SpawnBag (bag_name, x, y)
-    local b = Bags.CreateBag(bag_name, x, y, self)
-    b.sprite:addEventListener("collision", self)
-    table.insert(self.bags,b)
-    return b
-end
-
-function Level:SetBagCount (bag_count)
-    self.bag_count = bag_count
-end
-
-function Level:AddGround ()
-	--[[local width, height = self:GetWorldViewSize()
-	local groundInfo = {}--display.newRect(0, 0, width, 22)
-	--ground:setReferencePoint(display.BottomLeftReferencePoint)
-    groundInfo.anchorX = 0.5
-    groundInfo.anchorY = 0.5
-	groundInfo.alpha = 1.0
-	groundInfo.typeName = "ground"
-    groundInfo.physics = {}
-    groundInfo.scale = 1
-	local halfWidth = width * 0.5
-    self.ground = Actor:init(groundInfo)
-    self.ground.group = self:GetWorldGroup()
-    --self.ground:createRectangleSprite(0,0, width,14)
-    self.ground:addPhysics({bounce=0.2, category='ground', colliders={"food"}, isSensor=false, bodyType="static"})
-	self:GetWorldGroup():insert(self.ground.sprite)--]]
-    
-    
-    local width, height = self:GetWorldViewSize()
-    local function createBoundary(x,y,w,h)
-        local boundary = display.newRect(x, y, w, h)
-        boundary.anchorX, boundary.anchorY = 0.5, 0.5
-        boundary.x = x
-        boundary.y = y
-        boundary.alpha = 1
-        boundary.typeName = "ground"
-        local halfWidth = w * 0.5
-        local halfHeight = h * 0.5
-        local shape = {	-halfWidth, -halfHeight,
-                         halfWidth, -halfHeight,
-                         halfWidth,  halfHeight,
-                        -halfWidth,  halfHeight }
-        physics.addBody(boundary, "static", {
-            shape = shape,
-            bounce = 0.00001,
-            friction = 1,
-            filter = collision.MakeFilter("ground",{"food","bag"})
-        })
-        self:GetWorldGroup():insert(boundary)
-    end
-    createBoundary(width/2,height,width,22) --ground
-    createBoundary(0,height/2,22,height) --left
-    createBoundary(width,height/2,22,height) --ceiling
-    createBoundary(width/2,0,width,22) --right
-    
-    --[[Ground
-	local ground = display.newRect(0, 0, width, 22)
-    ground.anchorX, ground.anchorY = 0.5, 0.5
-	ground.x = width/2
-	ground.y = height
-	ground.alpha = 1
-	ground.typeName = "ground"
-	local halfWidth = width * 0.5
-	local shape = {	-halfWidth, -14,
-					 halfWidth, -14,
-					 halfWidth,  14,
-					-halfWidth,  14 }
-	physics.addBody(ground, "static", {
-		shape = shape,
-		bounce = 0.00001,
-		friction = 1,
-		filter = collision.MakeFilter("ground",{"food","bag"})
-	})
-	self:GetWorldGroup():insert(ground)
-    --]]
 end
 
 
 -------------------------------------------------------------------------------
 -- Getters and utility functions
 -------------------------------------------------------------------------------
-function Level:GetSpawner (idx)
-    assert( #self.spawn_points > 0, "Create a spawner before spawning food.")
-	return self.spawn_points[idx]
-end
 
-function Level:GetRandomFoodName ()
-    assert( self.food_list and #self.food_list > 0, "Required food name list before." )
-    return self.food_list[math.random(#self.food_list)]
-end
+
 
 function Level:GetWorldGroup ()
 	return self.world_group
@@ -444,18 +282,6 @@ end
 ----------------------------------------------------------------------------------------
 function Level:TimelineWait (seconds)
 	table.insert(self.timeline, function() return seconds end)
-end
-
-function Level:TimelineSpawnFood (data)
-	if (data.wait ~= nil) then
-		self:TimelineWait(data.wait)
-	end
-
-	local function SpawnFood()
-		self:SpawnFood( data.foodName or data.weight, data.x, data.y, data.spawner_id)
-	end
-
-	table.insert(self.timeline, SpawnFood)
 end
 
 function Level:ProcessTimeline ()

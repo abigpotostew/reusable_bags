@@ -7,7 +7,7 @@
 --      Log:FATAL ("oh my gosh")        --will print
 ----------------------------------------------------------------------------------------
 
-local LCS = require "libs.LCS"
+local LCS = require "opal.libs.LCS"
 
 local Log = LCS.class.abstract({
         DEBUG           = 0,    -- Prints everything
