@@ -22,30 +22,6 @@ function Util.DeepCopy(object)
     return _copy(object)
 end
 
-
--- override print() function to improve performance when running on device
--- and print out file and line number for each print
-local original_print = print
-if ( system.getInfo("environment") == "device" ) then
-	print("Print now going silent. With Love, util.lua")
-   print = function() end
-else
-	print = function(...)
-		local info = debug.getinfo(2)
-		local source_file = info.source
-		local debug_path = source_file:match('%a+.lua')
-        if debug_path then 
-            debug_path = debug_path  ..' ['.. info.currentline ..']'
-        end
-        local pre_msg = ((debug_path and (debug_path..": ")) or "")
-        local msg = ""
-        for i,v in ipairs(arg) do
-            msg = msg .. tostring(v) .. "\t"
-        end
-		original_print(pre_msg.."\t"..msg)
-	end
-end
-
 --Returns true if checkMe is one of the types passed in to arg
 -- Ex multiTypeCheck({1,2,3}, "string", "number") == false
 local function multiTypeCheck(checkMe, ...)

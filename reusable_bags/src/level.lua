@@ -78,7 +78,7 @@ end
 
 -- Called when the scene's view does not exist:
 function Level:create (event, sceneGroup)
-    print("Level:create")
+    Log:Verbose("Level:create")
     assert(sceneGroup,"Please provide Level with a scene group")
     
     -----------
@@ -98,8 +98,8 @@ function Level:create (event, sceneGroup)
     self:AddGround()
     
 
-    print(string.format("Screen Resolution: %i x %i", display.contentWidth, display.contentHeight))
-	print(string.format("Level Size: %i x %i", self.width, self.height))
+    Log:Verbose(string.format("Screen Resolution: %i x %i", display.contentWidth, display.contentHeight))
+	Log:Verbose(string.format("Level Size: %i x %i", self.width, self.height))
     
     self:ProcessTimeline()
     

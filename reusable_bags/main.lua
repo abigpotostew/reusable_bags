@@ -13,8 +13,9 @@ require("mobdebug").start()
 math.randomseed(os.time())
 Time = require "src.utils.time"
 Runtime:addEventListener("enterFrame", Time)
+
 Log = require "src.utils.log"
-Log:SetLevel (Log.VERBOSE)
+Log:SetLogLevel (Log.VERBOSE)
 
 -- Put GLOBAL table in _G
 require "src.globals"

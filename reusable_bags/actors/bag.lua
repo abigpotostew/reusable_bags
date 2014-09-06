@@ -97,7 +97,7 @@ function Bag:collision (event)
 	end
 
 	if (otherName == "food") then
-        Log:Verbose (self)
+        Log:Verbose (self.id)
         self.state:GoToState(self.states.FOOD_COLLISION_STATE, otherOwner)
 	elseif otherName then
 		Log:Verbose("Bag hit unknown named object: " .. otherName)
