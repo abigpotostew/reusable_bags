@@ -81,18 +81,6 @@ function Util.MergeTables(table1, table2)
 	return newTable
 end
 
--- Removes a value from an array
-function Util.FindAndRemove(tab, item)
-	for i, testItem in ipairs(tab) do
-		if (testItem == item) then
-			table.remove(tab, i)
-			return true
-		end
-	end
-
-	return false
-end
-
 function Util.DegToRad(degrees)
 	return degrees * math.pi / 180.0
 end
