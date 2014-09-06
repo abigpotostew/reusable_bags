@@ -99,15 +99,19 @@ function Actor:createRectangleSprite (w,h,x,y,strokeWidth)
     if strokeWidth then self.sprite.strokeWidth = strokeWidth end
 end
 
-function Actor:buildRectangleSprite (group,w,h,x,y,strokeWidth)
-    assert(group,"Please initialize group before creating a sprite")
+function Actor:buildRectangleSprite (group,w,h,x,y, sprite_data)
+    assert(group,"Actor:buildRectangleSprite(): Please initialize group before creating a sprite rectangle")
     x, y = x or 0, y or 0
+    local fill_color = sprite_data.fill_color or {1,0,1} --hot pink!
+    local stroke_color = sprite_data.stroke_color or {1,0,1} --hot pink!
+    
+    
     local sprite = display.newRect(group, x, y, w, h)
     sprite.owner = self
-	sprite:setFillColor(1,0,1)
+	sprite:setFillColor(unpack(fill_color))
 	sprite:setStrokeColor(1,0,1)    
     sprite.anchorX, sprite.anchorY = self.typeInfo.anchorX or 0.5, self.typeInfo.anchorY or 0.5
-    if strokeWidth then sprite.strokeWidth = strokeWidth end
+    if sprite_data.stroke_width then sprite.strokeWidth = sprite_data.stroke_width end
     return sprite
 end
 

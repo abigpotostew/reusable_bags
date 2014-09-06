@@ -29,7 +29,7 @@ function Bag:init(x, y, typeInfo, level)
     
     --Store the position under the food spawner
     self.original_position = Vector2(x,y)
-    self.last_bag_collision = -1
+    self.skip_next_collision_for_id = 0
     
     self:SetupStateMachine()
 	self:SetupStates()
@@ -124,12 +124,27 @@ function Bag:collision (event)
         --SELF IS THE ONE THAT MOVES INTO THE STATIONARY BAG
         --swap positions of bags
         local other_bag = otherOwner
-        --Prevent the other
-        if self.last_bag_collision ~= other_bag.id then
+        
+        if event.phase == "began" then
+            --Prevent the other from calling this same collision method
+            local skip_id = self.skip_next_collision_for_id
+            if skip_id and (skip_id == other_bag.id) then
+                self.skip_next_collision_for_id = 0
+                return
+            else
+                -- Other bag won't run this collision
+                other_bag.skip_next_collision_for_id = self.id
+            end
+            
             Log:Debug (self:describe().." colliding with "..other_bag:describe())
             self.last_bag_collision = other_bag.id
             other_bag.last_bag_collision = self.id
+            
+            Log:Debug ( string.format("self_state = %s, other_state = %s",self.state.state, other_bag.state.state ) )
             self.state:GoToState(self.states.BAG_COLLISION_STATE, other_bag)
+
+        elseif event.phase == "ended" then
+            
         end
         
 	elseif otherName then
@@ -199,7 +214,7 @@ function Bag:SetupStates ()
             local tmp = other_bag.original_position
             other_bag.original_position = self.original_position
 			self.original_position = tmp
-            self:SlideToPosition (self.original_position:Get())
+            self:SlideToPosition (self.original_position:Get()) --function() self.original_position=-1 end)
             self.state:GoToState(self.states.NORMAL)
 		end,
         exit= function()
