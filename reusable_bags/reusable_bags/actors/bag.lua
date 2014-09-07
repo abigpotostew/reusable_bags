@@ -62,7 +62,7 @@ function Bag:addCollisionSensor()
             isSensor=true, 
             scale=1.0, 
             collisionBoxScale=1.0, 
-            category = "bag_collider",
+            category = "bag_base",
             colliders= {"food", "bag"} })
     
     local joint = physics.newJoint ("weld",
@@ -73,6 +73,10 @@ function Bag:addCollisionSensor()
     self.collision_sensor = {joint=joint, collider=collider}
     
 	collider.sprite:addEventListener("collision", self)
+end
+
+function Bag:AddBaseSensor()
+    local collider = Actor({typeName="bag_base",physics={}}, self.level)
 end
 
 function Bag:CanFitWeight (itemWeight)

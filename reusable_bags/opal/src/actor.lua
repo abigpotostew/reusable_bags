@@ -127,6 +127,8 @@ function Actor:removeSprite ()
 end
 
 function Actor:removeSelf ()
+    print("Actor: Deleting actor "..self.typeName.."$"..self.id)
+    
     transition.cancel ( self.sprite )
     self._transitions = {}
     
@@ -142,7 +144,7 @@ function Actor:removeSelf ()
 	end
 	self._timers = {}
     
-    print("Actor: Deleting actor "..self.actorType.."$"..self.id)
+    
 end
 
 function Actor:removePhysics ()

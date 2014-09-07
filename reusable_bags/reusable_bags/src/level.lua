@@ -16,7 +16,15 @@ local Cannon = require "reusable_bags.actors.cannon"
 
 
 local collision = require "opal.src.collision"
-collision.SetGroups{"bag", "food", "head", "bag_collider", "ground", "wall", "nothing"}
+collision.SetGroups{
+    "bag", 
+    "food", 
+    "head", 
+    "bag_collider",     -- dynamic body welded to bag to allow collisions others
+    "bag_base",         -- kinematic body at each bag location
+    "ground", 
+    "wall", 
+    "nothing"}
 
 local BagLevel = DebugLevel:extends()
 
