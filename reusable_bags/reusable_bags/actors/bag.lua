@@ -55,7 +55,9 @@ function Bag:addCollisionSensor()
     collider:createRectangleSprite (
          self.typeInfo.collisionBoxScale*self.sprite.contentWidth, 
          self.typeInfo.collisionBoxScale*self.sprite.contentHeight, 
-        self:Pos() ) -- returns x,y
+        self:x(), self:y(),
+        
+        {fill_color={1,0,1,1}}) -- returns x,y
     
     collider:addPhysics({
             bodyType="dynamic", 
