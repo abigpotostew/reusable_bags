@@ -40,7 +40,7 @@ function Actor:init(typeInfo, level)
     
     self.id = self:GetActorID()
     
-    Log:Debug ("Creating new actor "..self.typeName.."$"..self.id)
+    oLog:Debug ("Creating new actor "..self.typeName.."$"..self.id)
 
 	--return self
 end

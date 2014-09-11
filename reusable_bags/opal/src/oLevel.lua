@@ -57,7 +57,7 @@ end
 
 -- Called when the scene's view does not exist:
 function Level:create (event, sceneGroup)
-    Log:Verbose("Level:create")
+    oLog:Verbose("Level:create")
     assert(sceneGroup,"Please provide Level with a scene group")
     
     -----------
@@ -77,8 +77,8 @@ function Level:create (event, sceneGroup)
     self:AddGround()
     
 
-    Log:Verbose(string.format("Screen Resolution: %i x %i", display.contentWidth, display.contentHeight))
-	Log:Verbose(string.format("Level Size: %i x %i", self.width, self.height))
+    oLog:Verbose(string.format("Screen Resolution: %i x %i", display.contentWidth, display.contentHeight))
+	oLog:Verbose(string.format("Level Size: %i x %i", self.width, self.height))
     
     self:ProcessTimeline()
     
@@ -88,7 +88,7 @@ end
 function Level:enterFrame (event)
     local phase = event.phase
     
-    local dt = Time:DeltaTime()
+    local dt = oTime:DeltaTime()
     
     --_.each( self.bags, function(bag)
     --    bag:update(dt)

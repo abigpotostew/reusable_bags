@@ -5,7 +5,7 @@
 
 local LCS = require "opal.libs.LCS"
 
-local Time = LCS.class.abstract({
+local oTime = LCS.class.abstract({
         fps             = display.fps,          -- constant
         s_per_frame     = 1/display.fps,        --constant
         ms_per_frame    = 1/display.fps * 1000, -- constant
@@ -17,18 +17,18 @@ local Time = LCS.class.abstract({
         delta_time      = 0
     })
 
-function Time:init()
+function oTime:init()
     -- Intentionally left blank, Time is an static class.
 end
 
-function Time:describe()
+function oTime:describe()
     print ( string.format("FPS: %d\t Elapsed Time: %4d", self.fps, self:ElapsedTime() ) )
 end
 ----------------------------------------------------------------------------------
 -- Corona Time event listener
 -- Call once per frame
 ----------------------------------------------------------------------------------
-function Time:enterFrame()
+function oTime:enterFrame()
     
     local temp_time = self:TotalRuntime()  --Get current game time in ms
     self.delta_time = (temp_time-self.last_frame_time) / (self.ms_per_frame) 
@@ -43,32 +43,32 @@ end
 -- Getters
 ----------------------------------------------------------------------------------
 -- Delta time in milliseconds since last frame.
-function Time:DeltaTime()
+function oTime:DeltaTime()
     return self.delta_time
 end
 
-function Time:FrameCount()
+function oTime:FrameCount()
     return self.frame_count
 end
 
 -- Time since Time:ResetElapsedTime() or Time instantiation
-function Time:ElapsedTime()
+function oTime:ElapsedTime()
     return self:TotalRuntime() - self.elapsed_time
 end
 
-function Time:TotalRuntime()
+function oTime:TotalRuntime()
     return system.getTimer()
 end
 
 ----------------------------------------------------------------------------------
 -- Resetters
 ----------------------------------------------------------------------------------
-function Time:ResetElapsed()
+function oTime:ResetElapsed()
     self.elapsed_time = self:TotalRuntime() 
 end
 
-function Time:ResetFrameCount()
+function oTime:ResetFrameCount()
     self.frame_count = 0
 end
 
-return Time
+return oTime

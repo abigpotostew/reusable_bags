@@ -78,8 +78,10 @@ function BagLevel:SpawnFood (weight_or_name, posX, posY, cannon)
     local f = spawner_function( x, y, weight_or_name, self )
         
     if spawner then
-        f.sprite.angularVelocity = spawner.angular_velocity
-        f.sprite:setLinearVelocity ( spawner.velocity:Get() )
+        local lin_vel = spawner.velocity:Copy()
+        lin_vel.y = lin_vel.y + oMath.binom() * spawner.speed_variation
+        f.sprite.angularVelocity = spawner.angular_velocity + oMath.binom() * spawner.rotation_variation
+        f.sprite:setLinearVelocity ( lin_vel:Get() )
     end
     self:InsertFood(f)
 end

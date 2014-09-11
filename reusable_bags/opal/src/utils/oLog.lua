@@ -2,14 +2,14 @@
 -- Global Logger static class
 -- Usage:
 --      require('src.utils.log')        --require once
---      Log:SetLogLevel (Log.WARNING)
---      Log:Verbose ("hey dingus")      --won't print anything
---      Log:FATAL ("oh my gosh")        --will print
+--      oLog:SetLogLevel (Log.WARNING)
+--      oLog:Verbose ("hey dingus")      --won't print anything
+--      oLog:FATAL ("oh my gosh")        --will print
 ----------------------------------------------------------------------------------------
 
 local LCS = require "opal.libs.LCS"
 
-local Log = LCS.class.abstract({
+local oLog = LCS.class.abstract({
         DEBUG           = 0,    -- Prints everything
         VERBOSE         = 1,    -- Print most things
         WARNING          = 2,   -- Prints errors & warnings
@@ -18,16 +18,16 @@ local Log = LCS.class.abstract({
     })
 
 local level_names = { 
-                      [Log.DEBUG]   = "Debug",
-                      [Log.VERBOSE] = "Verbose",
-                      [Log.WARNING] = "Warning",
-                      [Log.FATAL]   = "Fatal",
-                      [Log.SILENT]  = "Silent",
+                      [oLog.DEBUG]   = "Debug",
+                      [oLog.VERBOSE] = "Verbose",
+                      [oLog.WARNING] = "Warning",
+                      [oLog.FATAL]   = "Fatal",
+                      [oLog.SILENT]  = "Silent",
                      }
                      
-local current_log_level = Log.VERBOSE
+local current_log_level = oLog.VERBOSE
 
-function Log:init()
+function oLog:init()
     -- Intentionally left blank, Log is an static class.
 end
 
@@ -63,28 +63,28 @@ end
 -- Public Log Methods:
 ----------------------------------------------------------------------------------
 
-function Log:LevelName (log_level)
+function oLog:LevelName (log_level)
     return level_names[log_level]
 end
 
-function Log:SetLogLevel (log_level)
-    assert (type(log_level)=="number", "Log.lua: Incorrect Log level")
+function oLog:SetLogLevel (log_level)
+    assert (type(log_level)=="number", "oLog.lua: Incorrect Log level")
     current_log_level = log_level
 end
 
-function Log:Debug(...)
+function oLog:Debug(...)
     log_arg (self.DEBUG, arg)
 end
-function Log:Verbose(...)
+function oLog:Verbose(...)
     log_arg (self.VERBOSE, arg)
 end
-function Log:Warning(...)
+function oLog:Warning(...)
     log_arg (self.WARNING, arg)
 end
-function Log:Fatal(...)
+function oLog:Fatal(...)
     log_arg(self.FATAL, arg)
 end
-function Log:Silent(...)
+function oLog:Silent(...)
     log_arg(self.SILENT, arg)
 end
 
@@ -92,8 +92,8 @@ end
 -- and print out file and line number for each print
 local original_print = print
 if ( system.getInfo("environment") == "device" ) then
-	print("Print & Log now going silent. With Love, log.lua")
+	print("Print & Log now going silent. With Love, oLog.lua")
    print = function() end
 end
 
-return Log
+return oLog

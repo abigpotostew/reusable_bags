@@ -30,8 +30,8 @@ function Cannon:init (cannon_data, level)
     local direction = Vector2(data.directionX, data.directionY)
     self.velocity = direction * data.speed
     self.angular_velocity = data.angular_velocity or 0
-    self.speed_variation = data.speed_variation
-    self.rotation_variation = data.rotation_variation
+    self.speed_variation = data.speed_variation or 0
+    self.rotation_variation = data.rotation_variation or 0
        
 end
     

@@ -122,7 +122,7 @@ function Bag:collision (event)
     -- FOOD COLLISION
     ---------------------------
 	if (otherName == "food") then
-        Log:Debug (self:describe().." colliding with "..otherOwner:describe())
+        oLog:Debug (self:describe().." colliding with "..otherOwner:describe())
         self.state:GoToState(self.states.FOOD_COLLISION_STATE, otherOwner)
         
     ---------------------------
@@ -144,11 +144,11 @@ function Bag:collision (event)
                 other_bag.skip_next_collision_for_id = self.id
             end
             
-            Log:Debug (self:describe().." colliding with "..other_bag:describe())
+            oLog:Debug (self:describe().." colliding with "..other_bag:describe())
             self.last_bag_collision = other_bag.id
             other_bag.last_bag_collision = self.id
             
-            Log:Debug ( string.format("self_state = %s, other_state = %s",self.state.state, other_bag.state.state ) )
+            oLog:Debug ( string.format("self_state = %s, other_state = %s",self.state.state, other_bag.state.state ) )
             self.state:GoToState(self.states.BAG_COLLISION_STATE, other_bag)
 
         elseif event.phase == "ended" then
@@ -168,7 +168,7 @@ function Bag:collision (event)
         return
         
 	elseif otherName then
-		Log:Verbose("Bag hit unknown named object: " .. otherName)
+		oLog:Verbose("Bag hit unknown named object: " .. otherName)
 	end
 end
 
@@ -189,7 +189,7 @@ end
 
 function Bag:update(dt)
     --Update position for overall changes in bag position
-    --self:setPos(self.position + {x = 0, y = -25*math.abs(math.sin(Time:ElapsedTime()/10))})
+    --self:setPos(self.position + {x = 0, y = -25*math.abs(math.sin(oTime:ElapsedTime()/10))})
 end
 
 function Bag:SlideToPosition (x, y, onComplete)

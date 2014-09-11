@@ -66,7 +66,7 @@ function BagBase:collision (event)
                 return
             end
             
-            Log:Debug (self:describe().." colliding with "..colliding_bag:describe())
+            --oLog:Debug (self:describe().." colliding with "..colliding_bag:describe())
             
             local last_bag_here = self.bag
             local other_bag_base = colliding_bag.base
@@ -76,7 +76,7 @@ function BagBase:collision (event)
             --other_bag.last_bag_collision = self.id
             colliding_bag.base = self
             
-            --Log:Debug ( string.format("self_state = %s, other_state = %s",self.state.state, other_bag.state.state ) )
+            --oLog:Debug ( string.format("self_state = %s, other_state = %s",self.state.state, other_bag.state.state ) )
             -- Move the last bag to the colliding bag's base
             last_bag_here.state:GoToState(last_bag_here.states.BAG_COLLISION_STATE, other_bag_base)
 
@@ -85,7 +85,7 @@ function BagBase:collision (event)
         end
         
 	elseif otherName then
-		Log:Verbose("BagBase hit unknown named object: " .. otherName)
+		oLog:Verbose("BagBase hit unknown named object: " .. otherName)
 	end
 end
 
