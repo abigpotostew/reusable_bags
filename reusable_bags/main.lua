@@ -17,7 +17,7 @@ Runtime:addEventListener("enterFrame", Time)
 Log = require "opal.src.utils.log"
 Log:SetLogLevel (Log.DEBUG)
 
-OAssert = require "opal.src.utils.assert"
+oAssert = require "opal.src.utils.oAssert"
 
 -- Put GLOBAL table in _G
 require "opal.src.globals"

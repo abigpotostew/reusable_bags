@@ -14,7 +14,7 @@ local cannon_states = {
 local Cannon = Actor:extends {states = cannon_states}
 
 function Cannon:init (cannon_data, level)
-    OAssert (Util.typechk(cannon_data,"table"), "Cannon(): Requires cannon data")
+    oAssert.type (cannon_data, "table", "Cannon(): Requires cannon data")
     
     self:super ("init", {typeName="cannon"}, level)
     

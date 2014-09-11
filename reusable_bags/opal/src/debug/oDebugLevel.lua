@@ -6,7 +6,7 @@
    local debug_level = require('src.debug.debug_level'):new() -- or just ()
 
 -----------------------------------------------------------------------------]]
-local Level = require "opal.src.level"
+local Level = require "opal.src.oLevel"
 local fps = require "opal.libs.fps"
 
 local DebugLevel = Level:extends()

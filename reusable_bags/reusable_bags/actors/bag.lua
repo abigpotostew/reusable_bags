@@ -28,8 +28,8 @@ function Bag:init(x, y, typeInfo, level)
     self:addCollisionSensor()
     
     --Store the position under the food spawner
-    self.original_position = Vector2(x,y)
-    self.skip_next_collision_for_id = 0
+    --self.original_position = Vector2(x,y) --DO I NEED THIS ANYMORE?
+    --self.skip_next_collision_for_id = 0
     
     self:SetupStateMachine()
 	self:SetupStates()
@@ -71,6 +71,8 @@ function Bag:addCollisionSensor()
         self.sprite, collider.sprite, self:Pos() )
     joint.dampingRatio = 1
     joint.frequency = 10000000
+    
+    collider.bag = self
     
     self.collision_sensor = {joint=joint, collider=collider}
     
@@ -126,7 +128,7 @@ function Bag:collision (event)
     ---------------------------
     -- BAG COLLISION
     ---------------------------
-    elseif otherName == "bag" then
+    elseif otherName == "bagdfgd" then
         --SELF IS THE ONE THAT MOVES INTO THE STATIONARY BAG
         --swap positions of bags
         local other_bag = otherOwner
@@ -152,6 +154,18 @@ function Bag:collision (event)
         elseif event.phase == "ended" then
             
         end
+    
+    elseif otherName == "bag_base" then
+    
+        return
+        
+	elseif otherName == "bag" then
+    
+        return
+        
+	elseif otherName == "bag_collider" then
+    
+        return
         
 	elseif otherName then
 		Log:Verbose("Bag hit unknown named object: " .. otherName)
@@ -167,7 +181,7 @@ function Bag:touch (event)
     elseif event.phase == "moved" then
         bag:SetPos (event.x, bag:y())
     elseif event.phase == "ended" then
-        self:SlideToPosition (self.original_position:Get())
+        self:SlideToPosition (self.base:Pos())
         display.getCurrentStage():setFocus (nil)
         event.target.has_focus = false
     end
@@ -179,6 +193,7 @@ function Bag:update(dt)
 end
 
 function Bag:SlideToPosition (x, y, onComplete)
+    self.slide_transition_ref =
     self:AddTransition ({
             x = x,
             y = y,
@@ -216,11 +231,13 @@ function Bag:SetupStates ()
     })
     
     self.state:SetState(self.states.BAG_COLLISION_STATE, {
-		enter = function(other_bag)
-            local tmp = other_bag.original_position
-            other_bag.original_position = self.original_position
-			self.original_position = tmp
-            self:SlideToPosition (self.original_position:Get()) --function() self.original_position=-1 end)
+		enter = function(bag_base)
+            if self.slide_transition_ref then
+                self:CancelTransition (self.slide_transition_ref)
+            end
+            self.base = bag_base
+            bag_base.bag = self
+            self:SlideToPosition (bag_base:Pos()) --function() self.original_position=-1 end)
             self.state:GoToState(self.states.NORMAL)
 		end,
         exit= function()

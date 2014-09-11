@@ -5,12 +5,13 @@
 
 -----------------------------------------------------------------------------]]
 
---local Level = require "opal.src.level"
-local DebugLevel = require "opal.src.debug.debug_level"
+--local Level = require "opal.src.oLevel"
+local DebugLevel = require "opal.src.debug.oDebugLevel"
 local _ = require 'opal.libs.underscore'
 
 
 local Bags = require 'reusable_bags.actors.bagTypes'
+local BagBase = require 'reusable_bags.actors.BagBase'
 local Foods = require 'reusable_bags.actors.foodTypes'
 local Cannon = require "reusable_bags.actors.cannon"
 
@@ -20,8 +21,8 @@ collision.SetGroups{
     "bag", 
     "food", 
     "head", 
-    "bag_collider",     -- dynamic body welded to bag to allow collisions others
-    "bag_base",         -- kinematic body at each bag location
+    "bag_collider",     -- dynamic body welded to bag to allow collisions with others
+    "bag_base",         -- static body at each bag location
     "ground", 
     "wall", 
     "nothing"}
@@ -31,6 +32,7 @@ local BagLevel = DebugLevel:extends()
 function BagLevel:init ()
     self:super('init')
     self.food_list = self:GetFoodNameList(self.texture_sheet)
+    self.bag_types = Bags.GetBagTypes()
 end
 
 function BagLevel:RemoveFoodActor (food)
@@ -86,21 +88,49 @@ function BagLevel:SpawnRandomFood (posX, posY, spawner_id)
     self:SpawnFood( self:GetRandomFoodName(), posX, posY, spawner_id)
 end
 
-function BagLevel:SpawnBag (bag_name, x, y)
-    local b = Bags.CreateBag(bag_name, x, y, self)
-    b.sprite:addEventListener("collision", self)
-    self:InsertActor(b)
+-- Private method to spawn bagbase, each bag spawn on a bag base
+local function SpawnBagBase (level, x, y, w, h)
+    local b = BagBase (x, y, w, h, level)
+    level:InsertActor(b)
     return b
+end
+
+-- Private function to spawn a bag
+local function SpawnBag (level, bag_name, x, y)
+    local b = Bags.CreateBag(bag_name, x, y, level)
+    b.sprite:addEventListener("collision", level)
+    level:InsertActor(b)
+    return b
+end
+
+-- BagLevel:SpawnBags()
+--  bag_count required number of bags to spawn
+function BagLevel:SpawnBags (bag_count)
+    oAssert.type (bag_count, "number")
+    self.bag_count = bag_count
+    
+    local width, height = self.width, self.height
+    
+    local layout_border = self.width/4
+    for i, bag_name in ipairs (self.bag_types) do
+        local x = layout_border + ((width-layout_border)/#self.bag_types)*(i-1)
+        local y = height-140
+        local bag = SpawnBag (self, bag_name, x, y)
+        local base = SpawnBagBase (self, x, y, bag:Dimensions() )
+        --bag.last_bag_collision = base.id
+        bag.base = base
+        base.bag = bag
+    
+        local cannon = self:SpawnCannon {x = x, y = 250, directionX=0, directionY=1, speed = 80, angular_velocity = 55, speed_variation=40, rotation_variation=35}
+        --spawn a bag base here
+    end
+
 end
 
 function BagLevel:SpawnCannon (cannon_data)
     local c = Cannon(cannon_data, self)
     self:InsertActor (c)
     return c
-end
-
-function BagLevel:SetBagCount (bag_count)
-    self.bag_count = bag_count
 end
 
 

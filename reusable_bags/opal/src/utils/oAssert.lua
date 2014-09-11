@@ -1,0 +1,35 @@
+-----------------------------------------------------------------------------------------
+-- Assert for OpalEngine
+-- Require this once in setup.
+----------------------------------------------------------------------------------------
+local _ = require "opal.libs.underscore"
+
+local function opal_assert(condition, error_msg)
+    assert (condition, error_msg)
+end
+
+local function opal_assert_type(object, obj_type, error_msg)
+    assert (object and type (object) == obj_type, error_msg)
+end
+
+local function opal_assert_type_multi(obj_type, error_msg, ...)
+    _.each (arg, function(object)
+        assert (object and type (object) == obj_type, error_msg)
+    end)
+end
+
+local on_device = not (system.getInfo("environment") == "device" )
+if on_device then
+    opal_assert, opal_assert_type = function()end, function()end
+end
+
+local mt = {}
+mt.__call = opal_assert
+local oAssert = setmetatable ({}, mt)
+
+oAssert.boolean = opal_assert
+oAssert.type = opal_assert_type
+oAssert.multi_type = opal_assert_type_multi
+
+
+return oAssert

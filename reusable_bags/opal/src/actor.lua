@@ -13,7 +13,6 @@ local Vector2 = require 'opal.src.vector2'
 local Actor = LCS.class()
 
 
-
 function Actor:init(typeInfo, level)
     assert(level, "Level required to instance an actor")
     assert (typeInfo and type(typeInfo)=="table", "Actor(): requires typeInfo in constructor")
@@ -46,8 +45,13 @@ function Actor:init(typeInfo, level)
 	--return self
 end
 
+-- Override in inheriting class for printing
 function Actor:describe()
     return self.typeName .. "$" .. self.id
+end
+
+function Actor:NewTypeInfo()
+    return {physics={}, anims={}, sounds={}}
 end
 
 -- Single global table for id's for each actor type
@@ -152,7 +156,7 @@ function Actor:addPhysics (data)
     assert(self.sprite, "Actor:addPhysics() - Must have a sprite to add physics to")
 	data = data or {}
 
-	local scale = (data.scale or self.typeInfo.scale) * (data.collisionBoxScale or self.typeInfo.collisionBoxScale or 1.0)
+	local scale = (data.scale or self.typeInfo.scale or 1.0) * (data.collisionBoxScale or self.typeInfo.collisionBoxScale or 1.0)
     self.phys_body_scale = scale
 	local mass = data.mass or self.typeInfo.physics.mass
 
@@ -309,6 +313,12 @@ function Actor:SetPos (x, y)
     else
         self.sprite.x, self.sprite.y = x, y
     end
+end
+
+function Actor:Dimensions ()
+    oAssert (self.sprite, "Actor:Dimensions(): requires a sprite.")
+    local scale = self.phys_body_scale
+    return scale*self.sprite.width, scale*self.sprite.height
 end
 
 function Actor:update (...)

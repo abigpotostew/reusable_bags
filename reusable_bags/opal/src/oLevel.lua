@@ -219,9 +219,9 @@ end
 
 function Level:GetActor (type_name, id)
     local actor_list = self.actors[type_name]
-    OAssert (actor_list, "Level:GetActor(): Actor doesn't exist")
+    oAssert (actor_list, "Level:GetActor(): Actor doesn't exist")
     local actor = actor_list[id]
-    OAssert (actor, "Level:GetActor(): Actor doesn't exist")
+    oAssert (actor, "Level:GetActor(): Actor doesn't exist")
     
     return actor
 end
