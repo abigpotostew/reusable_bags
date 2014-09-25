@@ -69,13 +69,13 @@ local function assemble_food(food_name, params)
     Foods.by_weight[params.weight] = weight_bucket
 end
 
-assemble_food("apple", { weight=3, radius = 100})
+assemble_food("apple", { weight=2, radius = 100})
 
-assemble_food("orange", {weight=3, radius = 100})
+assemble_food("orange", {weight=2, radius = 100})
 
-assemble_food("burrito", {weight=5})
+assemble_food("burrito", {weight=2})
 
-assemble_food("pizza", {weight=7, radius = 250})
+assemble_food("pizza", {weight=2, radius = 250})
 
 -------------------------------------------------------------------------------
 -- light weight foods,

@@ -33,6 +33,10 @@ function BagLevel:init ()
     self:super('init')
     self.food_list = self:GetFoodNameList(self.texture_sheet)
     self.bag_types = Bags.GetBagTypes()
+    
+    self:AddKeyReleaseEvent("s", function(event)
+        self:SpawnRandomFood(nil,nil,1)
+    end)
 end
 
 function BagLevel:RemoveFoodActor (food)
@@ -80,7 +84,7 @@ function BagLevel:SpawnFood (weight_or_name, posX, posY, cannon)
     if spawner then
         local lin_vel = spawner.velocity:Copy()
         lin_vel.y = lin_vel.y + oMath.binom() * spawner.speed_variation
-        f.sprite.angularVelocity = spawner.angular_velocity + oMath.binom() * spawner.rotation_variation
+        f.sprite.angularVelocity = spawner.angular_velocity * oMath.random_sign() + oMath.binom() * spawner.rotation_variation
         f.sprite:setLinearVelocity ( lin_vel:Get() )
     end
     self:InsertFood(f)
@@ -123,7 +127,7 @@ function BagLevel:SpawnBags (bag_count)
         bag.base = base
         base.bag = bag
     
-        local cannon = self:SpawnCannon {x = x, y = 250, directionX=0, directionY=1, speed = 80, angular_velocity = 55, speed_variation=40, rotation_variation=35}
+        local cannon = self:SpawnCannon {x = x, y = 140, directionX=0, directionY=1, speed = 80, angular_velocity = 55, speed_variation=0, rotation_variation=35}
         --spawn a bag base here
     end
 

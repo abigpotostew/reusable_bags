@@ -13,9 +13,17 @@ local num_bags = #bag_types
 
 l:SpawnBags ( num_bags ) --required
 
-for i=1,50 do
-    --l:TimelineSpawnFood {wait=0.5,x=175,y=200, foodName=food_types[i%#food_types+1], cannon=l:GetActor ("cannon",i%num_bags+1)}
+for i=1,10 do
+    --l:TimelineSpawnFood {wait=0.5,x=175,y=200, foodName=food_types[i%#food_types+1], cannon=l:GetActor ("cannon", i%num_bags+1)}
 end
+
+l:TimelineSpawnFood {wait=0.5,x=175,y=200, foodName=food_types[math.random(#food_types)], cannon=l:GetActor ("cannon", 1)}
+l:TimelineSpawnFood {wait=3,x=175,y=200, foodName=food_types[math.random(#food_types)], cannon=l:GetActor ("cannon", 2)}
+l:TimelineSpawnFood {wait=3,x=175,y=200, foodName=food_types[math.random(#food_types)], cannon=l:GetActor ("cannon", 3)}
+l:TimelineSpawnFood {wait=3,x=175,y=200, foodName=food_types[math.random(#food_types)], cannon=l:GetActor ("cannon", 1)}
+    l:TimelineSpawnFood {wait=0,x=175,y=200, foodName=food_types[math.random(#food_types)], cannon=l:GetActor ("cannon", 3)}
+
+
 --l:TimelineSpawnFood {wait=1,x=175,y=200, foodName="apple", cannon=l:GetActor ("cannon",1)}
 --l:TimelineWait {wait=5}
 --l:TimelineSpawnFood {wait=5,x=425,y=200, foodName="apple", cannon=l:GetActor ("cannon",2)}

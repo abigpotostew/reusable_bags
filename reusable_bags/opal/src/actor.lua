@@ -1,19 +1,17 @@
 --[[
-Generic Actor
+Generic Actor. All actors extend event.
 ]]--
 
 local stateMachine = require "opal.src.stateMachine"
-local LCS = require "opal.libs.LCS"
+local oEvent = require "opal.src.oEvent"
 local util = require "opal.src.utils.util"
 local _ = require "opal.libs.underscore"
-local collision = require "opal.src.collision"
 local physics = require 'physics'
 local Vector2 = require 'opal.src.vector2'
 
-local Actor = LCS.class()
+local Actor = oEvent:extends()
 
-
-function Actor:init(typeInfo, level)
+function Actor:init(typeInfo, level, group)
     assert(level, "Level required to instance an actor")
     assert (typeInfo and type(typeInfo)=="table", "Actor(): requires typeInfo in constructor")
     
@@ -36,7 +34,7 @@ function Actor:init(typeInfo, level)
 	
 	self.sheet = debugTexturesImageSheet
     
-    self.group = nil
+    self.group = group
     
     self.id = self:GetActorID()
     
@@ -89,6 +87,22 @@ function Actor:createSprite(animName, x, y, scaleX, scaleY, events)
 	return sprite
 end
 
+function Actor:createCircularSprite (radius,x,y,sprite_data)    
+    assert(self.group,"Please initialize this actor's group before creating a sprite")
+    sprite_data = sprite_data or {}
+    x, y = x or 0, y or 0
+    local fill_color = sprite_data.fill_color or {1,0,1} --hot pink!
+    local stroke_color = sprite_data.stroke_color or {1,0,1} --hot 
+    
+    local sprite = display.newCircle(self.group, x, y, radius)
+    sprite.owner = self
+	sprite:setFillColor(unpack(fill_color))
+	sprite:setStrokeColor (unpack (stroke_color))
+    if sprite_data.stroke_width then sprite.strokeWidth = sprite_data.stroke_width end
+    self.sprite = sprite
+    return sprite
+end
+
 --???
 function Actor:createRectangleSprite (w,h,x,y,sprite_data)
     assert(self.group,"Please initialize this actor's group before creating a sprite")
@@ -103,7 +117,7 @@ function Actor:buildRectangleSprite (group,w,h,x,y, sprite_data)
     local fill_color = sprite_data.fill_color or {1,0,1} --hot pink!
     local stroke_color = sprite_data.stroke_color or {1,0,1} --hot pink!
     local anchorX = sprite_data.typeInfo and sprite_data.anchorX or self.typeInfo.anchorX or 0.5
-    local anchorY = sprite_data.typeInfo and esprite_data.typeInfo.anchorY or self.typeInfo.anchorY or 0.5
+    local anchorY = sprite_data.typeInfo and sprite_data.typeInfo.anchorY or self.typeInfo.anchorY or 0.5
     
     local sprite = display.newRect(group, x, y, w, h)
     sprite.owner = self
@@ -122,8 +136,8 @@ function Actor:removeSprite ()
 		self.sprite.disposed = true
         self.sprite = nil
 	else
-		print("WARNING: Attempting to remove a nonexistant or already-disposed sprite!")
-		print(debug.traceback())
+		oLog.Error("WARNING: Attempting to remove a nonexistant or already-disposed sprite!")
+		oLog.Error(debug.traceback())
 	end
 end
 
@@ -154,6 +168,7 @@ end
 
 function Actor:addPhysics (data)
     assert(self.sprite, "Actor:addPhysics() - Must have a sprite to add physics to")
+    assert(self.level.collision, "Actor:addPhysics() - level must have collision")
 	data = data or {}
 
 	local scale = (data.scale or self.typeInfo.scale or 1.0) * (data.collisionBoxScale or self.typeInfo.collisionBoxScale or 1.0)
@@ -164,7 +179,7 @@ function Actor:addPhysics (data)
 		density = 1, --we don't care about density
 		friction = data.friction or self.typeInfo.physics.friction,
 		bounce = data.bounce or self.typeInfo.physics.bounce,
-		filter = collision.MakeFilter(data.category or self.typeInfo.physics.category,
+		filter = self.level.collision.MakeFilter(data.category or self.typeInfo.physics.category,
 			data.colliders or self.typeInfo.physics.colliders or nil),
 		isSensor = data.isSensor or self.typeInfo.physics.isSensor or false,
         bodyType = data.bodyType or self.typeInfo.physics.bodyType or "kinematic",

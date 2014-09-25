@@ -23,9 +23,7 @@ function DebugLevel:init(...)
     self:EnableDebugKeys()
     self:EnableDebugPhysicsShake()
     
-    self:AddKeyReleaseEvent("s", function(event)
-        self:SpawnRandomFood(nil,nil,1)
-    end)
+    
     
     local performance = fps.new()
 	performance.group.alpha = 0.7

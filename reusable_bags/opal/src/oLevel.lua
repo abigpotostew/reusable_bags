@@ -9,18 +9,18 @@
 local physics = require "physics"
 physics.start(); physics.pause()
 physics.setContinuous( false )
-physics.setGravity(0,0)--0.6)
+
 
 local LCS = require ('opal.libs.LCS') 
 local util = require "opal.src.utils.util"
 local _ = require 'opal.libs.underscore'
 local collision = require "opal.src.collision"
 local Vector2 = require 'opal.src.vector2'
+local oEvent = require "opal.src.oEvent"
 
 local Actor = require 'opal.src.actor'
 
-
-local Level = LCS.class()
+local Level = oEvent:extends()
 
 -------------------------------------------------------------------------------
 -- Constructor
@@ -74,7 +74,7 @@ function Level:create (event, sceneGroup)
 	self.world_group.xScale = self.world_scale
 	self.world_group.yScale = self.world_scale
     
-    self:AddGround()
+    --self:AddGround()
     
 
     oLog:Verbose(string.format("Screen Resolution: %i x %i", display.contentWidth, display.contentHeight))

@@ -24,7 +24,7 @@ function Food:init (x, y, typeInfo, image_name, level)
 	self:SetupStates()
 	self.state:GoToState("normal")
     
-    self:addListener(self.sprite, "touch", self)
+    --self:addListener(self.sprite, "touch", self)
     
     --return self
 end
@@ -83,6 +83,7 @@ function Food:SetupStates ()
 	})
 
 end
+
 
 function Food:GetWeight ()
     return self.weight

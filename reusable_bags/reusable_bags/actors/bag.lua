@@ -37,6 +37,7 @@ function Bag:init(x, y, typeInfo, level)
     
     self.timer = 0
     
+    self:AddCapacityUI()
     
     self.sprite:addEventListener("touch", self)
     
@@ -45,6 +46,41 @@ end
 
 function Bag:describe()
     return self.typeName .. "$" .. self.id
+end
+
+function Bag:AddCapacityUI ()
+    local UIgroup = display.newGroup ()
+    UIgroup.x, UIgroup.y = self:Pos()
+    
+    local bag_w, bag_h = self:Dimensions()
+    bag_h = bag_h + 20
+    bag_w = bag_w * 2
+    local bar_w, bar_h = bag_w, 10
+    
+    
+    local outline = display.newRect ( UIgroup, 0, bag_h, bar_w, bar_h )
+    outline.strokeWidth = 1
+    outline:setFillColor( 0,0,0,0 )
+    outline:setStrokeColor( 1, 0, 0 )
+    
+    local bar_fill_w = bar_w-2
+    local bar     = display.newRect ( UIgroup, -bar_fill_w/2, bag_h, bar_fill_w, bar_h-2 )
+    bar.strokeWidth = 0
+    bar:setFillColor( 0, 1, 0 ) 
+    bar.o_width = bar_fill_w
+    bar.anchorX=0
+    bar.width = 0
+    UIgroup.bar = bar
+    
+    
+    for i=1,self.capacity-1 do
+        local x = bar_fill_w/self.capacity * i - bar_fill_w/2
+        display.newLine (UIgroup, x, bar_h/2+bag_h, x, -bar_h/2+bag_h)
+    end
+    
+    self.group:insert(UIgroup)
+    self.UIgroup = UIgroup
+    --self.sprite:insert (UIgroup)
 end
 
 --This isn't creating sensor to the proper size
@@ -83,6 +119,18 @@ function Bag:AddBaseSensor()
     local collider = Actor({typeName="bag_base",physics={}}, self.level)
 end
 
+function Bag:Full()
+    return self:Capacity() == self:Weight()
+end
+
+function Bag:Capacity()
+    return self.capacity
+end
+
+function Bag:Weight()
+    return self.weight
+end
+
 function Bag:CanFitWeight (itemWeight)
     return ((itemWeight + self.weight) <= self.capacity)
 end
@@ -104,6 +152,8 @@ end
 -- Events for bag
 ----------------------------------------------------------------------------------------
 
+--Edit: bags don't handle their own collision anymore
+-- See bag_base and bag_collider'
 function Bag:collision (event)
 
 	if (event.phase == "ended") then
@@ -174,12 +224,13 @@ end
 
 function Bag:touch (event)
     local body = event.target
-    local bag = body.owner
+    local bag = body.owner --also self
     if event.phase == "began" then
         display.getCurrentStage():setFocus (body)
         body.has_focus = true
     elseif event.phase == "moved" then
         bag:SetPos (event.x, bag:y())
+        bag.UIgroup.x, bag.UIgroup.y = event.x, bag:y()
     elseif event.phase == "ended" then
         self:SlideToPosition (self.base:Pos())
         display.getCurrentStage():setFocus (nil)
@@ -201,6 +252,13 @@ function Bag:SlideToPosition (x, y, onComplete)
             transition=easing.inOutSine,
             tag="bag_slide",
             onComplete = onComplete })
+    self:AddTransition ({
+            x = x,
+            y = y,
+            time=500,
+            transition=easing.inOutSine,
+            tag="bag_slide",
+             }, self.UIgroup)
 end
 
 
@@ -218,8 +276,14 @@ function Bag:SetupStates ()
                 return
             end --i dont think i need this
         
-            if self:CanFitWeight (food:GetWeight()) then
+            if not self:Full() then --and (self:CanFitWeight (food:GetWeight()))then
                 self:AddItem(food)
+                if self:Weight() >= self:Capacity() then
+                    self.weight = self.capacity
+                    self.UIgroup.bar:setFillColor (.1875,.5625,1)
+                end
+                local new_scale_w = self:Weight()/self:Capacity()
+                self.UIgroup.bar.width = self.UIgroup.bar.o_width *new_scale_w
                 
                 self.state:GoToState(self.states.NORMAL)
             else
@@ -250,7 +314,7 @@ function Bag:SetupStates ()
 			--set
 		end,
         exit= function()
-            return false --can't ever leave this state
+            --return false --can't ever leave this state
         end
 	})
 
