@@ -12,6 +12,7 @@ local Vector2 = require 'opal.src.vector2'
 local Actor = oEvent:extends()
 
 function Actor:init(typeInfo, level, group)
+	self:super("init")
     assert(level, "Level required to instance an actor")
     assert (typeInfo and type(typeInfo)=="table", "Actor(): requires typeInfo in constructor")
     
@@ -38,7 +39,7 @@ function Actor:init(typeInfo, level, group)
     
     self.id = self:GetActorID()
     
-    oLog:Debug ("Creating new actor "..self.typeName.."$"..self.id)
+    oLog.Debug ("Creating new actor "..self.typeName.."$"..self.id)
 
 	--return self
 end
@@ -136,8 +137,8 @@ function Actor:removeSprite ()
 		self.sprite.disposed = true
         self.sprite = nil
 	else
-		oLog.Error("WARNING: Attempting to remove a nonexistant or already-disposed sprite!")
-		oLog.Error(debug.traceback())
+		oLog.Warning("WARNING: Attempting to remove a nonexistant or already-disposed sprite!")
+		oLog.Warning(debug.traceback())
 	end
 end
 
@@ -170,6 +171,7 @@ function Actor:addPhysics (data)
     assert(self.sprite, "Actor:addPhysics() - Must have a sprite to add physics to")
     assert(self.level.collision, "Actor:addPhysics() - level must have collision")
 	data = data or {}
+    self.typeInfo.physics = self.typeInfo.physics or {}
 
 	local scale = (data.scale or self.typeInfo.scale or 1.0) * (data.collisionBoxScale or self.typeInfo.collisionBoxScale or 1.0)
     self.phys_body_scale = scale
@@ -243,7 +245,9 @@ function Actor:CancelAllTransions ()
     self._transitions = {}
 end
 
-function Actor:addListener (object, name, callback)
+--This is used for Corona events listeners
+--TODO clean this up
+function Actor:AddListener (object, name, callback)
 	assert(name and type(name) == "string", "addListener requires that name be a string")
 	assert(callback and (
 		type(callback) == "function" or
@@ -254,7 +258,7 @@ function Actor:addListener (object, name, callback)
 	object:addEventListener(name, callback)
 end
 
-function Actor:removeListener (listener)
+function Actor:RemoveListener (listener)
     _.reject(self._listeners, function(i) return i.name ~= actor end)
 end
 

@@ -33,6 +33,7 @@ function BagLevel:init ()
     self:super('init')
     self.food_list = self:GetFoodNameList(self.texture_sheet)
     self.bag_types = Bags.GetBagTypes()
+    self.collision = collision
     
     self:AddKeyReleaseEvent("s", function(event)
         self:SpawnRandomFood(nil,nil,1)

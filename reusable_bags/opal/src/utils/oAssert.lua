@@ -31,5 +31,6 @@ oAssert.boolean = opal_assert
 oAssert.type = opal_assert_type
 oAssert.multi_type = opal_assert_type_multi
 
+oUtil.lockObjectProperties (oAssert)
 
 return oAssert

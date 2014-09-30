@@ -172,7 +172,7 @@ function Bag:collision (event)
     -- FOOD COLLISION
     ---------------------------
 	if (otherName == "food") then
-        oLog:Debug (self:describe().." colliding with "..otherOwner:describe())
+        oLog.Debug (self:describe().." colliding with "..otherOwner:describe())
         self.state:GoToState(self.states.FOOD_COLLISION_STATE, otherOwner)
         
     ---------------------------
@@ -194,11 +194,11 @@ function Bag:collision (event)
                 other_bag.skip_next_collision_for_id = self.id
             end
             
-            oLog:Debug (self:describe().." colliding with "..other_bag:describe())
+            oLog.Debug (self:describe().." colliding with "..other_bag:describe())
             self.last_bag_collision = other_bag.id
             other_bag.last_bag_collision = self.id
             
-            oLog:Debug ( string.format("self_state = %s, other_state = %s",self.state.state, other_bag.state.state ) )
+            oLog.Debug ( string.format("self_state = %s, other_state = %s",self.state.state, other_bag.state.state ) )
             self.state:GoToState(self.states.BAG_COLLISION_STATE, other_bag)
 
         elseif event.phase == "ended" then
@@ -218,7 +218,7 @@ function Bag:collision (event)
         return
         
 	elseif otherName then
-		oLog:Verbose("Bag hit unknown named object: " .. otherName)
+		oLog.Verbose("Bag hit unknown named object: " .. otherName)
 	end
 end
 

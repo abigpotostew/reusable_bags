@@ -3,8 +3,10 @@ local Collision = {}
 Collision.collisionMasks = {}
 
 function Collision.SetGroups(groups)
+    local mask = 1
 	for i, group in ipairs(groups) do
-		Collision.collisionMasks[group] = (i)*2
+		Collision.collisionMasks[group] = mask
+        mask = mask * 2
 	end
 end
 

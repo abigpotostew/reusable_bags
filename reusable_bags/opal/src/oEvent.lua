@@ -9,6 +9,7 @@
 --
 ----------------------------------------------------------------------------------
 
+--TODO: use corona's event listener framework for this instead. COmbine all event listeners into common interface.
 
 local LCS = require "opal.libs.LCS"
 local _ = require "opal.libs.underscore"
@@ -31,7 +32,7 @@ function Event:Trigger (event_name, event)
         elseif type (listener) == "function" then
             listener (event)
         else
-            oLog.Error(string.format("Event:Trigger(): Listener for %s event is not correct type (table or function)", event_name))
+            oLog.Warning(string.format("Event:Trigger(): Listener for %s event is not correct type (table or function)", event_name))
         end
     end)
 end
