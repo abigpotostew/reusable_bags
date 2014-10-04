@@ -39,7 +39,7 @@ function Bag:init(x, y, typeInfo, level)
     
     self:AddCapacityUI()
     
-    self.sprite:addEventListener("touch", self)
+    self:AddEventListener(self.sprite, "touch", self)
     
     --return self
 end
@@ -86,7 +86,7 @@ end
 --This isn't creating sensor to the proper size
 --sensor should be slightly bigger than the bag
 function Bag:addCollisionSensor()
-    local collider = Actor({typeName="bag_collider",physics={}}, self.level)
+    local collider = Actor({typeName="bag_collider"}, self.level)
     collider.group = self.group
     collider:createRectangleSprite (
          self.typeInfo.collisionBoxScale*self.sprite.contentWidth, 
@@ -100,8 +100,8 @@ function Bag:addCollisionSensor()
             isSensor=true, 
             scale=1.0, 
             collisionBoxScale=1.0, 
-            category = "bag_base",
-            colliders= {"food", "bag"} })
+            category = "bag_collider",
+            colliders= {"food", "bag", 'bag_base'} })
     
     local joint = physics.newJoint ("weld",
         self.sprite, collider.sprite, self:Pos() )
@@ -112,11 +112,8 @@ function Bag:addCollisionSensor()
     
     self.collision_sensor = {joint=joint, collider=collider}
     
-	collider.sprite:addEventListener("collision", self)
-end
-
-function Bag:AddBaseSensor()
-    local collider = Actor({typeName="bag_base",physics={}}, self.level)
+    collider:AddEventListener ( collider.sprite, "collision", self )
+	--collider.sprite:addEventListener("collision", self)
 end
 
 function Bag:Full()

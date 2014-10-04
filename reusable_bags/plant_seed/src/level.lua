@@ -9,7 +9,7 @@ local DebugLevel = require "opal.src.debug.oDebugLevel"
 local _ = require 'opal.libs.underscore'
 local Actor = require 'opal.src.actor'
 
-local collision = require "opal.src.collision"
+local collision_groups = require "opal.src.collision"
 collision.SetGroups{
     "dirt", 
     "seed",
@@ -21,7 +21,7 @@ local PlantSeedsLevel = DebugLevel:extends()
 
 function PlantSeedsLevel:init ()
     self:super('init')
-    self.collision = collision
+    self.collision_groups = collision_groups
     self.ground_hole_ct = 0
     
     physics.setDrawMode("hybrid")
@@ -63,6 +63,15 @@ function PlantSeedsLevel:AddGround (x, y, width, height)
     self:InsertActor (actor)
 end
 
+function PlantSeedsLevel:SpawnSeed(hole,sensor)
+        local seed = Actor({typeName="seed"},self)
+        seed.group = self:GetWorldGroup()
+        seed:createRectangleSprite (35,35,hole:x(), 35,{fill_color={0,1,0,1}})
+        seed:addPhysics ({mass=1.0, radius=35,bodyType="dynamic", friction=0.4,bounce=0.4,category="seed",colliders={"dirt", "ground","ground_collider"}})
+        self:InsertActor (seed)
+        hole.seed = seed
+    end
+
 function PlantSeedsLevel:AddGroundHole(x, y, hole_width, hole_depth, hole_offset_bottom )
     self.ground_hole_ct = self.ground_hole_ct + 1
     local width, height = self:GetWorldViewSize()
@@ -77,9 +86,6 @@ function PlantSeedsLevel:AddGroundHole(x, y, hole_width, hole_depth, hole_offset
     local ground_level = y
     
     local shapes = get_hole_shapes(hole_w, hole_depth, hole_offset_bottom)
-    
-    --local x = hw
-    --local y = ground_level
     
     local ground_actor = Actor({typeName="ground"},self)
     ground_actor.group = self:GetWorldGroup()
@@ -111,10 +117,10 @@ function PlantSeedsLevel:AddGroundHole(x, y, hole_width, hole_depth, hole_offset
         end
         if event.phase == "began" then
             sensor.dirt_count = sensor.dirt_count + 1
-            sensor:Trigger ("dirt_collide", {target=sensor,other=event.other,phase="began",dirt_count=sensor.dirt_count})
+            sensor:DispatchEvent (sensor.sprite, "dirt_collide", {target=sensor,other=event.other,phase="began",dirt_count=sensor.dirt_count})
         elseif event.phase == "ended" then
             sensor.dirt_count = sensor.dirt_count - 1
-            sensor:Trigger ("dirt_collide", {target=sensor,other=event.other, phase="ended",dirt_count=sensor.dirt_count})
+            sensor:DispatchEvent (sensor.sprite,"dirt_collide", {target=sensor,other=event.other, phase="ended",dirt_count=sensor.dirt_count})
         end
     end
     local ground_sensor = Actor({typeName="ground_collider"},self)
@@ -124,28 +130,19 @@ function PlantSeedsLevel:AddGroundHole(x, y, hole_width, hole_depth, hole_offset
     ground_sensor:addPhysics ({mass=1.0,bodyType="static", isSensor=true, friction=0.0,bounce=0.0,category="ground_collider",colliders={'dirt',"seed"}})
     self:InsertActor (ground_sensor)
     ground_sensor.dirt_count = 0
-    ground_sensor:AddListener ( ground_sensor.sprite, "collision", ground_sensor_collide)
+    ground_sensor:AddEventListener ( ground_sensor.sprite, "collision", ground_sensor_collide)
     ground_sensor:AddEvent ("dirt_collide")
-    
-    local function spawn_seed(hole,sensor)
-        local seed = Actor({typeName="seed"},self)
-        seed.group = self:GetWorldGroup()
-        seed:createRectangleSprite (35,35,hole:x(), 35,{fill_color={0,1,0,1}})
-        seed:addPhysics ({mass=1.0, radius=35,bodyType="dynamic", friction=0.4,bounce=0.4,category="seed",colliders={"dirt", "ground","ground_collider"}})
-        self:InsertActor (seed)
-        hole.seed = seed
-    end
     
     local digging_listener, planting_listener
     
     digging_listener = function(event)
         if event.dirt_count <= 5 and not ground_actor.seed then
             --spawn seed now
-            timer.performWithDelay(1,function()
-                spawn_seed(ground_actor,ground_sensor)
+            timer.performWithDelay(0,function()
+                self:SpawnSeed(ground_actor,ground_sensor)
             end)
             event.target:RemoveEventListener ("dirt_collide", digging_listener)
-            event.target:AddEventListener ("dirt_collide", planting_listener)
+            event.target:AddEventListener (event.target.sprite,"dirt_collide", planting_listener)
         end
     end
     planting_listener = function(event)
@@ -157,7 +154,7 @@ function PlantSeedsLevel:AddGroundHole(x, y, hole_width, hole_depth, hole_offset
     end
     
     timer.performWithDelay(100, function()
-        ground_sensor:AddEventListener ("dirt_collide", digging_listener)
+        ground_sensor:AddEventListener (ground_sensor.sprite,"dirt_collide", digging_listener)
         end)
     
     return x, y, hole_w, hole_depth
@@ -200,7 +197,7 @@ function PlantSeedsLevel:AddDirt( hole_x, hole_y, hole_width, hole_depth, dirt_r
         dirt:createCircularSprite(25, x+oMath.binom(), y+oMath.binom())
         dirt:addPhysics({mass=1.0,bodyType="dynamic", radius=dirt_radius,friction='0.4',bounce='0.1',category='dirt',colliders={'ground', 'dirt', 'ground_collider',"seed"}})
         self:InsertActor(dirt)
-        dirt:AddListener (dirt.sprite, "touch", touch)
+        dirt:AddEventListener (dirt.sprite, "touch", touch)
     end
 end
 

@@ -169,7 +169,7 @@ end
 
 function Actor:addPhysics (data)
     assert(self.sprite, "Actor:addPhysics() - Must have a sprite to add physics to")
-    assert(self.level.collision, "Actor:addPhysics() - level must have collision")
+    assert(self.level.collision_groups, "Actor:addPhysics() - level must have collision groups")
 	data = data or {}
     self.typeInfo.physics = self.typeInfo.physics or {}
 
@@ -181,7 +181,7 @@ function Actor:addPhysics (data)
 		density = 1, --we don't care about density
 		friction = data.friction or self.typeInfo.physics.friction,
 		bounce = data.bounce or self.typeInfo.physics.bounce,
-		filter = self.level.collision.MakeFilter(data.category or self.typeInfo.physics.category,
+		filter = self.level.collision_groups.MakeFilter(data.category or self.typeInfo.physics.category,
 			data.colliders or self.typeInfo.physics.colliders or nil),
 		isSensor = data.isSensor or self.typeInfo.physics.isSensor or false,
         bodyType = data.bodyType or self.typeInfo.physics.bodyType or "kinematic",
@@ -243,23 +243,6 @@ function Actor:CancelAllTransions ()
     transition.cancel (self.sprite)
     self._transitions = nil
     self._transitions = {}
-end
-
---This is used for Corona events listeners
---TODO clean this up
-function Actor:AddListener (object, name, callback)
-	assert(name and type(name) == "string", "addListener requires that name be a string")
-	assert(callback and (
-		type(callback) == "function" or
-		(type(callback) == "table" and callback[name] and type(callback[name]) == "function")),
-		"addListener requires that callback be either a function, or a table with a function that has the same name as the event")
-
-	table.insert(self._listeners, {object = object, name = name, callback = callback})
-	object:addEventListener(name, callback)
-end
-
-function Actor:RemoveListener (listener)
-    _.reject(self._listeners, function(i) return i.name ~= actor end)
 end
 
 

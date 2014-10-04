@@ -16,16 +16,17 @@ local Foods = require 'reusable_bags.actors.foodTypes'
 local Cannon = require "reusable_bags.actors.cannon"
 
 
-local collision = require "opal.src.collision"
-collision.SetGroups{
+local collision_groups = require "opal.src.collision"
+collision_groups.SetGroups{
     "bag", 
     "food", 
     "head", 
     "bag_collider",     -- dynamic body welded to bag to allow collisions with others
     "bag_base",         -- static body at each bag location
     "ground", 
-    "wall", 
-    "nothing"}
+    --"wall", 
+    --"nothing"
+    }
 
 local BagLevel = DebugLevel:extends()
 
@@ -33,7 +34,7 @@ function BagLevel:init ()
     self:super('init')
     self.food_list = self:GetFoodNameList(self.texture_sheet)
     self.bag_types = Bags.GetBagTypes()
-    self.collision = collision
+    self.collision_groups = collision_groups
     
     self:AddKeyReleaseEvent("s", function(event)
         self:SpawnRandomFood(nil,nil,1)
@@ -105,7 +106,7 @@ end
 -- Private function to spawn a bag
 local function SpawnBag (level, bag_name, x, y)
     local b = Bags.CreateBag(bag_name, x, y, level)
-    b.sprite:addEventListener("collision", level)
+    b:AddEventListener(b.sprite, "collision", level)
     level:InsertActor(b)
     return b
 end

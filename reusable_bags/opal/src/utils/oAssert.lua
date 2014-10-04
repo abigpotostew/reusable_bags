@@ -12,7 +12,7 @@ local function opal_assert_type(object, obj_type, error_msg)
     assert (object and type (object) == obj_type, error_msg)
 end
 
-local function opal_assert_type_multi(obj_type, error_msg, ...)
+local function opal_assert_multi_type(obj_type, error_msg, ...)
     _.each (arg, function(object)
         assert (object and type (object) == obj_type, error_msg)
     end)
@@ -29,7 +29,7 @@ local oAssert = setmetatable ({}, mt)
 
 oAssert.boolean = opal_assert
 oAssert.type = opal_assert_type
-oAssert.multi_type = opal_assert_type_multi
+oAssert.multi_type = opal_assert_multi_type
 
 oUtil.lockObjectProperties (oAssert)
 

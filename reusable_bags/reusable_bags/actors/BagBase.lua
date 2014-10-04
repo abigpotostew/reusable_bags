@@ -24,8 +24,8 @@ function BagBase:init(x, y, w, h, level)
     self:createRectangleSprite (w, h, x, y, {fill_color={1,0,1,0}})
     
     self:addPhysics()
-    world_group:insert(self.sprite)
-    self.sprite:addEventListener ("collision", self)
+    level:InsertActor(self)
+    self:AddEventListener (self.sprite, "collision", self)
 end
 
 -----------------------------------------------------------------------------------------
