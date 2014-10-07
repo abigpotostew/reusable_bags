@@ -73,26 +73,16 @@ function Level:create (event, sceneGroup)
 	sceneGroup:insert(self.world_group)
 	self.world_group.xScale = self.world_scale
 	self.world_group.yScale = self.world_scale
-    
-    --self:AddGround()
-    
 
     oLog.Verbose(string.format("Screen Resolution: %i x %i", display.contentWidth, display.contentHeight))
 	oLog.Verbose(string.format("Level Size: %i x %i", self.width, self.height))
     
-    self:ProcessTimeline()
-    
-    self:PeriodicCheck()
 end
 
 function Level:enterFrame (event)
     local phase = event.phase
     
     local dt = oTime:DeltaTime()
-    
-    --_.each( self.bags, function(bag)
-    --    bag:update(dt)
-    --end)
 
     if self.physics_to_remove then
         _.each( self.physics_to_remove, function(actor)
@@ -105,14 +95,15 @@ end
 
 
 -- Called immediately after scene has moved onscreen:
-function Level:show (event)
-	local sceneGroup = self.sceneGroup
+function Level:show (event, sceneGroup)
     
     if event.phase == 'will' then
         sceneGroup:insert(self.world_group)
     elseif event.phase == 'did' then 
         physics.start()
         Runtime:addEventListener("enterFrame", self)
+        self:ProcessTimeline()
+        self:PeriodicCheck()
     end
 end
 

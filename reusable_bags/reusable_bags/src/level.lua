@@ -35,6 +35,10 @@ function BagLevel:init ()
     self.food_list = self:GetFoodNameList(self.texture_sheet)
     self.bag_types = Bags.GetBagTypes()
     self.collision_groups = collision_groups
+end
+
+function BagLevel:create (event, group)
+    self:super("create", event, group)
     
     self:AddKeyReleaseEvent("s", function(event)
         self:SpawnRandomFood(nil,nil,1)

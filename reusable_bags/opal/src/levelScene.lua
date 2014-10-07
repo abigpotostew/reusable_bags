@@ -17,9 +17,11 @@ function scene:create( event )
    
     assert(event.params and event.params.level, "LevelScene requires a level.")
    
-    self.level = event.params.level
-    
-    self.level:create( event, sceneGroup )
+    local l = require(event.params.level)
+    local level, setup = l[1], l[2]
+    self.level = level
+    level:create( event, sceneGroup )
+    setup()
 end
 
 -- "scene:show()"
@@ -27,7 +29,7 @@ function scene:show( event )
 
    local sceneGroup = self.view
    
-   self.level:show(event)
+   self.level:show(event, sceneGroup)
    
 end
 
@@ -36,7 +38,7 @@ function scene:hide( event )
 
    local sceneGroup = self.view
    
-   self.level:hide( event )
+   self.level:hide( event, sceneGroup )
 end
 
 -- "scene:destroy()"
@@ -44,7 +46,7 @@ function scene:destroy( event )
 
    local sceneGroup = self.view
 
-   self.level:destroy( event )
+   self.level:destroy( event, sceneGroup )
    
    self.level = nil
    

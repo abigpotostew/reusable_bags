@@ -10,7 +10,7 @@ local _ = require 'opal.libs.underscore'
 local Actor = require 'opal.src.actor'
 
 local collision_groups = require "opal.src.collision"
-collision.SetGroups{
+collision_groups.SetGroups{
     "dirt", 
     "seed",
     "ground_collider",     -- sensor that detects how much dirt in hole
@@ -27,6 +27,15 @@ function PlantSeedsLevel:init ()
     physics.setDrawMode("hybrid")
 end
 
+
+function PlantSeedsLevel:create ()
+    self:super("init")
+    local world_group = self.world_group
+    self.ground_group = display.newGroup()
+    self.dirt_group = display.newGroup()
+    world_group:insert(self.ground_group)
+    world_group:insert(self.dirt_group)
+end
 
 local function get_hole_shapes(hole_width, hole_depth, hole_offset_bottom, x, y)
     
@@ -55,7 +64,7 @@ end
 
 function PlantSeedsLevel:AddGround (x, y, width, height)
     local actor = Actor({typeName="ground",physics={}},self)
-    actor.group = self:GetWorldGroup()
+    actor.group = self.ground_group
     actor:createRectangleSprite(width,height,x,y,{fill_color={0,0,0,1}})
     actor.sprite.y = y + height/2
     actor:addPhysics ({mass=1.0,bodyType="static", friction='0.4',bounce='0.1',category='ground',colliders={'dirt'}})
@@ -65,7 +74,7 @@ end
 
 function PlantSeedsLevel:SpawnSeed(hole,sensor)
         local seed = Actor({typeName="seed"},self)
-        seed.group = self:GetWorldGroup()
+        seed.group = self.world_group
         seed:createRectangleSprite (35,35,hole:x(), 35,{fill_color={0,1,0,1}})
         seed:addPhysics ({mass=1.0, radius=35,bodyType="dynamic", friction=0.4,bounce=0.4,category="seed",colliders={"dirt", "ground","ground_collider"}})
         self:InsertActor (seed)
@@ -87,12 +96,12 @@ function PlantSeedsLevel:AddGroundHole(x, y, hole_width, hole_depth, hole_offset
     
     local shapes = get_hole_shapes(hole_w, hole_depth, hole_offset_bottom)
     
-    local ground_actor = Actor({typeName="ground"},self)
-    ground_actor.group = self:GetWorldGroup()
+    local ground_actor = Actor({typeName="ground"},self, self.ground_group)
+    --ground_actor.group = self.ground_group
     ground_actor:createRectangleSprite(hole_w,ground_level,x,y,{fill_color={0,0,0,0}})
     
     local phys_shapes = {}
-    local filter = self.collision.MakeFilter( 'ground', {'dirt',"seed"} )
+    local filter = self.collision_groups.MakeFilter( 'ground', {'dirt',"seed"} )
     for _,shape in ipairs(shapes) do
         table.insert(phys_shapes, 
             {friction=0.2, bounce=0.4, shape=shape, filter=filter})
@@ -124,8 +133,8 @@ function PlantSeedsLevel:AddGroundHole(x, y, hole_width, hole_depth, hole_offset
         end
     end
     local ground_sensor = Actor({typeName="ground_collider"},self)
-    ground_sensor.group = self:GetWorldGroup()
-    local sensor_height = hole_depth*0.6
+    ground_sensor.group = self.ground_group
+    local sensor_height = hole_depth*1
     ground_sensor:createRectangleSprite(hole_w,sensor_height,x,y+hole_depth-sensor_height/2, {fill_color={0,0,0,1}})
     ground_sensor:addPhysics ({mass=1.0,bodyType="static", isSensor=true, friction=0.0,bounce=0.0,category="ground_collider",colliders={'dirt',"seed"}})
     self:InsertActor (ground_sensor)
@@ -136,7 +145,7 @@ function PlantSeedsLevel:AddGroundHole(x, y, hole_width, hole_depth, hole_offset
     local digging_listener, planting_listener
     
     digging_listener = function(event)
-        if event.dirt_count <= 5 and not ground_actor.seed then
+        if event.dirt_count <= 10 and not ground_actor.seed then
             --spawn seed now
             timer.performWithDelay(0,function()
                 self:SpawnSeed(ground_actor,ground_sensor)
@@ -147,8 +156,13 @@ function PlantSeedsLevel:AddGroundHole(x, y, hole_width, hole_depth, hole_offset
     end
     planting_listener = function(event)
         local sensor = event.target
-        if sensor.seed and event.dirt_count > 10 then
+        if sensor.seed then--and event.dirt_count > 10 then
             oLog("you win")
+            timer.performWithDelay (1000, function(event)
+                local world = self.world_group
+                local world_x, world_w = world.x, self:GetWorldViewSize()
+                transition.to ( world, {x=world_x+world_w, time=2000, transition=easing.inOutCubic})
+            end)
             sensor:RemoveEventListener ("dirt_collide", planting_listener)
         end
     end
@@ -193,7 +207,7 @@ function PlantSeedsLevel:AddDirt( hole_x, hole_y, hole_width, hole_depth, dirt_r
     local dirt_count = hole_width/(dirt_radius*2)*0.9 * hole_depth/(dirt_radius*2)
     local x, y = hole_x, hole_y+hole_depth/2
     for i=1, dirt_count do
-        local dirt = Actor({typeName='dirt',physics={}}, self, self:GetWorldGroup())
+        local dirt = Actor({typeName='dirt',physics={}}, self, self.dirt_group)
         dirt:createCircularSprite(25, x+oMath.binom(), y+oMath.binom())
         dirt:addPhysics({mass=1.0,bodyType="dynamic", radius=dirt_radius,friction='0.4',bounce='0.1',category='dirt',colliders={'ground', 'dirt', 'ground_collider',"seed"}})
         self:InsertActor(dirt)

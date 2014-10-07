@@ -19,14 +19,7 @@ function DebugLevel:init(...)
     
     --Construct parent class
 	self:super('init', unpack(arg))
-    
-    self:EnableDebugKeys()
-    self:EnableDebugPhysicsShake()
-    
-    
-    
-    local performance = fps.new()
-	performance.group.alpha = 0.7
+
     
 	--return self
 end
@@ -86,6 +79,16 @@ end
 function DebugLevel:create (event, scene_group)
     self:super("create", event, scene_group)
     
+    local debug_draw_state = "normal"
+    if event.params.debug_draw then
+        debug_draw_state = "hybrid"
+    end
+        
+    self:EnableDebugKeys()
+    self:EnableDebugPhysicsShake(debug_draw_state)
+    
+    local performance = fps.new()
+	performance.group.alpha = 0.7
 end
 
 

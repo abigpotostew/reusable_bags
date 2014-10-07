@@ -76,7 +76,7 @@ function oLog.GetLogLevel (log_level)
     return current_log_level
 end
 
-function oLog.Log(...)
+function oLog:Log(...)
     log_arg (current_log_level, arg)
 end
 

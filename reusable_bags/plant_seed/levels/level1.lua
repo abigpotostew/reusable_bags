@@ -3,6 +3,8 @@ local seed_level = require "plant_seed.src.level"
 local l = seed_level()
 local width, height = l:GetWorldViewSize()
 local players = 2
+
+local function setup()
 if players == 2 then
     
 
@@ -38,5 +40,5 @@ elseif players == 1 then
     l:AddGround (2*width/3+ground_w/2, y, ground_w, ground_h)
 end
 
-
-return l
+end
+return {l, setup}
