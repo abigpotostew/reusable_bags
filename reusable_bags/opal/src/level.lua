@@ -16,7 +16,7 @@ local util = require "opal.src.utils.util"
 local _ = require 'opal.libs.underscore'
 local collision = require "opal.src.collision"
 local Vector2 = require 'opal.src.vector2'
-local oEvent = require "opal.src.oEvent"
+local oEvent = require "opal.src.event"
 
 local Actor = require 'opal.src.actor'
 

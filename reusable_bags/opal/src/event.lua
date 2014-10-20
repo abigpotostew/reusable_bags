@@ -1,11 +1,15 @@
 ----------------------------------------------------------------------------------
 --
--- oEvent.lua
--- Wrapper for Corona's Event System to aid custom event management. This class is an interface to corona's event model.
--- Usage: the Event or Actor or anything that extends this class creates an event using AddEvent(), or just calling AddEventListener()
---  The Event then calls DispatchEvent() when it wants to fire that event
---  An observer can call AddEventListener() to become an observer for that event.
---  The event object passed to event listeners are only guaranteed the event name. Please don't modify the event as the name table is passed to every listener.
+-- event.lua
+-- Wrapper for Corona's Event System to aid custom event management. This class is
+-- an interface to corona's event model.
+-- Usage: the Event or Actor or anything that extends this class (the subject) 
+-- creates an event using AddEvent(), or just calling AddEventListener().
+-- The subject then calls DispatchEvent() when it wants to fire that event
+-- An observer can call AddEventListener() to become an observer for that event.
+-- The event object passed to event listeners are only guaranteed the event name. 
+-- Please don't allow the observers to modify the event table as the same table is
+-- passed to every observer.
 --
 ----------------------------------------------------------------------------------
 

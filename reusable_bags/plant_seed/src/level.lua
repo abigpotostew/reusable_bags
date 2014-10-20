@@ -5,7 +5,7 @@
 -----------------------------------------------------------------------------]]
 
 --local Level = require "opal.src.oLevel"
-local DebugLevel = require "opal.src.debug.oDebugLevel"
+local DebugLevel = require "opal.src.debug.debugLevel"
 local _ = require 'opal.libs.underscore'
 local Actor = require 'opal.src.actor'
 

@@ -1,0 +1,2 @@
+If corona ever updates to Lua 5.2, then I need to change a few things in Opal:
+- Unit tests set the global table _G so that each test gets a fresh global environment that inherits from _G. 5.2 doesn' thave setevn() so I'll need to use the alternative method with _ENV documented here: http://lua-users.org/wiki/EnvironmentsTutorial

@@ -4,15 +4,23 @@
 -- By Stewart Bracken
 --
 -----------------------------------------------------------------------------------------
-
 display.setStatusBar( display.HiddenStatusBar )
 
 require("mobdebug").start()
 
-require "opal.src.oSetup".setup()
+local game_options = {
+        run_all_tests=true,
+        tests_only = true, -- runs only tests
+        game = {
+            params={
+                level = "plant_seed.levels.level1", --initial level of game
+                debug_draw = true
+                }
+            }
+        
+    }
 
-local composer = require "composer"
+local opal = require"opal.src.opal"() --new instance of opal framework
 
---local level = "reusable_bags.levels.level1"
-local level = "plant_seed.levels.level1"
-composer.gotoScene('opal.src.levelScene', {params={level=level, debug_draw = true}})
+opal:Setup(game_options)
+opal:Begin() --kick off game

@@ -3,7 +3,7 @@ Generic Actor. All actors extend event.
 ]]--
 
 local stateMachine = require "opal.src.stateMachine"
-local oEvent = require "opal.src.oEvent"
+local oEvent = require "opal.src.event"
 local util = require "opal.src.utils.util"
 local _ = require "opal.libs.underscore"
 local physics = require 'physics'
