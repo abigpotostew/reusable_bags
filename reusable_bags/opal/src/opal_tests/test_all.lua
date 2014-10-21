@@ -1,11 +1,18 @@
 local test_all = setmetatable({},nil)
-local test_suites = {}
+local _ = require 'opal.libs.underscore'
 local Tests = require 'opal.src.test.tests'('opal_all')
 
-table.insert( test_suites, require "opal.src.opal_tests.test_assert" )
+local test_suites = {
+    "opal.src.opal_tests.test_assert",
+    "opal.src.opal_tests.test_opal",
+    "opal.src.opal_tests.test_event",
+}
 
 test_all.Run = function()
-    Tests:RunAll (test_suites)
+    Tests:RunAll (_.map(test_suites,
+            function(i)
+                return require(i)
+            end))
 end
 
 return test_all

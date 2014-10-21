@@ -1,9 +1,9 @@
-local Opal = require "opal.src.event"
+local Opal = require "opal.src.event":extends()
 local _ = require "opal.libs.underscore"
 
 
-function Opal:init()
-    
+function Opal:init(name)
+    self:super("init", name or "Opal Instance")
 end
 
 local function run_tests()
@@ -55,8 +55,18 @@ function Opal:Begin()
         end
     end
     
+    
+    
+    if self.options.skip_scene_creation then
+        return
+    end
+    
     local composer = require "composer"
     composer.gotoScene('opal.src.levelScene', options.game)
+end
+
+function Opal:Destroy()
+    --cleanup code
 end
 
 return Opal

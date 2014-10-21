@@ -39,8 +39,8 @@ function Unit:TestCount ()
     return #self.tests
 end
 
-function Unit:Name()
-    return self.test_suite_name
+function Unit:Name(case_name)
+    return string.format("%s.%s",self.test_suite_name,case_name or "")
 end
 
 -- Unit:Test() - add a unit test case to the suite. Won't run immeditably, but 
@@ -55,31 +55,37 @@ function Unit:Test (test_name, test_func)
     table.insert ( self.tests, new_test(test_name,test_func) )
 end
 
-function Unit:FAIL ()
-    error (self:FailMsg(4))
+function Unit:FAIL (stack_depth)
+    error (self:FailMsg(stack_depth or 4))
 end
     
-function Unit:FAIL_OK ()
-    print (self:FailMsg(4))
+function Unit:FAIL_OK (stack_depth)
+    print (self:FailMsg(stack_depth or 4))
 end
 
 -- assuming stack is 3 away from test case, or set by lvl
 function Unit:FailMsg (lvl)
     lvl = lvl or 3
     return string.format("%s:%d: Assertion Failure.",
-        self.current_test,debug.getinfo(lvl))
+        self.current_test,debug.getinfo(lvl).currentline)
 end
 
-function Unit:ASSERT_TRUE (condition)
+function Unit:ASSERT_TRUE (condition, stack_depth)
     if not condition then
-        self:FAIL()
+        self:FAIL(stack_depth)
     end
 end
 
-function Unit:ASSERT_FALSE (condition)
+function Unit:ASSERT_FALSE (condition, stack_depth)
     if condition then
-        self:FAIL()
+        self:FAIL(stack_depth)
     end
+end
+
+--Protected calls function and asserts it runs without error
+function Unit:FUNC_ASSERT (func)
+    local status, err = pcall(func)
+    self:ASSERT_TRUE (status,5)
 end
 
 function Unit:EXPECT_TRUE (condition)
@@ -111,7 +117,7 @@ function Unit:Run ( tests_to_run )
         setmetatable (test_env_table, {__index = _G})
         setfenv(1, test_env_table)
         --run test here
-        local name = self.test_suite_name..'.'..t.name
+        local name = self:Name(t.name)
         self.current_test = name
         self:print("run",name)
         --local result;
@@ -119,7 +125,7 @@ function Unit:Run ( tests_to_run )
         print(err)
         if not status then
             table.insert (fails, t.name)
-            self:print ("fail", self.test_suite_name..'.'..name)
+            self:print ("fail", name)
         else
             passes = passes + 1
             self:print ("ok", name)
