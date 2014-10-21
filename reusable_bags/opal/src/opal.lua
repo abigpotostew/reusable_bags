@@ -62,7 +62,7 @@ function Opal:Begin()
     end
     
     local composer = require "composer"
-    composer.gotoScene('opal.src.levelScene', options.game)
+    composer.gotoScene('opal.src.levelScene', self.options.game)
 end
 
 function Opal:Destroy()
