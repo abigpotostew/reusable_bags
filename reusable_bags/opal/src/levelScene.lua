@@ -11,34 +11,34 @@ local scene = composer.newScene()
 ---------------------------------------------------------------------------------
 
 -- "scene:create()"
-function scene:create( event )
+function scene:create ( event )
 
     local sceneGroup = self.view
    
-    assert(event.params and event.params.level, "LevelScene requires a level.")
+    assert (event.params and event.params.level, "LevelScene requires a level.")
    
     local l = require(event.params.level)
     local level, setup = l[1], l[2]
     self.level = level
-    level:create( event, sceneGroup )
+    level:create (event, sceneGroup)
     setup()
 end
 
 -- "scene:show()"
-function scene:show( event )
+function scene:show ( event )
 
    local sceneGroup = self.view
    
-   self.level:show(event, sceneGroup)
+   self.level:show (event, sceneGroup)
    
 end
 
 -- "scene:hide()"
-function scene:hide( event )
+function scene:hide ( event )
 
    local sceneGroup = self.view
    
-   self.level:hide( event, sceneGroup )
+   self.level:hide ( event, sceneGroup )
 end
 
 -- "scene:destroy()"

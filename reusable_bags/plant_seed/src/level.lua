@@ -25,6 +25,10 @@ function PlantSeedsLevel:init ()
     self.ground_hole_ct = 0
     
     physics.setDrawMode("hybrid")
+    
+    self.num_players = 1
+    
+    self.round = 0
 end
 
 
@@ -72,14 +76,98 @@ function PlantSeedsLevel:AddGround (x, y, width, height)
     self:InsertActor (actor)
 end
 
+
+
+local function CancelTouch(event)
+    local sprite = event.target
+    if sprite.joint then
+        sprite.joint:removeSelf()
+        sprite.joint = nil
+    end
+    if sprite.has_focus then
+        display.getCurrentStage():setFocus( nil )
+        sprite.has_focus = false
+    end
+end
+
+local function touch (event)
+    if event.phase == "began" then
+        event.target.joint = physics.newJoint( "touch", event.target, event.x, event.y )
+        event.target.joint.frequency = 1 --low frequency, makes it more floaty
+        event.target.joint.dampingRatio = 1 --max damping, doesn't bounce against joint
+        display.getCurrentStage():setFocus( event.target )
+        event.target.has_focus = true
+    elseif event.phase == "moved" then
+        if not event.target.joint then --we may have removed another food and finger slid to this food
+            return false
+        end
+        event.target.joint:setTarget(event.x, event.y)
+    elseif event.phase == "ended" then
+        CancelTouch(event)
+    end 
+    return true
+end
+
+function PlantSeedsLevel:SetNumPlayer (count)
+    self.num_players = 2
+end
+
+function PlantSeedsLevel:BuildHolesNStuff (round)
+    local l = self
+    local width, height = l:GetWorldViewSize()
+    local ro = round and (round*width) or 0
+    if self.num_players == 2 then
+    
+
+        local ground_level = height*0.6
+        local x, y, w, d = l:AddGroundHole(  width/4 + ro, ground_level,
+            width/4 + ro, height-height*.6-50,
+            50)
+        l:AddDirt(x, y, w, d, 23)
+        
+        local ground ={w=x-w/2,h=d+50}
+        l:AddGround (x-w/2-ground.w/2 + ro, y, ground.w, ground.h)
+        
+        local middle_grd_w = width/2-w
+        
+        l:AddGround (3*width/4-middle_grd_w + ro, y, middle_grd_w, ground.h)
+        
+        l:AddGround (3*width/4+w/2+ground.w/2 + ro, y, ground.w, ground.h)
+        
+        x,y,w,d = l:AddGroundHole(3*width/4 + ro, ground_level, 
+            width/4, height-height*.6-50, 
+            50)
+        l:AddDirt(x, y, w, d, 23)
+
+    elseif self.num_players == 1 then
+        local x, y, w, d = l:AddGroundHole(width/2 + ro, height*0.6, width/3, height-height*.6-50,50)
+        l:AddDirt(x, y, w, d, 23)
+        
+        local ground_w = width/3
+        local ground_h = d+50
+        l:AddGround (width/3-ground_w/2 + ro, y, ground_w, ground_h)
+        l:AddGround (2*width/3+ground_w/2 + ro, y, ground_w, ground_h)
+    end
+end
+
+
 function PlantSeedsLevel:SpawnSeed(hole,sensor)
         local seed = Actor({typeName="seed"},self)
         seed.group = self.world_group
         seed:createRectangleSprite (35,35,hole:x(), 35,{fill_color={0,1,0,1}})
         seed:addPhysics ({mass=1.0, radius=35,bodyType="dynamic", friction=0.4,bounce=0.4,category="seed",colliders={"dirt", "ground","ground_collider"}})
         self:InsertActor (seed)
+        seed:AddEventListener(seed.sprite, "touch", touch)
         hole.seed = seed
-    end
+end
+
+function PlantSeedsLevel:NextRound()
+    local world = self.world_group
+    local world_x, world_w = world.x, self:GetWorldViewSize()
+    transition.to (world, {x=world_x-world_w, time=2000, transition=easing.inOutCubic})
+    self.round = self.round + 1
+    self:BuildHolesNStuff(self.round)
+end
 
 function PlantSeedsLevel:AddGroundHole(x, y, hole_width, hole_depth, hole_offset_bottom )
     self.ground_hole_ct = self.ground_hole_ct + 1
@@ -159,9 +247,10 @@ function PlantSeedsLevel:AddGroundHole(x, y, hole_width, hole_depth, hole_offset
         if sensor.seed then--and event.dirt_count > 10 then
             oLog("you win")
             timer.performWithDelay (1000, function(event)
-                local world = self.world_group
-                local world_x, world_w = world.x, self:GetWorldViewSize()
-                transition.to ( world, {x=world_x+world_w, time=2000, transition=easing.inOutCubic})
+                self:NextRound()
+                timer.performWithDelay(100, function()
+        ground_sensor:AddEventListener (ground_sensor.sprite,"dirt_collide", digging_listener)
+        end)
             end)
             sensor:RemoveEventListener ("dirt_collide", planting_listener)
         end
@@ -174,35 +263,10 @@ function PlantSeedsLevel:AddGroundHole(x, y, hole_width, hole_depth, hole_offset
     return x, y, hole_w, hole_depth
 end
 
+
+
 function PlantSeedsLevel:AddDirt( hole_x, hole_y, hole_width, hole_depth, dirt_radius)
-    local function CancelTouch(event)
-        local sprite = event.target
-        if sprite.joint then
-            sprite.joint:removeSelf()
-            sprite.joint = nil
-        end
-        if sprite.has_focus then
-            display.getCurrentStage():setFocus( nil )
-            sprite.has_focus = false
-        end
-    end
-    local function touch (event)
-        if event.phase == "began" then
-            event.target.joint = physics.newJoint( "touch", event.target, event.x, event.y )
-            event.target.joint.frequency = 1 --low frequency, makes it more floaty
-            event.target.joint.dampingRatio = 1 --max damping, doesn't bounce against joint
-            display.getCurrentStage():setFocus( event.target )
-            event.target.has_focus = true
-        elseif event.phase == "moved" then
-            if not event.target.joint then --we may have removed another food and finger slid to this food
-                return false
-            end
-            event.target.joint:setTarget(event.x, event.y)
-        elseif event.phase == "ended" then
-            CancelTouch(event)
-        end 
-        return true
-    end
+    
     
     local dirt_count = hole_width/(dirt_radius*2)*0.9 * hole_depth/(dirt_radius*2)
     local x, y = hole_x, hole_y+hole_depth/2
