@@ -12,36 +12,36 @@ local Vector2 = require 'opal.src.vector2'
 local Actor = oEvent:extends()
 
 function Actor:init(typeInfo, level, group)
-	self:super("init")
+    self:super("init")
     assert(level, "Level required to instance an actor")
     assert (typeInfo and type(typeInfo)=="table", "Actor(): requires typeInfo in constructor")
-    
+
     self.level = level
 
-	self.typeName = typeInfo.typeName or "actor"
-	
-	-- POSITION access through sprite
+    self.typeName = typeInfo.typeName or "actor"
+
+    -- POSITION access through sprite
     self.position = Vector2()
-    
+
     local actorType = typeInfo or {}
-	if actorType then
-		self.typeInfo = actorType
-	end
-    
-	self.sprite = nil
-	self._timers = {}
+    if actorType then
+        self.typeInfo = actorType
+    end
+
+    self.sprite = nil
+    self._timers = {}
     self._transitions = {}
-	self._listeners = {}
-	
-	self.sheet = debugTexturesImageSheet
-    
+    self._listeners = {}
+
+    self.sheet = debugTexturesImageSheet
+
     self.group = group
-    
+
     self.id = self:GetActorID()
-    
+
     oLog.Debug ("Creating new actor "..self.typeName.."$"..self.id)
 
-	--return self
+    --return self
 end
 
 -- Override in inheriting class for printing
@@ -60,32 +60,32 @@ function Actor:GetActorID ()
     if actor_typenames[self.typeName] == nil then
         actor_typenames[self.typeName] = 1
     end
-       
+
     local new_id = actor_typenames[self.typeName]
     actor_typenames[self.typeName] = new_id + 1
     return new_id
 end
 
 function Actor:createSprite(animName, x, y, scaleX, scaleY, events)
-	assert(animName, "You must provide an anim name when creating an actor sprite")
-	assert(x and y, "You must specify a position when creating an actor sprite")
+    assert(animName, "You must provide an anim name when creating an actor sprite")
+    assert(x and y, "You must specify a position when creating an actor sprite")
 
-	scaleX = scaleX or self.typeInfo.scale or 1
-	scaleY = scaleY or self.typeInfo.scale or 1
+    scaleX = scaleX or self.typeInfo.scale or 1
+    scaleY = scaleY or self.typeInfo.scale or 1
 
-	local sprite = display.newImage( debugTexturesImageSheet , debugTexturesSheetInfo:getFrameIndex(animName))
+    local sprite = display.newImage( debugTexturesImageSheet , debugTexturesSheetInfo:getFrameIndex(animName))
 
-	sprite.anchorX, sprite.anchorY = self.anchorX or 0.5, self.anchorY or  0.5
-	sprite.owner = self
-	sprite.x, sprite.y = x, y
-	sprite:scale(scaleX, scaleY)
-	sprite.radiousSprite = nil
-	sprite.gravityScale = (self.typeInfo.physics and self.typeInfo.physics.gravityScale) or 0.0
+    sprite.anchorX, sprite.anchorY = self.anchorX or 0.5, self.anchorY or  0.5
+    sprite.owner = self
+    sprite.x, sprite.y = x, y
+    sprite:scale(scaleX, scaleY)
+    sprite.radiousSprite = nil
+    sprite.gravityScale = (self.typeInfo.physics and self.typeInfo.physics.gravityScale) or 0.0
     sprite.alpha = self.typeInfo.alpha or 1.0
-    
+
     self.position:Set(x,y)
 
-	return sprite
+    return sprite
 end
 
 function Actor:createCircularSprite (radius,x,y,sprite_data)    
@@ -94,11 +94,11 @@ function Actor:createCircularSprite (radius,x,y,sprite_data)
     x, y = x or 0, y or 0
     local fill_color = sprite_data.fill_color or {1,0,1} --hot pink!
     local stroke_color = sprite_data.stroke_color or {1,0,1} --hot 
-    
+
     local sprite = display.newCircle(self.group, x, y, radius)
     sprite.owner = self
-	sprite:setFillColor(unpack(fill_color))
-	sprite:setStrokeColor (unpack (stroke_color))
+    sprite:setFillColor(unpack(fill_color))
+    sprite:setStrokeColor (unpack (stroke_color))
     if sprite_data.stroke_width then sprite.strokeWidth = sprite_data.stroke_width end
     self.sprite = sprite
     return sprite
@@ -119,48 +119,48 @@ function Actor:buildRectangleSprite (group,w,h,x,y, sprite_data)
     local stroke_color = sprite_data.stroke_color or {1,0,1} --hot pink!
     local anchorX = sprite_data.typeInfo and sprite_data.anchorX or self.typeInfo.anchorX or 0.5
     local anchorY = sprite_data.typeInfo and sprite_data.typeInfo.anchorY or self.typeInfo.anchorY or 0.5
-    
+
     local sprite = display.newRect(group, x, y, w, h)
     sprite.owner = self
-	sprite:setFillColor(unpack(fill_color))
-	sprite:setStrokeColor (unpack (stroke_color))    
+    sprite:setFillColor(unpack(fill_color))
+    sprite:setStrokeColor (unpack (stroke_color))    
     sprite.anchorX, sprite.anchorY = anchorX, anchorY
     if sprite_data.stroke_width then sprite.strokeWidth = sprite_data.stroke_width end
     return sprite
 end
 
 function Actor:removeSprite ()
-	if (self.sprite and self.sprite.disposed == nil or self.sprite.disposed == false) then
-		--self.sprite:clearEventListeners()
-		--TODO: may not be clearing event listeners properly here since above func is from other sprite class
-		self.sprite:removeSelf()
-		self.sprite.disposed = true
+    if (self.sprite and self.sprite.disposed == nil or self.sprite.disposed == false) then
+        --self.sprite:clearEventListeners()
+        --TODO: may not be clearing event listeners properly here since above func is from other sprite class
+        self.sprite:removeSelf()
+        self.sprite.disposed = true
         self.sprite = nil
-	else
-		oLog.Warning("WARNING: Attempting to remove a nonexistant or already-disposed sprite!")
-		oLog.Warning(debug.traceback())
-	end
+    else
+        oLog.Warning("WARNING: Attempting to remove a nonexistant or already-disposed sprite!")
+        oLog.Warning(debug.traceback())
+    end
 end
 
 function Actor:removeSelf ()
     print("Actor: Deleting actor "..self.typeName.."$"..self.id)
-    
+
     transition.cancel ( self.sprite )
     self._transitions = {}
-    
-	self:removeSprite()
 
-	for _, _timer in ipairs(self._timers) do
-		timer.cancel(_timer)
-	end
-	self._timers = {}
-    
-	for _, _listener in ipairs(self._listeners) do
-		_listener.object:removeEventListener(_listener.name, _listener.callback)
-	end
-	self._timers = {}
-    
-    
+    self:removeSprite()
+
+    for _, _timer in ipairs(self._timers) do
+        timer.cancel(_timer)
+    end
+    self._timers = {}
+
+    for _, _listener in ipairs(self._listeners) do
+        _listener.object:removeEventListener(_listener.name, _listener.callback)
+    end
+    self._timers = {}
+
+
 end
 
 function Actor:removePhysics ()
@@ -170,28 +170,30 @@ end
 function Actor:addPhysics (data)
     assert(self.sprite, "Actor:addPhysics() - Must have a sprite to add physics to")
     assert(self.level.collision_groups, "Actor:addPhysics() - level must have collision groups")
-	data = data or {}
+    data = data or {}
     self.typeInfo.physics = self.typeInfo.physics or {}
 
-	local scale = (data.scale or self.typeInfo.scale or 1.0) * (data.collisionBoxScale or self.typeInfo.collisionBoxScale or 1.0)
+    local scale = (data.scale or self.typeInfo.scale or 1.0) * (data.collisionBoxScale or self.typeInfo.collisionBoxScale or 1.0)
     self.phys_body_scale = scale
-	local mass = data.mass or self.typeInfo.physics.mass
+    local mass = data.mass or self.typeInfo.physics.mass
 
-	local phys = {
-		density = 1, --we don't care about density
-		friction = data.friction or self.typeInfo.physics.friction,
-		bounce = data.bounce or self.typeInfo.physics.bounce,
-		filter = self.level.collision_groups.MakeFilter(data.category or self.typeInfo.physics.category,
-			data.colliders or self.typeInfo.physics.colliders or nil),
-		isSensor = data.isSensor or self.typeInfo.physics.isSensor or false,
+    local phys = {
+        density = 1, --we don't care about density
+        friction = data.friction or self.typeInfo.physics.friction,
+        bounce = data.bounce or self.typeInfo.physics.bounce,
+        filter = data.filter or 
+        self.level.collision_groups.MakeFilter(data.category or 
+            self.typeInfo.physics.category,
+            data.colliders or self.typeInfo.physics.colliders or nil),
+        isSensor = data.isSensor or self.typeInfo.physics.isSensor or false,
         bodyType = data.bodyType or self.typeInfo.physics.bodyType or "kinematic",
         radius = data.radius or self.typeInfo.physics.radius or nil
-	}
+    }
     --Optionally set a custom shape for the actor. Default uses sprite to shape it
     if data.shape or self.typeInfo.physics.shape then
         phys.shape = data.shape or self.typeInfo.physics.shape
     end
-    
+
     --create a rectangular body if the sprite is scaled
     if not phys.shape and scale ~= 1.0 then
         if phys.radius then
@@ -203,22 +205,22 @@ function Actor:addPhysics (data)
         end
     end
 
-	physics.addBody(self.sprite, phys.bodyType, phys)
-    
+    physics.addBody(self.sprite, phys.bodyType, phys)
+
     self.sprite.gravityScale = data.gravityScale or self.typeInfo.physics.gravityScale or 1.0
 end
 
 
 --TODO: Timers are never removes from _timers
 function Actor:AddTimer( delay, callback, count)
-	assert(delay and type(delay) == "number", "addTimer requires that delay be a number")
-	assert(callback and (
-		type(callback) == "function" or
-		(type(callback) == "table" and callback.timer and type(callback.timer) == "function")),
-		"addTimer requires a callback that is either a function, or a table with a 'timer' function")
-	assert(count == nil or type(count) == "number", "addTimer requires that count be nil or a number")
+    assert(delay and type(delay) == "number", "addTimer requires that delay be a number")
+    assert(callback and (
+            type(callback) == "function" or
+            (type(callback) == "table" and callback.timer and type(callback.timer) == "function")),
+        "addTimer requires a callback that is either a function, or a table with a 'timer' function")
+    assert(count == nil or type(count) == "number", "addTimer requires that count be nil or a number")
 
-	table.insert(self._timers, timer.performWithDelay(delay, callback, count))
+    table.insert(self._timers, timer.performWithDelay(delay, callback, count))
 end
 
 --
@@ -249,43 +251,43 @@ end
 -- Sprite Event Commands get called during the various event phases for sprites animations:
 -- see http://docs.coronalabs.com/api/event/sprite/index.html
 function Actor:ClearSpriteEventCommands ()
-	self.state.spriteEventCommands = {}
-	self.state.spriteEventCommands["end"] = {}
-	self.state.spriteEventCommands["loop"] = {}
-	self.state.spriteEventCommands["next"] = {}
-	self.state.spriteEventCommands["prepare"] = {}
+    self.state.spriteEventCommands = {}
+    self.state.spriteEventCommands["end"] = {}
+    self.state.spriteEventCommands["loop"] = {}
+    self.state.spriteEventCommands["next"] = {}
+    self.state.spriteEventCommands["prepare"] = {}
 end
 
 function Actor:AddSpriteEventCommand (eventName, command)
-	self.state.spriteEventCommands[eventName] = self.state.spriteEventCommands[eventName] or {}
-	table.insert(self.state.spriteEventCommands[eventName], command)
+    self.state.spriteEventCommands[eventName] = self.state.spriteEventCommands[eventName] or {}
+    table.insert(self.state.spriteEventCommands[eventName], command)
 end
 
 -- Commands called may add new commands, so before we call anything, reassign to an empty list
 function Actor:ProcessSpriteEvent (event)
-	local commands = self.state.spriteEventCommands[event.phase]
-	self.state.spriteEventCommands[event.phase] = {}
+    local commands = self.state.spriteEventCommands[event.phase]
+    self.state.spriteEventCommands[event.phase] = {}
 
-	for _, command in ipairs(commands) do
-		command()
-	end
+    for _, command in ipairs(commands) do
+        command()
+    end
 end
 
 
 -- Call after the actor's sprite has been created
 function Actor:SetupStateMachine ()
-	self.state = stateMachine.Create()
-	self:ClearSpriteEventCommands()
-	self.sprite:addEventListener("sprite", function(event) self:ProcessSpriteEvent(event) end)
+    self.state = stateMachine.Create()
+    self:ClearSpriteEventCommands()
+    self.sprite:addEventListener("sprite", function(event) self:ProcessSpriteEvent(event) end)
 end
 
 function Actor:GetState ()
-	if (self.state ~= nil) then
-		local stateName, _ = self.state:GetState()
-		return stateName
-	else
-		return nil
-	end
+    if (self.state ~= nil) then
+        local stateName, _ = self.state:GetState()
+        return stateName
+    else
+        return nil
+    end
 end
 
 function Actor:x ()
@@ -299,17 +301,17 @@ function Actor:y ()
 end
 
 function Actor:posVector ()
-	assert(self.sprite,"Sprite mustn't be null when accessing pos")
-	return Vector2(self:x(),self:y())
+    assert(self.sprite,"Sprite mustn't be null when accessing pos")
+    return Vector2(self:x(),self:y())
 end
 
 function Actor:Pos ()
     assert(self.sprite,"Sprite mustn't be null when accessing pos")
-	return self:x(), self:y()
+    return self:x(), self:y()
 end
 
 function Actor:SetPos (x, y)
-	assert(self.sprite,"Sprite mustn't be null when accessing pos")
+    assert(self.sprite,"Sprite mustn't be null when accessing pos")
     if Vector2.isVector2(x) then
         self.sprite.x, self.sprite.y = x.x, x.y
     else
