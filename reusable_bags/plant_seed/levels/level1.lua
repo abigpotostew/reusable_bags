@@ -6,7 +6,7 @@ local players = 2
 
 local function setup()
     l:SetNumPlayer(2)
-l:BuildHolesNStuff()
+    l:BuildHolesNStuff()
 
 end
 return {l, setup}

@@ -8,6 +8,7 @@
 local DebugLevel = require "opal.src.debug.debugLevel"
 local _ = require 'opal.libs.underscore'
 local Actor = require 'opal.src.actor'
+local composer = require 'composer'
 
 local collision_groups = require "opal.src.collision"
 collision_groups.SetGroups{
@@ -46,9 +47,14 @@ function PlantSeedsLevel:init ()
     self.round = 0
 end
 
+-- called after levelX.lua setup
+function PlantSeedsLevel:begin()
+    
+end
 
-function PlantSeedsLevel:create ()
-    self:super("init")
+--called when scene is in view
+function PlantSeedsLevel:create (event, sceneGroup)
+    self:super("create", event, sceneGroup)
     local world_group = self.world_group
     self.ground_group = display.newGroup()
     self.dirt_group = display.newGroup()
@@ -56,6 +62,10 @@ function PlantSeedsLevel:create ()
     world_group:insert(self.ground_group)
     world_group:insert(self.dirt_group)
     world_group:insert(self.wall_group)
+    
+    self:AddKeyReleaseEvent('e', function()self.world_group.x=self.world_group.x+10 end)
+    self:AddKeyReleaseEvent('q', function()self.world_group.x=self.world_group.x-10 end)
+    
 end
 
 local function get_hole_shapes(hole_width, hole_depth, hole_offset_bottom, x, y)
@@ -109,7 +119,7 @@ end
 
 local function touch (event)
     if event.phase == "began" then
-        event.target.joint = physics.newJoint( "touch", event.target, event.x, event.y )
+        event.target.joint = physics.newJoint( "touch", event.target, event.x + event.target.owner.level:WorldOffsetX(), event.y )
         event.target.joint.frequency = 1 --low frequency, makes it more floaty
         event.target.joint.dampingRatio = 1 --max damping, doesn't bounce against joint
         display.getCurrentStage():setFocus( event.target )
@@ -118,7 +128,7 @@ local function touch (event)
         if not event.target.joint then --we may have removed another food and finger slid to this food
             return false
         end
-        event.target.joint:setTarget(event.x, event.y)
+        event.target.joint:setTarget(event.x + event.target.owner.level:WorldOffsetX(), event.y)
     elseif event.phase == "ended" then
         CancelTouch(event)
     end 
@@ -157,16 +167,15 @@ function PlantSeedsLevel:BuildHolesNStuff (round)
     local width, height = l:GetWorldViewSize()
     local ro = round and (round*width) or 0
     if self.num_players == 2 then
-    
 
         local ground_level = height*0.6
         local x, y, w, d = l:AddGroundHole(  width/4 + ro, ground_level,
-            width/4 + ro, height-height*.6-50,
+            width/4 , height-height*.6-50,
             50)
         l:AddDirt(x, y, w, d, 23)
         
         local ground ={w=x-w/2,h=d+50}
-        l:AddGround (x-w/2-ground.w/2 + ro, y, ground.w, ground.h)
+        l:AddGround (x-w/2-ground.w/2, y, ground.w, ground.h)
         
         local middle_grd_w = width/2-w
         
@@ -192,6 +201,10 @@ function PlantSeedsLevel:BuildHolesNStuff (round)
     BuildWalls(self,ro,0)
 end
 
+function PlantSeedsLevel:WorldOffsetX()
+    return -self.world_group.x
+end
+
 
 function PlantSeedsLevel:SpawnSeed(hole,sensor)
     local type_name = 'seed'
@@ -207,9 +220,9 @@ end
 function PlantSeedsLevel:NextRound()
     local world = self.world_group
     local world_x, world_w = world.x, self:GetWorldViewSize()
-    transition.to (world, {x=world_x-world_w, time=2000, transition=easing.inOutCubic})
+    --transition.to (world, {x=world_x-world_w, time=2000, transition=easing.inOutCubic})
     self.round = self.round + 1
-    self:BuildHolesNStuff(self.round)
+    self:BuildHolesNStuff(0)--self.round)
 end
 
 function PlantSeedsLevel:AddGroundHole(x, y, hole_width, hole_depth, hole_offset_bottom )
