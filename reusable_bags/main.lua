@@ -13,7 +13,8 @@ local game_options = {
         tests_only = false, -- runs only tests
         game = {
             params={
-                level = "plant_seed.levels.level1", --initial level of game
+--                level = "plant_seed.levels.level1", --initial level of game
+                  level="plant_math.levels.level1",
                 debug_draw = true
                 }
             }

@@ -117,8 +117,8 @@ function Actor:buildRectangleSprite (group,w,h,x,y, sprite_data)
     x, y = x or 0, y or 0
     local fill_color = sprite_data.fill_color or {1,0,1} --hot pink!
     local stroke_color = sprite_data.stroke_color or {1,0,1} --hot pink!
-    local anchorX = sprite_data.typeInfo and sprite_data.anchorX or self.typeInfo.anchorX or 0.5
-    local anchorY = sprite_data.typeInfo and sprite_data.typeInfo.anchorY or self.typeInfo.anchorY or 0.5
+    local anchorX = sprite_data.anchorX or sprite_data.typeInfo and sprite_data.anchorX or self.typeInfo.anchorX or 0.5
+    local anchorY = sprite_data.anchorY or sprite_data.typeInfo and sprite_data.typeInfo.anchorY or self.typeInfo.anchorY or 0.5
 
     local sprite = display.newRect(group, x, y, w, h)
     sprite.owner = self
