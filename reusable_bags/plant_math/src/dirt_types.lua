@@ -18,7 +18,7 @@ local function touch (event)
         --display.getCurrentStage():setFocus( event.target )
         --event.target.has_focus = true
         event.target.owner:DispatchEvent(event.target, "block_touch",
-            {target = event.target.owner, phase = event.phase})
+            {block = event.target.owner, phase = event.phase})
     elseif event.phase == "moved" then
     elseif event.phase == "ended" then
         --TODO:revamp touch to trigger event on touch release

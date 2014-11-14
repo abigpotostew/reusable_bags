@@ -45,6 +45,8 @@ function PlantMathLevel:init ()
     
     self.gridx, self.gridy = 6, 6
     self.width, self.height = self:GetWorldViewSize()
+    
+    self.block_stack = {}
 end
 
 -- called after levelX.lua setup
@@ -60,14 +62,24 @@ local function add_dirt (dirt_grid, ix, iy, dirt_type)
     
 end
 
-local function block_touch(event)
+function PlantMathLevel:block_touch(event)
     --local level = event.target.owner
-    oLog("touch "..event.target.owner:describe())
+    oLog("touch "..event.block:describe())
+    table.insert(self.block_stack,event.block)
+    if #self.block_stack >= 3 then
+        self:EvalStack()
+    end
 end
 
 function PlantMathLevel:SpawnNumberDirt( value, w, h )
     local out = dirt_blocks.Number(value,w,h,self)
-    out:AddEventListener(self.world_group, "block_touch", block_touch)
+    out:AddEventListener(out.sprite, "block_touch", self)
+    return out
+end
+
+function PlantMathLevel:SpawnRandomOpDirt (w,h)
+    local out = dirt_blocks.Operator(math.random(1,4),w,h,self)
+    out:AddEventListener(out.sprite, "block_touch", self)
     return out
 end
 
@@ -91,7 +103,12 @@ function PlantMathLevel:create (event, sceneGroup)
     for i=1,self.gridx do
         dirt_grid[i]={}
         for j=1,self.gridy do
-            local B = self:SpawnNumberDirt(i*j+j,block_size,block_size)
+            local B
+            if math.random()<.25 then
+                B = self:SpawnRandomOpDirt(block_size,block_size)
+            else
+                B = self:SpawnNumberDirt(math.random(10),block_size,block_size)
+            end
             local x, y = grid_block_width*(i-1), grid_block_width*(j-1)
             B:SetPos (x, y) 
             dirt_grid[i][j] = B
@@ -134,6 +151,18 @@ function PlantMathLevel:CanEvalBlocks(...)
         return num_a, op, num_b 
     else
         return false
+    end
+end
+
+function PlantMathLevel:Pop()
+    return table.remove(self.block_stack)
+end
+
+function PlantMathLevel:EvalStack()
+    oAssert(#self.block_stack >= 3, "block stack must be greater than 3 to eval")
+    local num_a, op, num_b = self:CanEvalBlocks( self:Pop(),self:Pop(),self:Pop())
+    if num_a then
+        oLog(string.format("%d %s %d = %f",num_a:Value(), op.op, num_b:Value(), op:Evaluate(num_a, num_b)))
     end
 end
 
