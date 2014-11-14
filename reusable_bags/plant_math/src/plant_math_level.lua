@@ -43,7 +43,7 @@ function PlantMathLevel:init ()
     
     self.round = 0
     
-    self.gridx, self.gridy = 10, 10
+    self.gridx, self.gridy = 6, 6
     self.width, self.height = self:GetWorldViewSize()
 end
 
@@ -58,6 +58,17 @@ end
 
 local function add_dirt (dirt_grid, ix, iy, dirt_type)
     
+end
+
+local function block_touch(event)
+    --local level = event.target.owner
+    oLog("touch "..event.target.owner:describe())
+end
+
+function PlantMathLevel:SpawnNumberDirt( value, w, h )
+    local out = dirt_blocks.Number(value,w,h,self)
+    out:AddEventListener(self.world_group, "block_touch", block_touch)
+    return out
 end
 
 --called when scene is in view
@@ -80,7 +91,7 @@ function PlantMathLevel:create (event, sceneGroup)
     for i=1,self.gridx do
         dirt_grid[i]={}
         for j=1,self.gridy do
-            local B = dirt_blocks.Number(i*j+i,block_size,block_size,self)
+            local B = self:SpawnNumberDirt(i*j+j,block_size,block_size)
             local x, y = grid_block_width*(i-1), grid_block_width*(j-1)
             B:SetPos (x, y) 
             dirt_grid[i][j] = B
@@ -90,30 +101,6 @@ function PlantMathLevel:create (event, sceneGroup)
 end
 
 
-
-
-local function CancelTouch(event)
-    local sprite = event.target
-    if sprite.joint then
-        sprite.joint:removeSelf()
-        sprite.joint = nil
-    end
-    if sprite.has_focus then
-        display.getCurrentStage():setFocus( nil )
-        sprite.has_focus = false
-    end
-end
-
-local function touch (event)
-    if event.phase == "began" then
-        display.getCurrentStage():setFocus( event.target )
-        event.target.has_focus = true
-    elseif event.phase == "moved" then
-    elseif event.phase == "ended" then
-        CancelTouch(event)
-    end 
-    return true
-end
 
 function PlantMathLevel:SetNumPlayer (count)
     self.num_players = 2
@@ -125,6 +112,29 @@ end
 
 function PlantMathLevel:NextRound()
     self.round = self.round + 1
+end
+
+--Accepts variable amounts of blocks and tries to make equation with them
+--in the form of [num, op, num]
+function PlantMathLevel:CanEvalBlocks(...)
+    local t = arg
+    local num_a, num_b, op
+    while (not num_a or not num_b or not op) and t.n>0 do
+        local block = table.remove(t,1)
+        t.n = t.n-1
+        if not num_a and block:IsNum() then
+            num_a = block
+        elseif not num_b and block:IsNum() then
+            num_b = block
+        elseif not op and block:IsOp() then
+            op = block
+        end
+    end
+    if num_a and num_b and op then
+        return num_a, op, num_b 
+    else
+        return false
+    end
 end
 
 return PlantMathLevel

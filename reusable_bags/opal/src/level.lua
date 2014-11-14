@@ -41,6 +41,7 @@ function Level:init()
     self.world_group = display.newGroup()
     self.world_group.xScale = self.world_scale 
     self.world_group.yScale = self.world_scale
+    self.world_group.owner = self
     
     --Level actors:
     self.actors = {}
@@ -114,26 +115,39 @@ function Level:hide (event)
     if event.phase == 'will' then
         
     elseif event.phase == 'did' then
-        physics.stop()
-    
-        for _, timerToStop in ipairs(self.timers) do
-            timer.cancel(timerToStop)
-        end
-        self.timers = {}
-
-        for _, transitionToStop in ipairs(self.transitions) do
-            transition.cancel(transitionToStop)
-        end
-        self.transitions = {}
-
-        for _, listener in ipairs(self.listeners) do
-            if (listener.object and listener.object.removeEventListener) then
-                listener.object:removeEventListener(listener.name, listener.listener)
-            end
-        end
-        self.listeners = {}
+        self:Destroy()
     end
     
+end
+
+function Level:Destroy()
+    physics.stop()
+    
+    for _, timerToStop in ipairs(self.timers) do
+        timer.cancel(timerToStop)
+    end
+    self.timers = {}
+
+    for _, transitionToStop in ipairs(self.transitions) do
+        transition.cancel(transitionToStop)
+    end
+    self.transitions = {}
+
+    for _, listener in ipairs(self.listeners) do
+        if (listener.object and listener.object.removeEventListener) then
+            listener.object:removeEventListener(listener.name, listener.listener)
+        end
+    end
+    self.listeners = {}
+    
+    --Remove all actors
+    for k, actor_list in pairs(self.actors) do
+        for i, actor in ipairs(actor_list) do
+            actor:removeSelf()
+            actor_list[i] = nil
+        end
+        self.actors[k] = nil
+    end
 end
 
 function Level:touchListener (event)

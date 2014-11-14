@@ -11,6 +11,7 @@ local test_suites = {
                                'test_opal',
                                'test_event',
         },
+    ['plant_math.tests.']={'plant_math_tests'}
 }
 
 local function get_tests(prefix,tests_list)
