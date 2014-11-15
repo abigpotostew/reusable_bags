@@ -9,6 +9,7 @@ local DebugLevel = require "opal.src.debug.debugLevel"
 local _ = require 'opal.libs.underscore'
 local Actor = require 'opal.src.actor'
 local dirt_blocks = require "plant_math.src.dirt_types"
+local BlockGroup = require "plant_math.src.block_group"
 
 local collision_groups = require "opal.src.collision"
 collision_groups.SetGroups{
@@ -47,7 +48,7 @@ function PlantMathLevel:init ()
     self.op_block_ratio = 1/3
     self.width, self.height = self:GetWorldViewSize()
     
-    self.block_stack = {}
+    self.player_goals = {}
 end
 
 -- called after levelX.lua setup
@@ -55,33 +56,55 @@ function PlantMathLevel:begin()
     
 end
 
-local function create_dirt_block(x, y, dirt_type)
+function PlantMathLevel:evaluate(event)
     
 end
 
-local function add_dirt (dirt_grid, ix, iy, dirt_type)
-    
-end
-
-function PlantMathLevel:block_touch(event)
-    --local level = event.target.owner
-    oLog("touch "..event.block:describe())
-    table.insert(self.block_stack,event.block)
-    if #self.block_stack >= 3 then
-        self:EvalStack()
-    end
-end
-
-function PlantMathLevel:SpawnNumberDirt( value, w, h )
+function PlantMathLevel:SpawnNumberDirt( block_group, value, w, h )
     local out = dirt_blocks.Number(value,w,h,self)
-    out:AddEventListener(out.sprite, "block_touch", self)
+    block_group:InsertBlock (out)
     return out
 end
 
-function PlantMathLevel:SpawnRandomOpDirt (w,h)
+function PlantMathLevel:SpawnRandomOpDirt (block_group, w,h)
     local out = dirt_blocks.Operator(math.random(1,4),w,h,self)
-    out:AddEventListener(out.sprite, "block_touch", self)
+    block_group:InsertBlock (out)
     return out
+end
+
+function PlantMathLevel:CreateBlockGroup(grid_width, grid_height, gridx, gridy)
+    local grid_block_width = grid_width/gridx
+    local spacing = 3
+    local block_size = (grid_width-spacing*gridx)/gridx
+    --local dirt_grid = {}
+    local total_blocks_ct = gridx*gridy
+    local num_op_blocks = math.floor(total_blocks_ct *self.op_block_ratio)
+    local block_idx = 1
+    local bgroup1 = BlockGroup(self)
+    for i=1,self.gridx do
+        --dirt_grid[i]={}
+        for j=1,self.gridy do
+            local B
+            if total_blocks_ct-block_idx <= num_op_blocks or (num_op_blocks>0 and math.random()<=self.op_block_ratio) then
+                B = self:SpawnRandomOpDirt(bgroup1, block_size,block_size)
+                num_op_blocks = num_op_blocks-1
+            else
+                B = self:SpawnNumberDirt(bgroup1, math.random(10),block_size,block_size)
+            end
+            local x, y = grid_block_width*(i-1), grid_block_width*(j-1)
+            B:SetPos (x, y) 
+            block_idx = block_idx+1
+            --dirt_grid[i][j] = B
+        end
+    end
+    bgroup1:SetPos(self.width/2-grid_width/2, self.height/2-grid_height/2)
+    self:InsertActor(bgroup1, true)
+    bgroup1:AddEventListener(bgroup1.sprite, 'evaluate', self)
+    
+    
+    
+    --self.dirt_grid = dirt_grid
+    return bgroup1
 end
 
 --called when scene is in view
@@ -95,32 +118,7 @@ function PlantMathLevel:create (event, sceneGroup)
     world_group:insert(self.dirt_group)
     world_group:insert(self.wall_group)
     
-    local grid_width = self.height / 2
-    local grid_height = grid_width
-    local grid_block_width = grid_width/self.gridx
-    local spacing = 3
-    local block_size = (grid_width-spacing*self.gridx)/self.gridx
-    --local dirt_grid = {}
-    local total_blocks_ct = self.gridx*self.gridy
-    local num_op_blocks = math.floor(total_blocks_ct *self.op_block_ratio)
-    local block_idx = 1
-    for i=1,self.gridx do
-        --dirt_grid[i]={}
-        for j=1,self.gridy do
-            local B
-            if total_blocks_ct-block_idx <= num_op_blocks or (num_op_blocks>0 and math.random()<=self.op_block_ratio) then
-                B = self:SpawnRandomOpDirt(block_size,block_size)
-                num_op_blocks = num_op_blocks-1
-            else
-                B = self:SpawnNumberDirt(math.random(10),block_size,block_size)
-            end
-            local x, y = grid_block_width*(i-1), grid_block_width*(j-1)
-            B:SetPos (x, y) 
-            block_idx = block_idx+1
-            --dirt_grid[i][j] = B
-        end
-    end
-    --self.dirt_grid = dirt_grid
+    self:CreateBlockGroup(self.height/2, self.height/2, self.gridx, self.gridy)
 end
 
 
@@ -135,48 +133,6 @@ end
 
 function PlantMathLevel:NextRound()
     self.round = self.round + 1
-end
-
---Accepts variable amounts of blocks and tries to make equation with them
---in the form of [num, op, num]
-function PlantMathLevel:CanEvalBlocks(...)
-    local t = arg
-    local num_a, num_b, op
-    while (not num_a or not num_b or not op) and t.n>0 do
-        local block = table.remove(t,1)
-        t.n = t.n-1
-        if not num_a and block:IsNum() then
-            num_a = block
-        elseif not num_b and block:IsNum() then
-            num_b = block
-        elseif not op and block:IsOp() then
-            op = block
-        end
-    end
-    if num_a and num_b and op then
-        return num_a, op, num_b 
-    else
-        return false
-    end
-end
-
---actually a dequeue to preserve order of clicking from user.
-function PlantMathLevel:Pop()
-    return table.remove(self.block_stack,1)
-end
-
-function PlantMathLevel:EvalStack()
-    oAssert(#self.block_stack >= 3, "block stack must be greater than 3 to eval")
-    local num_a, op, num_b = self:CanEvalBlocks( self:Pop(),self:Pop(),self:Pop())
-    if num_a then
-        local a, op_op, b = num_a:Value(), op.op, num_b:Value()
-        local result = op:Evaluate(num_a, num_b)
-        oLog(string.format("%d %s %d = %f",a, op_op, b, result))
-    end
-end
-
-function PlantMathLevel:StackSize()
-    return #self.block_stack
 end
 
 return PlantMathLevel

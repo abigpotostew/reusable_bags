@@ -28,8 +28,8 @@ local function get_tests(prefix,tests_list)
     return out
 end
 
-test_all.Run = function()
-    Tests:RunAll ( get_tests(nil, test_suites) )
+test_all.Run = function(setup, teardown)
+    Tests:RunAll ( get_tests(nil, test_suites), setup, teardown )
 end
 
 return test_all

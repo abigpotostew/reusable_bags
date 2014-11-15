@@ -6,16 +6,19 @@ local _ = require "opal.libs.underscore"
 
 local function opal_assert(condition, error_msg)
     assert (condition, error_msg)
+    return true
 end
 
 local function opal_assert_type(object, obj_type, error_msg)
     assert (object and type (object) == obj_type, error_msg)
+    return true
 end
 
 local function opal_assert_multi_type(obj_type, error_msg, ...)
     _.each (arg, function(object)
         assert (object and type (object) == obj_type, error_msg)
     end)
+    return true
 end
 
 local on_device = not (system.getInfo("environment") == "device" )

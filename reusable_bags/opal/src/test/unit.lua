@@ -125,6 +125,7 @@ function Unit:Run ( tests_to_run )
             print (err)
             table.insert (fails, t.name)
             self:print ("fail", name)
+            break
         else
             passes = passes + 1
             self:print ("ok", name)

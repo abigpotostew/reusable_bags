@@ -142,12 +142,13 @@ function Level:Destroy()
     
     --Remove all actors
     for k, actor_list in pairs(self.actors) do
-        for i, actor in ipairs(actor_list) do
+        for i, actor in pairs(actor_list) do
             actor:removeSelf()
             actor_list[i] = nil
         end
         self.actors[k] = nil
     end
+    self.actors = {}
 end
 
 function Level:touchListener (event)
@@ -215,11 +216,16 @@ function Level:RemoveActorPhysics (actor)
     table.insert(self.physics_to_remove, actor)
 end
 
-function Level:InsertActor (a)
+function Level:InsertActor (a, add_to_level_group)
     if not self.actors[a.typeName] then
         self.actors[a.typeName] = {}
     end
     self.actors[a.typeName][a.id] = a
+    if add_to_level_group and a.sprite then
+        local g = self:GetWorldGroup()
+        g:insert(a.sprite)
+        a.group = g
+    end
 end
 
 function Level:GetActor (type_name, id)
