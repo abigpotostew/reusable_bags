@@ -120,10 +120,9 @@ function Unit:Run ( tests_to_run )
         local name = self:Name(t.name)
         self.current_test = name
         self:print("run",name)
-        --local result;
         local status, err = pcall(function() t.test() end)
-        print(err)
         if not status then
+            print (err)
             table.insert (fails, t.name)
             self:print ("fail", name)
         else
@@ -139,11 +138,7 @@ function Unit:Run ( tests_to_run )
 end
 
 function Unit:RunAllTests ()
-    --print(string.format("*** %s: RUNNING ALL TESTS! ******",
-    --        self.test_suite_name))
     return self:Run (self.tests)
-    --print(string.format("*** %s: FINISHED RUNNING ALL TESTS! ******",
-    --       self.test_suite_name))
 end
 
 return Unit

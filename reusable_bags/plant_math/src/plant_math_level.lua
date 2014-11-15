@@ -44,6 +44,7 @@ function PlantMathLevel:init ()
     self.round = 0
     
     self.gridx, self.gridy = 4, 4
+    self.op_block_ratio = 1/3
     self.width, self.height = self:GetWorldViewSize()
     
     self.block_stack = {}
@@ -100,17 +101,22 @@ function PlantMathLevel:create (event, sceneGroup)
     local spacing = 3
     local block_size = (grid_width-spacing*self.gridx)/self.gridx
     --local dirt_grid = {}
+    local total_blocks_ct = self.gridx*self.gridy
+    local num_op_blocks = math.floor(total_blocks_ct *self.op_block_ratio)
+    local block_idx = 1
     for i=1,self.gridx do
         --dirt_grid[i]={}
         for j=1,self.gridy do
             local B
-            if math.random()<.34 then
+            if total_blocks_ct-block_idx <= num_op_blocks or (num_op_blocks>0 and math.random()<=self.op_block_ratio) then
                 B = self:SpawnRandomOpDirt(block_size,block_size)
+                num_op_blocks = num_op_blocks-1
             else
                 B = self:SpawnNumberDirt(math.random(10),block_size,block_size)
             end
             local x, y = grid_block_width*(i-1), grid_block_width*(j-1)
             B:SetPos (x, y) 
+            block_idx = block_idx+1
             --dirt_grid[i][j] = B
         end
     end

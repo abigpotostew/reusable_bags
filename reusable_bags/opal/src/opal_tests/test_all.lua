@@ -6,12 +6,12 @@ local test_suites = {
     --"opal.src.opal_tests.test_assert",
     --"opal.src.opal_tests.test_opal",
     --"opal.src.opal_tests.test_event",
-    ['plant_seed.tests.']={'plant_tests'},
     ['opal.src.opal_tests.']={'test_assert',
                                'test_opal',
                                'test_event',
                                'test_level',
         },
+    ['plant_seed.tests.']={'plant_tests'},
     ['plant_math.tests.']={'plant_math_tests'}
 }
 
