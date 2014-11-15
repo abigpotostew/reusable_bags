@@ -1,7 +1,7 @@
 local Unit = require "opal.src.test.unit"
 local oEvent = require 'opal.src.event'
 
-u = Unit("oEvent_Tests")
+local u = Unit("oEvent_Tests")
 
 
 u:Test ( "add_event", function()

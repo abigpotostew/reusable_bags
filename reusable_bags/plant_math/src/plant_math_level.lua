@@ -43,7 +43,7 @@ function PlantMathLevel:init ()
     
     self.round = 0
     
-    self.gridx, self.gridy = 6, 6
+    self.gridx, self.gridy = 4, 4
     self.width, self.height = self:GetWorldViewSize()
     
     self.block_stack = {}
@@ -99,12 +99,12 @@ function PlantMathLevel:create (event, sceneGroup)
     local grid_block_width = grid_width/self.gridx
     local spacing = 3
     local block_size = (grid_width-spacing*self.gridx)/self.gridx
-    local dirt_grid = {}
+    --local dirt_grid = {}
     for i=1,self.gridx do
         --dirt_grid[i]={}
         for j=1,self.gridy do
             local B
-            if math.random()<.25 then
+            if math.random()<.34 then
                 B = self:SpawnRandomOpDirt(block_size,block_size)
             else
                 B = self:SpawnNumberDirt(math.random(10),block_size,block_size)
@@ -114,7 +114,7 @@ function PlantMathLevel:create (event, sceneGroup)
             --dirt_grid[i][j] = B
         end
     end
-    self.dirt_grid = dirt_grid
+    --self.dirt_grid = dirt_grid
 end
 
 
@@ -154,6 +154,7 @@ function PlantMathLevel:CanEvalBlocks(...)
     end
 end
 
+--actually a dequeue to preserve order of clicking from user.
 function PlantMathLevel:Pop()
     return table.remove(self.block_stack,1)
 end
@@ -162,8 +163,14 @@ function PlantMathLevel:EvalStack()
     oAssert(#self.block_stack >= 3, "block stack must be greater than 3 to eval")
     local num_a, op, num_b = self:CanEvalBlocks( self:Pop(),self:Pop(),self:Pop())
     if num_a then
-        oLog(string.format("%d %s %d = %f",num_a:Value(), op.op, num_b:Value(), op:Evaluate(num_a, num_b)))
+        local a, op_op, b = num_a:Value(), op.op, num_b:Value()
+        local result = op:Evaluate(num_a, num_b)
+        oLog(string.format("%d %s %d = %f",a, op_op, b, result))
     end
+end
+
+function PlantMathLevel:StackSize()
+    return #self.block_stack
 end
 
 return PlantMathLevel

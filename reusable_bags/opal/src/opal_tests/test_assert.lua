@@ -1,7 +1,7 @@
 local Unit = require "opal.src.test.unit"
 local oAssert = require "opal.src.utils.assert"
 
-u = Unit("oAssert Test Suite")
+local u = Unit("oAssert Test Suite")
 
 
 u:Test ( "Assert True", function()

@@ -10,6 +10,7 @@ local test_suites = {
     ['opal.src.opal_tests.']={'test_assert',
                                'test_opal',
                                'test_event',
+                               'test_level',
         },
     ['plant_math.tests.']={'plant_math_tests'}
 }

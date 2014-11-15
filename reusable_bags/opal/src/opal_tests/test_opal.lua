@@ -1,7 +1,7 @@
 local Unit = require "opal.src.test.unit"
 local Opal = require "opal.src.opal"
 
-u = Unit("Opal_Test_Suite")
+local u = Unit("Opal_Test_Suite")
 
 
 u:Test ( "Setup_default_modules", function()
