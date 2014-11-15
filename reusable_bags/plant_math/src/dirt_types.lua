@@ -1,5 +1,6 @@
 
 local Actor = require "opal.src.actor"
+local _ = require 'opal.libs.underscore'
 
 local BASE = 0
 local OPERATOR = 1
@@ -14,13 +15,19 @@ local function CancelTouch(event)
 end
 
 local function touch (event)
+    local block = event.target.owner
     if event.phase == "began" then
-        --display.getCurrentStage():setFocus( event.target )
-        --event.target.has_focus = true
-        event.target.owner:DispatchEvent(event.target, "block_touch",
-            {block = event.target.owner, phase = event.phase})
+        display.getCurrentStage():setFocus( event.target )
+        event.target.has_focus = true
+        block:BeginTouch(event)
+        block:DispatchEvent(event.target, "block_touch",
+            {block = block, phase = event.phase})
+        
     elseif event.phase == "moved" then
-    elseif event.phase == "ended" then
+elseif event.phase == "ended" then
+        display.getCurrentStage():setFocus( nil )
+        event.target.has_focus = false
+        block:EndTouch(event)
         --TODO:revamp touch to trigger event on touch release
     end 
     return true
@@ -33,7 +40,7 @@ local BaseDirt = Actor:extends()
 function BaseDirt:init(typeInfo, level)
     self:super("init", typeInfo, level, level:GetWorldGroup() )
     self.sprite = display.newGroup()
-    self.group:insert(self.sprite)
+    --self.group:insert(self.sprite) --this is done by level:InsertActor()
     self.sprite.owner = self
     self.kind = BASE
     self:AddEvent("block_touch")
@@ -48,19 +55,33 @@ function BaseDirt:CreateBlock (w,h,sprite_data)
     oAssert(self.sprite, 'BaseDirt:CreateBlock() - requires a sprite group')
     sprite_data = sprite_data or {}
     sprite_data.anchorX, sprite_data.anchorY = 0, 0
+    sprite_data.fill_color = sprite_data.fill_color or {1,0,1}
+    sprite_data.stroke_color = sprite_data.stroke_color or {0,0,0}
     local block = self:buildRectangleSprite (self.sprite, w, h, 0, 0, sprite_data)
+    local dd = self.draw_data or {}
+    dd.block_data = sprite_data
+    dd.block = block
+    self.draw_data = dd 
     return block
 end
 
+--call after CreateBlock()
 function BaseDirt:AddLabel (text, options)
     options = options or {}
     options.text = text
     options.font = options.font or native.systemFont
     options.fontSize = options.fontSize or 12
     options.parent = options.parent or self.sprite
+    options.font_color = options.font_color or {1,0,0}
     local t = display.newText(options)
     self.sprite:insert(t)
-    t:setFillColor (1,0,0)
+    t:setFillColor (unpack(options.font_color))
+    
+    --preserve text draw data
+    local bd = self.draw_data or {}
+    bd.label_data = options
+    bd.label = t
+    self.draw_data = bd
 end
 
 function BaseDirt:IsNum()
@@ -71,6 +92,22 @@ function BaseDirt:IsOp()
     return false
 end
 
+function BaseDirt:BeginTouch(event)
+    if not self.sprite or (not self.draw_data and not self.draw_data.block) then return end
+    
+    local c = { unpack (self.draw_data.block_data.fill_color) }
+    self.draw_data.block_data.select_color = c
+    
+    c[1] = c[1] * 1.3
+    c[2] = c[2] * 1.3
+    c[3] = c[3] * 1.3
+    
+    self.block:setFillColor (unpack (c))
+end
+
+function BaseDirt:EndTouch(event)
+    self.block:setFillColor (unpack (self.draw_data.block_data.fill_color))
+end
 
 ---------------------------
 -- OPERATOR dirt block

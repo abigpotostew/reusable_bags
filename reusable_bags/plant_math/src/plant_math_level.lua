@@ -101,7 +101,7 @@ function PlantMathLevel:create (event, sceneGroup)
     local block_size = (grid_width-spacing*self.gridx)/self.gridx
     local dirt_grid = {}
     for i=1,self.gridx do
-        dirt_grid[i]={}
+        --dirt_grid[i]={}
         for j=1,self.gridy do
             local B
             if math.random()<.25 then
@@ -111,7 +111,7 @@ function PlantMathLevel:create (event, sceneGroup)
             end
             local x, y = grid_block_width*(i-1), grid_block_width*(j-1)
             B:SetPos (x, y) 
-            dirt_grid[i][j] = B
+            --dirt_grid[i][j] = B
         end
     end
     self.dirt_grid = dirt_grid
@@ -155,7 +155,7 @@ function PlantMathLevel:CanEvalBlocks(...)
 end
 
 function PlantMathLevel:Pop()
-    return table.remove(self.block_stack)
+    return table.remove(self.block_stack,1)
 end
 
 function PlantMathLevel:EvalStack()
