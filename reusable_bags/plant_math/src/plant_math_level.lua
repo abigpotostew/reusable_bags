@@ -85,7 +85,7 @@ function PlantMathLevel:SpawnNumberDirt( block_group, value, w, h )
 end
 
 function PlantMathLevel:SpawnRandomOpDirt (block_group, w,h)
-    local out = dirt_blocks.Operator(math.random(1,4),w,h,self)
+    local out = dirt_blocks.Operator(math.random(1,3),w,h,self)
     block_group:InsertBlock (out)
     return out
 end
