@@ -45,7 +45,7 @@ function PlantMathLevel:init ()
     
     self.round = 0
     
-    self.gridx, self.gridy = 4, 4
+    self.gridx, self.gridy = 6, 6
     self.op_block_ratio = 1/3
     self.width, self.height = self:GetWorldViewSize()
     
@@ -99,7 +99,7 @@ end
 
 function PlantMathLevel:CreateBlockGroup(grid_width, grid_height, gridx, gridy)
     local grid_block_width = grid_width/gridx
-    local spacing = 3
+    local spacing = 1
     local block_size = (grid_width-spacing*gridx)/gridx
     --local dirt_grid = {}
     local total_blocks_ct = gridx*gridy

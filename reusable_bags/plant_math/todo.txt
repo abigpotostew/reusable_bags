@@ -1,0 +1,1 @@
+-condider blocks of different size. since we possibly use physics engine it could be an ez impromvement (or make it worse, would need to test)
