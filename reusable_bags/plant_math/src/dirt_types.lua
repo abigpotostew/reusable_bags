@@ -14,6 +14,7 @@ local function CancelTouch(event)
     end
 end
 
+--delegate touch event to 'block_touch'
 local function touch (event)
     local block = event.target.owner
     if event.phase == "began" then
@@ -54,7 +55,7 @@ end
 function BaseDirt:CreateBlock (w,h,sprite_data)
     oAssert(self.sprite, 'BaseDirt:CreateBlock() - requires a sprite group')
     sprite_data = sprite_data or {}
-    sprite_data.anchorX, sprite_data.anchorY = 0, 0
+    sprite_data.anchorX, sprite_data.anchorY = 0.5, 0.5
     sprite_data.fill_color = sprite_data.fill_color or {1,0,1}
     sprite_data.stroke_color = sprite_data.stroke_color or {0,0,0}
     local block = self:buildRectangleSprite (self.sprite, w, h, 0, 0, sprite_data)
@@ -62,6 +63,9 @@ function BaseDirt:CreateBlock (w,h,sprite_data)
     dd.block_data = sprite_data
     dd.block = block
     self.draw_data = dd 
+    
+    self:addPhysics({bodyType='dynamic',category='all',colliders={'all'}, friction=1})
+    
     return block
 end
 
@@ -135,7 +139,8 @@ function Operator:init(operator, w, h, level)
     self.op = self:GetOp(operator)
     self.operator = operator
     self.block = self:CreateBlock ( w, h, {fill_color=self:GetOpColor(operator), stroke_color={0,0,0}})
-    self:AddLabel(self.op, {x=w/2,y=h/2})
+    self:AddLabel(self.op, {x=0,y=0})
+    --self:addPhysics({bodyType='dynamic',category='all',colliders={'all'}})
 end
 
 function Operator:Evaluate(block_a, block_b)
@@ -186,7 +191,7 @@ function Number:init(value, w, h, level)
     self.value = value
     self.block = self:CreateBlock ( w, h, {fill_color=
             {.850980392, .925490196,.631372549 }, stroke_color={0,0,0}})
-    self:AddLabel(string.format("%d",value),{x=w/2,y=h/2})
+    self:AddLabel(string.format("%d",value),{x=0,y=0})
 end
 
 function Number:Value(block_a, block_b)

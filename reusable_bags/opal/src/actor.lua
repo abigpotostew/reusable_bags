@@ -143,7 +143,7 @@ function Actor:removeSprite ()
 end
 
 function Actor:removeSelf ()
-    print("Actor: Deleting actor "..self.typeName.."$"..self.id)
+    print("Actor: Removing actor "..self:describe())
 
     transition.cancel ( self.sprite )
     self._transitions = {}
@@ -181,7 +181,7 @@ function Actor:addPhysics (data)
         density = 1, --we don't care about density
         friction = data.friction or self.typeInfo.physics.friction,
         bounce = data.bounce or self.typeInfo.physics.bounce,
-        filter = data.filter or 
+        filter = (data.no_filter and nil) or data.filter or 
         self.level.collision_groups.MakeFilter(data.category or 
             self.typeInfo.physics.category,
             data.colliders or self.typeInfo.physics.colliders or nil),

@@ -206,7 +206,7 @@ end
 function Level:RemoveActor (actor)
     local a = self.actors[actor.typeName][actor.id]
     a:removeSelf()
-    self.actors[actor.typeName][actor.id] = nil
+    table.remove(self.actors[actor.typeName], actor.id)
 end
 
 function Level:RemoveActorPhysics (actor)

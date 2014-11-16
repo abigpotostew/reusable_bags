@@ -110,29 +110,51 @@ u:Test ("Prevent Queue Duplicates", function()
     u:ASSERT_TRUE (b_group:StackSize() == 0)
     
     --prevent duplicate ops
-    num_a:DispatchEvent(sub_op.sprite, "block_touch",
+    sub_op:DispatchEvent(sub_op.sprite, "block_touch",
             {block = sub_op, phase = "began"})
-    num_a:DispatchEvent(sub_op.sprite, "block_touch",
+    sub_op:DispatchEvent(sub_op.sprite, "block_touch",
             {block = sub_op, phase = "began"})
     u:ASSERT_TRUE (b_group:StackSize() == 0)
     
-    --prevent two ops
-    num_a:DispatchEvent(sub_op.sprite, "block_touch",
+    --swaps 2 diff ops
+    sub_op:DispatchEvent(sub_op.sprite, "block_touch",
             {block = sub_op, phase = "began"})
-    num_a:DispatchEvent(add_op.sprite, "block_touch",
+    add_op:DispatchEvent(add_op.sprite, "block_touch",
             {block = add_op, phase = "began"})
     u:ASSERT_TRUE (b_group:StackSize() == 1)
     
     
+    --clean up
+    level_mock:Destroy()
 end)
 
 
-u:Test ("Number Goals", function()
+u:Test ("Random Goal", function()
     local val_a, val_b = 2, 3
     local level_mock, b_group, num_a, num_b, sub_op = default_setup (val_a, val_b, dirt_types.Operator.SUB, true)
     
+    local random_goal = b_group:GetRandomGoal()
     
-    --clean up
+    local actual_goal1, actual_goal2 = sub_op:Evaluate(num_a,num_b), sub_op:Evaluate(num_b,num_a)
+    
+    u:ASSERT_TRUE( random_goal == actual_goal1 or random_goal == actual_goal2)
+    
+    level_mock:Destroy()
+end)
+
+u:Test ("Remove Blocks On goal", function()
+    local val_a, val_b = 2, 3
+    local level_mock, b_group, num_a, num_b, sub_op = default_setup (val_a, val_b, dirt_types.Operator.SUB, true)
+    
+    b_group:AddGoal(-1)
+    
+    num_a:DispatchEvent(num_a.sprite, "block_touch",
+            {block = num_a, phase = "began"})
+    sub_op:DispatchEvent(sub_op.sprite, "block_touch",
+            {block = sub_op, phase = "began"})
+    
+    --TODO
+    
     level_mock:Destroy()
 end)
 

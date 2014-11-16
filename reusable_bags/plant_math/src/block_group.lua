@@ -15,18 +15,24 @@ function BlockGroup:init (level)
     --stack actually functions like a queue :)
     self.queue = {}
     
+    self.goal = nil
     self.goals = {} --list of number goals for player
     
     self:AddEvent("evaluate") --dispatched whenever player completes operation
 end
 
 function BlockGroup:AddGoal(number)
+    self.goal = number
     table.insert(self.goals,number)    
+end
+
+function BlockGroup:RemoveGoal(number)
+    self.goal = nil
 end
 
 function BlockGroup:block_touch(event)
     oLog.Debug("touch "..event.block:describe())
-    self:Queue(event.block)
+    local in_queue = self:Queue(event.block)
     if #self.queue >= 3 then
         self:EvalStack()
     end
@@ -57,15 +63,22 @@ function BlockGroup:Queue(block)
             if (block.typeName=="Operator" and b.typeName=="Operator")then
                 both_ops = true
                 if b==block then duplicate_block = true end
-                return b
+                return true
             elseif b == block then
                 duplicate_block = true
-                return b
+                return true
             end
+            return false
         end)
     if duplicate then
         -- remove duplicate from queue, to 'unselect' block
-        _.reject(self.queue, function(b) return b==duplicate end)
+        for i, v in ipairs(self.queue) do
+            if v == duplicate then
+                table.remove(self.queue, i)
+                break
+            end
+        end
+        --_.reject(self.queue, function(b) return b==duplicate end)
         
         -- re-insert block if it's an operator, to swap operator
         if duplicate_block then
@@ -121,17 +134,10 @@ function BlockGroup:EvalStack()
     if num_a then
         local a, op_op, b = num_a:Value(), op.op, num_b:Value()
         result = op:Evaluate(num_a, num_b)
-        self:DispatchEvent (self.sprite, "evaluate", {target = self, num_a=num_a, op=op,num_b=num_b})
         oLog.Verbose(string.format("%d %s %d = %f",a, op_op, b, result))
+        return result, self:DispatchEvent (self.sprite, "evaluate", {target = self, num_a=num_a, op=op,num_b=num_b, result = result})
     end
     return result
-end
-
-function BlockGroup:DidAchieveGoal(number)
-    local has_goal = _.reject(self.goals, function(goal) return goal==number end)
-    if has_goal then
-        
-    end
 end
 
 function BlockGroup:StackSize()
@@ -144,7 +150,13 @@ function BlockGroup:GetRandomGoal()
     local number_keys = _.keys(numbers)
     local op_keys = _.keys(ops)
     while true do
-        --local num_a = numbers[math.random(#number_keys)]
+        local num_key_idx = math.random(#number_keys)
+        local num_a_key = number_keys[num_key_idx]
+        table.remove(number_keys,num_key_idx)
+        local num_a = numbers[num_a_key]
+        local num_b = numbers[number_keys[math.random(#number_keys)]]
+        local op = ops[op_keys[math.random(#op_keys)]]
+        return op:Evaluate(num_a, num_b)
     end
 end
 
