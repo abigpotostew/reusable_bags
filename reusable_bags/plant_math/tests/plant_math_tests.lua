@@ -26,7 +26,7 @@ local function default_setup(val_a, val_b, operator_type, enable_touch)
     return level_mock, b_group, num_a, num_b, op
 end
 
-u:Test ( "Evaluate math", function()
+u:Test ( "Evaluate math", function(self)
     local val_a, val_b = 10, 3
     
     local level_mock, b_group, num_a, num_b = default_setup (val_a, val_b, nil, false)
@@ -41,16 +41,16 @@ u:Test ( "Evaluate math", function()
     
     for k, op_table in pairs(ops) do
         local num_1a, op_1, num_1b = b_group:CanEvalBlocks(num_a, op_table.op, num_b)
-        u:ASSERT_TRUE (num_1a)
+        self:ASSERT_TRUE (num_1a)
         
         local actual = op_1:Evaluate(num_1a, num_1b)
-        u:ASSERT_TRUE ( actual == op_table.expected )
+        self:ASSERT_TRUE ( actual == op_table.expected )
     end
     
     level_mock:Destroy()
 end)
 
-u:Test ( "Evaluation Stack", function()
+u:Test ( "Evaluation Stack", function(self)
     local val_a, val_b = 2, 3
     local level_mock, b_group, num_a, num_b, sub_op = default_setup (val_a, val_b, dirt_types.Operator.SUB, true)
     
@@ -77,7 +77,7 @@ u:Test ( "Evaluation Stack", function()
     u:ASSERT_FALSE( pcall(function() b_group:EvalStack() end))
     
     --EvalStack() call with 3 objects in it will pop all 3 and try to evaluate
-    u:ASSERT_TRUE (b_group:StackSize() == 0)
+    self:ASSERT_TRUE (b_group:StackSize() == 0)
     
     
     --Now test actually evaluating stack
@@ -89,14 +89,14 @@ u:Test ( "Evaluation Stack", function()
     b_group:Queue(num_b)
     
     local result = b_group:EvalStack()
-    u:ASSERT_TRUE( result and result == 2-3 )
+    self:ASSERT_TRUE( result and result == 2-3 )
     
     
     --clean up
     level_mock:Destroy()
 end)
 
-u:Test ("Prevent Queue Duplicates", function()
+u:Test ("Prevent Queue Duplicates", function(self)
     local val_a, val_b = 2, 3
     local level_mock, b_group, num_a, num_b, sub_op = default_setup (val_a, val_b, dirt_types.Operator.SUB, true)
     local add_op = dirt_types.Operator(dirt_types.Operator.ADD, 5,5, level_mock)
@@ -107,21 +107,21 @@ u:Test ("Prevent Queue Duplicates", function()
             {block = num_a, phase = "began"})
     num_a:DispatchEvent(num_a.sprite, "block_touch",
             {block = num_a, phase = "began"})
-    u:ASSERT_TRUE (b_group:StackSize() == 0)
+    self:ASSERT_TRUE (b_group:StackSize() == 0)
     
     --prevent duplicate ops
     sub_op:DispatchEvent(sub_op.sprite, "block_touch",
             {block = sub_op, phase = "began"})
     sub_op:DispatchEvent(sub_op.sprite, "block_touch",
             {block = sub_op, phase = "began"})
-    u:ASSERT_TRUE (b_group:StackSize() == 0)
+    self:ASSERT_TRUE (b_group:StackSize() == 0)
     
     --swaps 2 diff ops
     sub_op:DispatchEvent(sub_op.sprite, "block_touch",
             {block = sub_op, phase = "began"})
     add_op:DispatchEvent(add_op.sprite, "block_touch",
             {block = add_op, phase = "began"})
-    u:ASSERT_TRUE (b_group:StackSize() == 1)
+    self:ASSERT_TRUE (b_group:StackSize() == 1)
     
     
     --clean up
@@ -129,20 +129,23 @@ u:Test ("Prevent Queue Duplicates", function()
 end)
 
 
-u:Test ("Random Goal", function()
+u:Test ("Random Goal", function(self)
+        
     local val_a, val_b = 2, 3
     local level_mock, b_group, num_a, num_b, sub_op = default_setup (val_a, val_b, dirt_types.Operator.SUB, true)
+    
+    self:ASSERT_FALSE ( BlockGroup(PlantLevel()):GetRandomGoal(),"can't call get goal when no more blocks left") 
     
     local random_goal = b_group:GetRandomGoal()
     
     local actual_goal1, actual_goal2 = sub_op:Evaluate(num_a,num_b), sub_op:Evaluate(num_b,num_a)
     
-    u:ASSERT_TRUE( random_goal == actual_goal1 or random_goal == actual_goal2)
+    self:ASSERT_TRUE( random_goal == actual_goal1 or random_goal == actual_goal2)
     
     level_mock:Destroy()
 end)
 
-u:Test ("Remove Blocks On goal", function()
+u:Test ("Remove Blocks On goal", function(self)
     local val_a, val_b = 2, 3
     local level_mock, b_group, num_a, num_b, sub_op = default_setup (val_a, val_b, dirt_types.Operator.SUB, true)
     

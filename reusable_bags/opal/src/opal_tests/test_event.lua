@@ -4,21 +4,21 @@ local oEvent = require 'opal.src.event'
 local u = Unit("oEvent_Tests")
 
 
-u:Test ( "add_event", function()
-    u:FUNC_ASSERT (function()
+u:Test ( "add_event", function(self)
+    self:FUNC_ASSERT (function()
         local group = display.newGroup()
         local event = oEvent:new()
         event:AddEvent ("event1")
     end)
 end)
 
-u:Test ( "dispatch_event", function()
+u:Test ( "dispatch_event", function(self)
     local event_name = 'big_butt_warrior'
     local event_dispatched = false
     local group = display.newGroup()
     
     local listener = function(event)
-        u:ASSERT_TRUE (event.dang_snag_test_data=='ffft')
+        self:ASSERT_TRUE (event.dang_snag_test_data=='ffft')
         event_dispatched = true
     end
     local event = oEvent()
@@ -27,21 +27,21 @@ u:Test ( "dispatch_event", function()
         dang_snag_test_data='ffft'
     }
     event:DispatchEvent (group, event_name, event_data)
-    u:ASSERT_TRUE(event_dispatched)
+    self:ASSERT_TRUE(event_dispatched)
     
     event_dispatched = false
     
     local table_listen = {}
     table_listen[event_name] = function(event)
-        u:ASSERT_TRUE (event.dang_snag_test_data=='ffft')
+        self:ASSERT_TRUE (event.dang_snag_test_data=='ffft')
         event_dispatched = true
     
     end
     event:DispatchEvent(group,event_name,event_data)
-    u:ASSERT_TRUE(event_dispatched)
+    self:ASSERT_TRUE(event_dispatched)
 end)
 
-u:Test ( "remove_event", function()
+u:Test ( "remove_event", function(self)
     local event_name = 'big_butt_warrior'
     local event_dispatched = false
     local group = display.newGroup()
@@ -54,7 +54,7 @@ u:Test ( "remove_event", function()
         event_dispatched = true
         end
     event:DispatchEvent (group, event_name, event_data)
-    u:ASSERT_FALSE (event_dispatched)
+    self:ASSERT_FALSE (event_dispatched)
 end)
 
 return u

@@ -7,11 +7,11 @@ local _ = require "opal.libs.underscore"
 local BlockGroup = Actor:extends()
 
 function BlockGroup:init (level)
-    self:super("init", {typeName="BlockGroup"}, level, level:GetWorldGroup())
+    self:super("init", {typeName="BlockGroup"}, level)
     
     self.sprite = display.newGroup()
     
-    self.blocks = {} --list of blocks associated with this group
+    self.blocks = {Number={}, Operator={}} --list of blocks associated with this group
     --stack actually functions like a queue :)
     self.queue = {}
     
@@ -40,7 +40,6 @@ end
 
 function BlockGroup:InsertBlock (block)
     block:AddEventListener (block.sprite, "block_touch", self)
-    self.level:InsertActor (block)
     self.sprite:insert(block.sprite)
     
     if not self.blocks[block.typeName] then
@@ -60,7 +59,7 @@ function BlockGroup:Queue(block)
     local duplicate_block = false
     local both_ops = false
     local duplicate = _.detect (self.queue, function(b)
-            if (block.typeName=="Operator" and b.typeName=="Operator")then
+            if (block:IsOp() and b:IsOp())then
                 both_ops = true
                 if b==block then duplicate_block = true end
                 return true
@@ -109,6 +108,7 @@ end
 function BlockGroup:CanEvalBlocks(...)
     local t = arg
     local num_a, num_b, op
+    -- O(n), n==number of args
     while (not num_a or not num_b or not op) and t.n>0 do
         local block = table.remove(t,1)
         t.n = t.n-1
@@ -127,6 +127,7 @@ function BlockGroup:CanEvalBlocks(...)
     end
 end
 
+-- not const
 function BlockGroup:EvalStack()
     oAssert(#self.queue >= 3, "block stack must be greater than 3 to eval")
     local num_a, op, num_b = self:CanEvalBlocks( self:Dequeue(),self:Dequeue(),self:Dequeue())
@@ -144,11 +145,15 @@ function BlockGroup:StackSize()
     return #self.queue
 end
 
+--prerequisites: number of blocks
 function BlockGroup:GetRandomGoal()
     local numbers = self.blocks['Number']
     local ops = self.blocks['Operator']
     local number_keys = _.keys(numbers)
     local op_keys = _.keys(ops)
+    if #number_keys < 2 or #op_keys < 1 then
+        return nil
+    end
     while true do
         local num_key_idx = math.random(#number_keys)
         local num_a_key = number_keys[num_key_idx]

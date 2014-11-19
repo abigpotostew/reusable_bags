@@ -63,6 +63,8 @@ function PlantMathLevel:SetGoal(b_group)
     oLog('Goal = '.. tostring(b_group.goal))
 end
 
+
+--event listener for block group
 function PlantMathLevel:evaluate(event)
     local b_group = event.target
     if event.result == b_group.goal then
@@ -81,6 +83,7 @@ end
 function PlantMathLevel:SpawnNumberDirt( block_group, value, w, h )
     local out = dirt_blocks.Number(value,w,h,self)
     block_group:InsertBlock (out)
+    self:InsertActor (out)
     return out
 end
 
@@ -106,6 +109,7 @@ function PlantMathLevel:CreateBlockGroup(grid_width, grid_height, gridx, gridy)
     local num_op_blocks = math.floor(total_blocks_ct *self.op_block_ratio)
     local block_idx = 1
     local bgroup1 = BlockGroup(self)
+    bgroup1.group = self:GetWorldGroup()
     local x, y = self.width/2-grid_width/2, self.height/2-grid_height/2
     for i=1,self.gridx do
         --dirt_grid[i]={}
@@ -124,7 +128,6 @@ function PlantMathLevel:CreateBlockGroup(grid_width, grid_height, gridx, gridy)
         end
     end
     
-    --bgroup1:SetPos(x,y)
     self:InsertActor(bgroup1, true)
     bgroup1:AddEventListener(bgroup1.sprite, 'evaluate', self)
     
@@ -147,6 +150,7 @@ function PlantMathLevel:create (event, sceneGroup)
     world_group:insert(self.ground_group)
     world_group:insert(self.dirt_group)
     world_group:insert(self.wall_group)
+    
     
     local bg1 = self:CreateBlockGroup(self.height/2, self.height/2, self.gridx, self.gridy)
     self:SetGoal(bg1)

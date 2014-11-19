@@ -120,7 +120,7 @@ function Unit:Run ( tests_to_run )
         local name = self:Name(t.name)
         self.current_test = name
         self:print("run",name)
-        local status, err = pcall(function() t.test() end)
+        local status, err = pcall(function() t.test(self) end)
         if not status then
             print (err)
             table.insert (fails, t.name)

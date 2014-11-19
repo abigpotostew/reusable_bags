@@ -125,6 +125,7 @@ function Vector2.isVector2 (obj)
     return isVector2Equivalent(obj)
 end
 
+--Only non-const method besides constructor
 function Vector2:Set (x, y)
     self.x, self.y = x or 0, y or 0
 end
