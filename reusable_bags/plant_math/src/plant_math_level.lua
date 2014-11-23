@@ -66,7 +66,11 @@ end
 function PlantMathLevel:queue_update (event)
     local b_group = event.target
     local queue = event.queue
-    
+    local a, op, b = unpack(queue)
+    a = a and a.value
+    op = op and op.op
+    b = b and b.value
+    self:DisplayEquationQueue(a,op,b)
 end
 
 --event listener for block group
@@ -137,6 +141,7 @@ function PlantMathLevel:CreateBlockGroup(grid_width, grid_height, gridx, gridy)
     
     self:InsertActor(bgroup1, true)
     bgroup1:AddEventListener(bgroup1.sprite, 'evaluate', self)
+    bgroup1:AddEventListener(bgroup1.sprite, 'queue_update', self)
     
     local ground_w, ground_h = grid_width, 10
     self:SpawnGround(self.width/2, self.height/2+grid_height/2 +ground_h/2, ground_w,ground_h)
@@ -175,5 +180,22 @@ end
 function PlantMathLevel:NextRound()
     self.round = self.round + 1
 end
+
+function PlantMathLevel:DisplayEquationQueue (num_a_value, operator_text, num_b_value)
+    local a = num_a_value and type(num_a_value) and string.format("%3d",num_a_value) or ""
+    local op = operator_text or "?"
+    local b = num_b_value and type(num_b_value) and string.format("%3d",num_b_value) or ""
+    
+    local text = self.equation_text
+    if not text then
+        text = display.newText{text = "", x=100-36,y=self.height-100,fontSize=36,parent=self:GetWorldGroup(), font=native.systemFont}
+        text:setFillColor (1,1,1)
+    end
+    
+    text.text = string.format("%s %s %s", a, op, b)
+    
+    self.equation_text = text
+end
+    
 
 return PlantMathLevel

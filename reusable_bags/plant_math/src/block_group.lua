@@ -102,7 +102,7 @@ function BlockGroup:Queue(block)
     if block:IsOp() then
         self.has_operator_queue = true
     end
-    table.insert(self.queue,block)
+    return table.insert(self.queue,block)
     
 end
 
