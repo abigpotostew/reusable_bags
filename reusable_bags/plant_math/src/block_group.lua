@@ -36,6 +36,9 @@ function BlockGroup:block_touch(event)
     if #self.queue >= 3 then
         self:EvalStack()
     end
+    self:DispatchEvent(self.sprite, "queue_update", 
+        { target = self, queue={self:GetEquation()} 
+            })
 end
 
 function BlockGroup:InsertBlock (block)
@@ -47,10 +50,12 @@ function BlockGroup:InsertBlock (block)
         self.blocks[typeName] = {}
     end
     self.blocks[typeName][block.id] = block
+    return block
 end
 
 function BlockGroup:RemoveBlock (block)
     self.blocks[block.typeName][block.id] = nil
+    return block
 end
 
 --returns the duplicate block in the list if it exists
@@ -75,17 +80,7 @@ function BlockGroup:Queue(block)
     --push onto end of list
     local duplicate_block = duplicate_in_queue (self.queue, block)
     local both_ops = duplicate_op_in_queue (self.queue, block)
-    --[[ local duplicate = _.detect (self.queue, function(b)
-            if (block:IsOp() and b:IsOp())then
-                both_ops = true
-                if b==block then duplicate_block = true end
-                return true
-            elseif b == block then
-                duplicate_block = true
-                return true
-            end
-            return false
-        end) --]]
+
     if duplicate_block or both_ops then
         local duplicate = duplicate_block or both_ops
         -- remove duplicate from queue, to 'unselect' block
@@ -95,10 +90,8 @@ function BlockGroup:Queue(block)
                 break
             end
         end
-        --_.reject(self.queue, function(b) return b==duplicate end)
-        
-        -- re-insert block if it's an operator, to swap operator
-        
+
+        -- re-insert block only if it's a non-duplicate operator, to swap it.
         if duplicate_block then
             block = nil
         end
@@ -116,17 +109,13 @@ end
 --actually a dequeue from front to preserve order of clicking from user.
 function BlockGroup:Dequeue()
     local block = table.remove(self.queue,1)
-    if block.typeName == "Operator" then
+    if block:IsOp() then
         self.has_operator_queue = false
     end
     return block
 end
 
-
-
---Accepts variable amounts of blocks and tries to make equation with them
---in the form of [num, op, num]
-function BlockGroup:CanEvalBlocks(...)
+function BlockGroup:GetEquation (...)
     local t = arg
     local num_a, num_b, op
     -- O(n), n==number of args
@@ -141,6 +130,13 @@ function BlockGroup:CanEvalBlocks(...)
             op = block
         end
     end
+    return num_a, op, num_b 
+end
+
+--Accepts variable amounts of blocks and tries to make equation with them
+--in the form of [num, op, num]
+function BlockGroup:CanEvalBlocks(...)
+    local num_a, op, num_b = self:GetEquation(unpack(arg))
     if num_a and num_b and op then
         return num_a, op, num_b 
     else

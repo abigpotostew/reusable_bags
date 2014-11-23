@@ -6,15 +6,27 @@ local BlockGroup = require "plant_math.src.block_group"
 
 local PlantLevel = require "plant_math.src.plant_math_level"
 
+function u:SetUp()
+    physics.start()
+end
+
+function u:TearDown()
+    physics.stop()
+end
+
 local function default_setup(val_a, val_b, operator_type, enable_touch)
     local level_mock = PlantLevel()
     local b_group = BlockGroup(level_mock)
     level_mock:InsertActor(b_group)
-    local num_a = dirt_types.Number(val_a, 5,5,level_mock)
-    local num_b = dirt_types.Number(val_b, 5,5,level_mock)
-    
-    b_group:InsertBlock(num_a)
-    b_group:InsertBlock(num_b)
+    local num_a, num_b
+    if val_a ~= nil then 
+        num_a = dirt_types.Number(val_a, 5,5,level_mock)
+        level_mock:InsertBlock (b_group, num_a)
+    end
+    if val_b ~= nil then
+        num_b = dirt_types.Number(val_b, 5,5,level_mock)
+        level_mock:InsertBlock (b_group, num_b)
+    end
     
     --optional op creation
     local op = nil
@@ -37,7 +49,7 @@ u:Test ( "Evaluate math", function(self)
         mul = {op=dirt_types.Operator(dirt_types.Operator.MUL, 5,5, level_mock), expected = val_a*val_b},
         div = {op=dirt_types.Operator(dirt_types.Operator.DIV, 5,5, level_mock), expected = val_a/val_b} 
         }
-    for k,op in pairs(ops) do b_group:InsertBlock(op.op); end
+    for k,op in pairs(ops) do level_mock:InsertBlock(b_group,op.op); end
     
     for k, op_table in pairs(ops) do
         local num_1a, op_1, num_1b = b_group:CanEvalBlocks(num_a, op_table.op, num_b)
@@ -153,10 +165,41 @@ u:Test ("Remove Blocks On goal", function(self)
     
     num_a:DispatchEvent(num_a.sprite, "block_touch",
             {block = num_a, phase = "began"})
+    self:ASSERT_TRUE (b_group:StackSize() == 1)
     sub_op:DispatchEvent(sub_op.sprite, "block_touch",
             {block = sub_op, phase = "began"})
+    self:ASSERT_TRUE (b_group:StackSize() == 2)
+    num_b:DispatchEvent (num_b.sprite, "block_touch", {block = num_b, phase = "began"})
+    self:ASSERT_TRUE (b_group:StackSize() == 0)
     
-    --TODO
+    level_mock:Destroy()
+end)
+
+u:Test ("Op Queue Order", function(self)
+    local val_a, val_b = 2, 3
+    local level_mock, b_group, num_a, num_b, sub_op = default_setup (val_a, val_b, dirt_types.Operator.SUB, true)
+    
+    num_a:DispatchEvent(num_a.sprite, "block_touch",
+            {block = num_a, phase = "began"})
+    sub_op:DispatchEvent(sub_op.sprite, "block_touch",
+            {block = sub_op, phase = "began"})
+    b_group:Queue(num_b)
+    self:ASSERT_TRUE (b_group:Dequeue() == num_a)
+    self:ASSERT_TRUE (b_group:Dequeue() == sub_op)
+    self:ASSERT_TRUE (b_group:Dequeue() == num_b)
+    
+    level_mock:Destroy()
+end)
+
+u:Test ("Inserting blocks", function(self)
+    local val_a, val_b = nil, nil
+    local level_mock, b_group, num_a, num_b, sub_op = default_setup (val_a, val_b, dirt_types.Operator.SUB, true)
+    
+    num_a = level_mock:SpawnNumberDirt(b_group, 1, 2, 2)
+    num_b = level_mock:SpawnRandomOpDirt(b_group, 2, 2)
+    
+    self:ASSERT_TRUE (b_group:RemoveBlock(num_a))
+    self:ASSERT_TRUE (b_group:RemoveBlock(num_b))
     
     level_mock:Destroy()
 end)

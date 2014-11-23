@@ -7,6 +7,7 @@ local players = 1
 
 local function setup()
     l:SetNumPlayer(2)
+    --physics.setDrawMode("hybrid")
 
 end
 return {l, setup}

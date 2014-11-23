@@ -39,8 +39,6 @@ function PlantMathLevel:init ()
     self:super('init')
     self.collision_groups = collision_groups
     
-    physics.setDrawMode("hybrid")
-    
     self.num_players = 1
     
     self.round = 0
@@ -65,6 +63,13 @@ end
 
 
 --event listener for block group
+function PlantMathLevel:queue_update (event)
+    local b_group = event.target
+    local queue = event.queue
+    
+end
+
+--event listener for block group
 function PlantMathLevel:evaluate(event)
     local b_group = event.target
     if event.result == b_group.goal then
@@ -80,21 +85,22 @@ function PlantMathLevel:evaluate(event)
     end
 end
 
-local function insert_block (plant_level, block_group, block)
+--private
+function PlantMathLevel:InsertBlock (block_group, block)
     block_group:InsertBlock (block)
-    plant_level:InsertActor (block_group)
+    self:InsertActor (block)
     return block
 end
 
 function PlantMathLevel:SpawnNumberDirt( block_group, value, w, h )
     local out = dirt_blocks.Number(value,w,h,self)
-    return insert_block (self, block_group, out)
+    return self:InsertBlock (block_group, out)
 end
 
 
 function PlantMathLevel:SpawnRandomOpDirt (block_group, w,h)
     local out = dirt_blocks.Operator(math.random(1,3),w,h,self)
-    return insert_block (self, block_group, out)
+    return self:InsertBlock (block_group, out)
 end
 
 function PlantMathLevel:SpawnGround (x,y,w,h)
@@ -108,7 +114,6 @@ function PlantMathLevel:CreateBlockGroup(grid_width, grid_height, gridx, gridy)
     local grid_block_width = grid_width/gridx
     local spacing = 1
     local block_size = (grid_width-spacing*gridx)/gridx
-    --local dirt_grid = {}
     local total_blocks_ct = gridx*gridy
     local num_op_blocks = math.floor(total_blocks_ct *self.op_block_ratio)
     local block_idx = 1
@@ -116,7 +121,6 @@ function PlantMathLevel:CreateBlockGroup(grid_width, grid_height, gridx, gridy)
     bgroup1.group = self:GetWorldGroup()
     local x, y = self.width/2-grid_width/2, self.height/2-grid_height/2
     for i=1,self.gridx do
-        --dirt_grid[i]={}
         for j=1,self.gridy do
             local B
             if total_blocks_ct-block_idx <= num_op_blocks or (num_op_blocks>0 and math.random()<=self.op_block_ratio) then
@@ -128,7 +132,6 @@ function PlantMathLevel:CreateBlockGroup(grid_width, grid_height, gridx, gridy)
             local x, y = grid_block_width*(i-1)+x+block_size/2, grid_block_width*(j-1)+y+block_size/2
             B:SetPos (x, y) 
             block_idx = block_idx+1
-            --dirt_grid[i][j] = B
         end
     end
     
