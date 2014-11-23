@@ -183,15 +183,16 @@ end
 
 function PlantMathLevel:DisplayEquationQueue (num_a_value, operator_text, num_b_value)
     local a = num_a_value and type(num_a_value) and string.format("%3d",num_a_value) or ""
-    local op = operator_text or "?"
+    local op = operator_text or ""
     local b = num_b_value and type(num_b_value) and string.format("%3d",num_b_value) or ""
     
     local text = self.equation_text
     if not text then
         text = display.newText{text = "", x=100-36,y=self.height-100,fontSize=36,parent=self:GetWorldGroup(), font=native.systemFont}
         text:setFillColor (1,1,1)
+        text.anchorX = 0
     end
-    
+    --todo not showing operator when deselect op.
     text.text = string.format("%s %s %s", a, op, b)
     
     self.equation_text = text

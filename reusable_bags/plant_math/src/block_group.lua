@@ -33,12 +33,13 @@ end
 function BlockGroup:block_touch(event)
     oLog.Debug("touch "..event.block:describe())
     local in_queue = self:Queue(event.block)
+    self:DispatchEvent(self.sprite, "queue_update", 
+        { target = self, queue={self:GetEquation(unpack(self.queue))} 
+            })
     if #self.queue >= 3 then
         self:EvalStack()
     end
-    self:DispatchEvent(self.sprite, "queue_update", 
-        { target = self, queue={self:GetEquation()} 
-            })
+    
 end
 
 function BlockGroup:InsertBlock (block)
