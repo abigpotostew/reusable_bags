@@ -80,17 +80,21 @@ function PlantMathLevel:evaluate(event)
     end
 end
 
+local function insert_block (plant_level, block_group, block)
+    block_group:InsertBlock (block)
+    plant_level:InsertActor (block_group)
+    return block
+end
+
 function PlantMathLevel:SpawnNumberDirt( block_group, value, w, h )
     local out = dirt_blocks.Number(value,w,h,self)
-    block_group:InsertBlock (out)
-    self:InsertActor (out)
-    return out
+    return insert_block (self, block_group, out)
 end
+
 
 function PlantMathLevel:SpawnRandomOpDirt (block_group, w,h)
     local out = dirt_blocks.Operator(math.random(1,3),w,h,self)
-    block_group:InsertBlock (out)
-    return out
+    return insert_block (self, block_group, out)
 end
 
 function PlantMathLevel:SpawnGround (x,y,w,h)

@@ -42,23 +42,40 @@ function BlockGroup:InsertBlock (block)
     block:AddEventListener (block.sprite, "block_touch", self)
     self.sprite:insert(block.sprite)
     
-    if not self.blocks[block.typeName] then
-        self.blocks[block.typeName] = {}
+    local typeName = block.typeName
+    if not self.blocks[typeName] then
+        self.blocks[typeName] = {}
     end
-    self.blocks[block.typeName][block.id] = block
-    
+    self.blocks[typeName][block.id] = block
 end
 
 function BlockGroup:RemoveBlock (block)
     self.blocks[block.typeName][block.id] = nil
 end
 
+--returns the duplicate block in the list if it exists
+local function duplicate_in_queue (queue, block)
+    return _.detect (queue, function(other)
+        return (block == other)
+    end)
+end
+
+--returns another operator block in queue (if it exists) if the block param is an operator block
+local function duplicate_op_in_queue (queue, block)
+    if not block:IsOp() then
+        return nil
+    end
+    return _.detect (queue, function(other)
+        return other:IsOp()
+    end)
+end
+
 --don't queue duplicate blocks. swap operators if 2 in queue.
 function BlockGroup:Queue(block)
     --push onto end of list
-    local duplicate_block = false
-    local both_ops = false
-    local duplicate = _.detect (self.queue, function(b)
+    local duplicate_block = duplicate_in_queue (self.queue, block)
+    local both_ops = duplicate_op_in_queue (self.queue, block)
+    --[[ local duplicate = _.detect (self.queue, function(b)
             if (block:IsOp() and b:IsOp())then
                 both_ops = true
                 if b==block then duplicate_block = true end
@@ -68,8 +85,9 @@ function BlockGroup:Queue(block)
                 return true
             end
             return false
-        end)
-    if duplicate then
+        end) --]]
+    if duplicate_block or both_ops then
+        local duplicate = duplicate_block or both_ops
         -- remove duplicate from queue, to 'unselect' block
         for i, v in ipairs(self.queue) do
             if v == duplicate then
@@ -80,12 +98,15 @@ function BlockGroup:Queue(block)
         --_.reject(self.queue, function(b) return b==duplicate end)
         
         -- re-insert block if it's an operator, to swap operator
+        
         if duplicate_block then
             block = nil
         end
     end
+    
     if not block then return end
-    if block.typeName == "Operator" then
+
+    if block:IsOp() then
         self.has_operator_queue = true
     end
     table.insert(self.queue,block)
