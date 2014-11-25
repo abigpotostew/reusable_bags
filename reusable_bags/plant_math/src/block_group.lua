@@ -154,7 +154,7 @@ function BlockGroup:EvalStack()
         local a, op_op, b = num_a:Value(), op.op, num_b:Value()
         result = op:Evaluate(num_a, num_b)
         oLog.Verbose(string.format("%d %s %d = %f",a, op_op, b, result))
-        return result, self:DispatchEvent (self.sprite, "evaluate", {target = self, num_a=num_a, op=op,num_b=num_b, result = result})
+        return result, self:DispatchEvent (self.sprite, "evaluate", {target = self, num_a=num_a, op=op, num_b=num_b, result = result})
     end
     return result
 end

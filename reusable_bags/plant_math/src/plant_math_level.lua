@@ -66,7 +66,7 @@ end
 function PlantMathLevel:queue_update (event)
     local b_group = event.target
     local queue = event.queue
-    local a, op, b = unpack(queue)
+    local a, op, b = queue[1], queue[2], queue[3]
     a = a and a.value
     op = op and op.op
     b = b and b.value
@@ -76,6 +76,8 @@ end
 --event listener for block group
 function PlantMathLevel:evaluate(event)
     local b_group = event.target
+    local a, op, b = event.num_a, event.op, event.num_b
+    self:DisplayEquationQueue (a and a:Value(), op and op.op, b and b:Value(), event.result)
     if event.result == b_group.goal then
         oLog("You did it!")
         
@@ -181,10 +183,11 @@ function PlantMathLevel:NextRound()
     self.round = self.round + 1
 end
 
-function PlantMathLevel:DisplayEquationQueue (num_a_value, operator_text, num_b_value)
-    local a = num_a_value and type(num_a_value) and string.format("%3d",num_a_value) or ""
+function PlantMathLevel:DisplayEquationQueue (num_a_value, operator_text, num_b_value, answer)
+    local a = num_a_value and type(num_a_value)=='number' and string.format("%3d",num_a_value) or ""
     local op = operator_text or ""
-    local b = num_b_value and type(num_b_value) and string.format("%3d",num_b_value) or ""
+    local b = num_b_value and type(num_b_value)=='number' and string.format("%3d",num_b_value) or ""
+    answer = answer and type(answer)=='number' and string.format("= %3d",answer) or ""
     
     local text = self.equation_text
     if not text then
@@ -192,10 +195,12 @@ function PlantMathLevel:DisplayEquationQueue (num_a_value, operator_text, num_b_
         text:setFillColor (1,1,1)
         text.anchorX = 0
     end
-    --todo not showing operator when deselect op.
-    text.text = string.format("%s %s %s", a, op, b)
+    --todo not showing operator when deselect number.
+    text.text = string.format("%s %s %s %s", a, op, b, answer)
     
     self.equation_text = text
+    
+    return text
 end
     
 
