@@ -1,6 +1,7 @@
 ----------------------------------------------------------------------------------
 --
 -- level.lua
+-- this is the model for levels
 --
 ----------------------------------------------------------------------------------
 
@@ -20,14 +21,13 @@ local oEvent = require "opal.src.event"
 
 local Actor = require 'opal.src.actor'
 
+--Can listen for events
 local Level = oEvent:extends()
 
 -------------------------------------------------------------------------------
 -- Constructor
 function Level:init()
     --Possibly call super init here
-    
-    
     
     -- Display constants
     self.screenW    = display.contentWidth 

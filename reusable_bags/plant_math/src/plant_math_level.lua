@@ -1,6 +1,7 @@
 --[[---------------------------------------------------------------------------
 
  Plant seeds level
+ This is the controller for the level
 
 -----------------------------------------------------------------------------]]
 
@@ -35,7 +36,7 @@ add_collision('all', 'all', {'all'})
 
 local PlantMathLevel = DebugLevel:extends()
 
-function PlantMathLevel:init ()
+function PlantMathLevel:init (size_w, size_h)
     self:super('init')
     self.collision_groups = collision_groups
     
@@ -43,11 +44,13 @@ function PlantMathLevel:init ()
     
     self.round = 0
     
-    self.gridx, self.gridy = 6, 6
+    self.gridx, self.gridy = size_w or 6, size_h or 6
     self.op_block_ratio = 1/3
     self.width, self.height = self:GetWorldViewSize()
     
     self.player_goals = {}
+    
+    
     
 end
 
@@ -58,19 +61,33 @@ end
 
 function PlantMathLevel:SetGoal(b_group)
     b_group.goal = b_group:GetRandomGoal()
+    self.goal_display:RevealNextGoal(b_group.goal)
     oLog('Goal = '.. tostring(b_group.goal))
 end
 
+function PlantMathLevel:GetCurrentGoal(player)
+    return self:GetPlayerGroup(player).goal
+end
+
+function PlantMathLevel:GetPlayerGroup(player)
+    return self.block_groups[player]
+end
 
 --event listener for block group
 function PlantMathLevel:queue_update (event)
-    local b_group = event.target
+    --local b_group = event.target
     local queue = event.queue
     local a, op, b = queue[1], queue[2], queue[3]
     a = a and a.value
     op = op and op.op
     b = b and b.value
     self:DisplayEquationQueue(a,op,b)
+end
+
+function PlantMathLevel:UpdateGoalDisplay()
+    for i=1, self.num_players do
+        --local 
+    end
 end
 
 --event listener for block group
@@ -91,7 +108,7 @@ function PlantMathLevel:evaluate(event)
     end
 end
 
---private
+
 function PlantMathLevel:InsertBlock (block_group, block)
     block_group:InsertBlock (block)
     self:InsertActor (block)
@@ -166,13 +183,29 @@ function PlantMathLevel:create (event, sceneGroup)
     world_group:insert(self.wall_group)
     
     
+    do
+        local gd = require "plant_math.src.goal_display"
+        local goal_types = require "plant_math.src.goal_display_types"
+        local goal_display = gd(self)
+        goal_display:SetPos(100,100)
+        local num_goals = math.floor(self.gridx*self.gridy/2)
+        goal_display:SetNumGoals ( num_goals )
+        goal_display:CreateHiddenGoalTypes (self,num_goals, goal_types.basic)
+        self.goal_display = goal_display
+    end
+    
     local bg1 = self:CreateBlockGroup(self.height/2, self.height/2, self.gridx, self.gridy)
+    self.block_groups = {bg1}
     self:SetGoal(bg1)
+    
+    
+    
+    
 end
 
 
 function PlantMathLevel:SetNumPlayer (count)
-    self.num_players = 2
+    self.num_players = count
 end
 
 function PlantMathLevel:WorldOffsetX()

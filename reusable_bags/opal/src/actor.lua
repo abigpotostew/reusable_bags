@@ -331,9 +331,10 @@ function Actor:update (...)
     end
 end
 
-function Actor:SetState(state)
-    assert(self.state, "Actor:SetState(): requires state machine member.")
-    self.state:GoToState(state)
+function Actor:SetState(state, ...)
+    assert(self.state or self.state_machine, "Actor:SetState(): requires state machine member.")
+    local sm = self.state or self.state_machine
+    return sm:GoToState(state, unpack(arg))
 end
 
 

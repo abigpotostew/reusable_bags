@@ -1,4 +1,4 @@
--- BlockGroup handles a group of dirt block, listening for touch events, and then handling evaluating the stack of block operations
+-- BlockGroup is the controller for a group of numeric and operator blocks, listening for touch events, and then handling evaluating the stack of block operations
 
 
 local Actor = require 'opal.src.actor'

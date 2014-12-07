@@ -58,6 +58,7 @@ function BaseDirt:CreateBlock (w,h,sprite_data)
     sprite_data.anchorX, sprite_data.anchorY = 0.5, 0.5
     sprite_data.fill_color = sprite_data.fill_color or {1,0,1}
     sprite_data.stroke_color = sprite_data.stroke_color or {0,0,0}
+    sprite_data.stroke_width = sprite_data.stroke_width or 1
     local block = self:buildRectangleSprite (self.sprite, w, h, 0, 0, sprite_data)
     local dd = self.draw_data or {}
     dd.block_data = sprite_data
@@ -138,7 +139,7 @@ function Operator:init(operator, w, h, level)
     oAssert.type(operator, 'number', "Operator dirt block requires a number type for it's operator")
     self.op = self:GetOp(operator)
     self.operator = operator
-    self.block = self:CreateBlock ( w, h, {fill_color=self:GetOpColor(operator), stroke_color={0,0,0}})
+    self.block = self:CreateBlock ( w, h, {fill_color=self:GetOpColor(operator), stroke_color={0,0,0}, stroke_width=4})
     self:AddLabel(self.op, {x=0,y=0})
     --self:addPhysics({bodyType='dynamic',category='all',colliders={'all'}})
 end
@@ -190,7 +191,7 @@ function Number:init(value, w, h, level)
     oAssert.type(value, 'number', "Number dirt block requires a number for it's value")
     self.value = value
     self.block = self:CreateBlock ( w, h, {fill_color=
-            {.850980392, .925490196,.631372549 }, stroke_color={0,0,0}})
+            {.850980392, .925490196,.631372549 }, stroke_color={0,0,0}, stroke_width=4})
     self:AddLabel(string.format("%d",value),{x=0,y=0})
 end
 
