@@ -59,7 +59,7 @@ u:Test ( "Evaluate math", function(self)
         self:ASSERT_TRUE ( actual == op_table.expected )
     end
     
-    level_mock:Destroy()
+    level_mock:DestroyLevel()
 end)
 
 u:Test ( "Evaluation Stack", function(self)
@@ -105,7 +105,7 @@ u:Test ( "Evaluation Stack", function(self)
     
     
     --clean up
-    level_mock:Destroy()
+    level_mock:DestroyLevel()
 end)
 
 u:Test ("Prevent Queue Duplicates", function(self)
@@ -137,7 +137,7 @@ u:Test ("Prevent Queue Duplicates", function(self)
     
     
     --clean up
-    level_mock:Destroy()
+    level_mock:DestroyLevel()
 end)
 
 
@@ -154,7 +154,7 @@ u:Test ("Random Goal", function(self)
     
     self:ASSERT_TRUE( random_goal == actual_goal1 or random_goal == actual_goal2)
     
-    level_mock:Destroy()
+    level_mock:DestroyLevel()
 end)
 
 u:Test ("Remove Blocks On goal", function(self)
@@ -172,7 +172,7 @@ u:Test ("Remove Blocks On goal", function(self)
     num_b:DispatchEvent (num_b.sprite, "block_touch", {block = num_b, phase = "began"})
     self:ASSERT_TRUE (b_group:StackSize() == 0)
     
-    level_mock:Destroy()
+    level_mock:DestroyLevel()
 end)
 
 u:Test ("Op Queue Order", function(self)
@@ -188,7 +188,7 @@ u:Test ("Op Queue Order", function(self)
     self:ASSERT_TRUE (b_group:Dequeue() == sub_op)
     self:ASSERT_TRUE (b_group:Dequeue() == num_b)
     
-    level_mock:Destroy()
+    level_mock:DestroyLevel()
 end)
 
 u:Test ("Inserting blocks", function(self)
@@ -201,7 +201,20 @@ u:Test ("Inserting blocks", function(self)
     self:ASSERT_TRUE (b_group:RemoveBlock(num_a))
     self:ASSERT_TRUE (b_group:RemoveBlock(num_b))
     
-    level_mock:Destroy()
+    level_mock:DestroyLevel()
+end)
+
+u:Test ("Display goal", function(self)
+    local val_a, val_b = 3, 7
+    local level_mock, b_group, num_a, num_b, sub_op = default_setup (val_a, val_b, dirt_types.Operator.SUB, true)
+    
+    num_a = level_mock:SpawnNumberDirt(b_group, 1, 2, 2)
+    num_b = level_mock:SpawnRandomOpDirt(b_group, 2, 2)
+    
+    self:ASSERT_TRUE (b_group:RemoveBlock(num_a))
+    self:ASSERT_TRUE (b_group:RemoveBlock(num_b))
+    
+    level_mock:DestroyLevel()
 end)
 
 return u

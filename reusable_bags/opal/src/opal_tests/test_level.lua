@@ -12,7 +12,7 @@ u:Test("Destroy level", function(self)
     _.each(actors, function(a) level_mock:InsertActor(a) end)
     self:ASSERT_TRUE(actors[1].sprite)
     
-    level_mock:Destroy()
+    level_mock:DestroyLevel()
     self:ASSERT_FALSE (actors[1].sprite)
 end)
 

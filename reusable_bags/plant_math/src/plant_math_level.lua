@@ -12,6 +12,8 @@ local Actor = require 'opal.src.actor'
 local dirt_blocks = require "plant_math.src.dirt_types"
 local BlockGroup = require "plant_math.src.block_group"
 
+local composer = require 'composer'
+
 local collision_groups = require "opal.src.collision"
 collision_groups.SetGroups{'all'}--[[
     'all',
@@ -184,8 +186,8 @@ function PlantMathLevel:create (event, sceneGroup)
     
     
     do
-        local gd = require "plant_math.src.goal_display"
-        local goal_types = require "plant_math.src.goal_display_types"
+        local gd = require "plant_math.src.display.goal_display"
+        local goal_types = require "plant_math.src.display.goal_display_types"
         local goal_display = gd(self)
         goal_display:SetPos(100,100)
         local num_goals = math.floor(self.gridx*self.gridy/2)
@@ -198,9 +200,23 @@ function PlantMathLevel:create (event, sceneGroup)
     self.block_groups = {bg1}
     self:SetGoal(bg1)
     
+    local button = display.newRect(self.width-110,10,100,100)
+    button:addEventListener('touch', function(e)
+        if e.phase=='ended' then
+            composer.removeScene('opal.src.levelScene')
+        end
+    end)
+
     
+end
+
+function PlantMathLevel:DestroyLevel (event, sceneGroup)
     
-    
+    physics.stop()
+    if self.goal_display then 
+        self.goal_display:removeSelf()
+    end
+    self:super("DestroyLevel")
 end
 
 

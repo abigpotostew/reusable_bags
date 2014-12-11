@@ -43,10 +43,8 @@ function GoalDisplay:RevealNextGoal(...)
     next_goal:SetState(next_goal.state_ids.REVEAL, next_goal, unpack(arg))
 end
 
---init is a function that returns a single goal display item with initial settings
---hidden_display_func is a funciton that accepts the object returned by 'init', and returns an object modified in some way for when the object is in a hidden state
-function GoalDisplay:CreateGoalType(init, hidden_display_func, reveal_display_func)
-    return {init = init, hidden=hidden_display_func, reveal=reveal_display_func}
+function GoalDisplay:GetCurrentGoal()
+    return 
 end
 
 return GoalDisplay

@@ -120,8 +120,7 @@ function Level:hide (event)
     
 end
 
-function Level:Destroy()
-    physics.stop()
+function Level:DestroyLevel()
     
     for _, timerToStop in ipairs(self.timers) do
         timer.cancel(timerToStop)
@@ -151,18 +150,8 @@ function Level:Destroy()
     self.actors = {}
 end
 
-function Level:touchListener (event)
-    
-    
-end
-
--- If scene's view is removed, scene:destroyScene() will be called just prior to:
-function Level:destroyScene (event)
-	local group = self.sceneGroup
-	
-	package.loaded[physics] = nil
-	physics = nil
-end
+--function Level:touchListener (event)    
+--end
 
 
 --------------------------------------------

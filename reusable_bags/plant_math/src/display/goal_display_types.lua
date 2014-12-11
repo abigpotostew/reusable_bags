@@ -1,4 +1,4 @@
-local GoalDisplayType = require "plant_math.src.goal_display_type"
+local GoalDisplayType = require "plant_math.src.display.goal_display_type"
 
 local function basic(level)
     local t = GoalDisplayType(level)
@@ -16,7 +16,8 @@ local function basic(level)
     end
     local destroy = {}
     destroy.enter = function(self)
-        self.text:removeSelf()
+        --self.text:removeSelf()
+        self:removeSelf()
     end
     t.states = {
             [t.state_ids.HIDDEN]=hidden,

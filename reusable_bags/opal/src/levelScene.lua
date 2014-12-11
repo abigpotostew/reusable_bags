@@ -46,7 +46,7 @@ function scene:destroy( event )
 
    local sceneGroup = self.view
 
-   self.level:destroy( event, sceneGroup )
+   self.level:DestroyLevel( event, sceneGroup )
    
    self.level = nil
    
