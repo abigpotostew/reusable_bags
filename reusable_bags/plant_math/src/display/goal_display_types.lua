@@ -26,6 +26,10 @@ local function basic(level)
     t:SetupStates (t.states)
     return t
 end
+
+local function timer_basic (level)
+    
+end
     
 return {
     basic=basic,

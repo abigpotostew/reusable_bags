@@ -196,7 +196,7 @@ u:Test ("Inserting blocks", function(self)
     local level_mock, b_group, num_a, num_b, sub_op = default_setup (val_a, val_b, dirt_types.Operator.SUB, true)
     
     num_a = level_mock:SpawnNumberDirt(b_group, 1, 2, 2)
-    num_b = level_mock:SpawnRandomOpDirt(b_group, 2, 2)
+    num_b = level_mock:SpawnOperatorBlock(b_group, 2, 2)
     
     self:ASSERT_TRUE (b_group:RemoveBlock(num_a))
     self:ASSERT_TRUE (b_group:RemoveBlock(num_b))
@@ -209,7 +209,7 @@ u:Test ("Display goal", function(self)
     local level_mock, b_group, num_a, num_b, sub_op = default_setup (val_a, val_b, dirt_types.Operator.SUB, true)
     
     num_a = level_mock:SpawnNumberDirt(b_group, 1, 2, 2)
-    num_b = level_mock:SpawnRandomOpDirt(b_group, 2, 2)
+    num_b = level_mock:SpawnOperatorBlock(b_group, 2, 2)
     
     self:ASSERT_TRUE (b_group:RemoveBlock(num_a))
     self:ASSERT_TRUE (b_group:RemoveBlock(num_b))

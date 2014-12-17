@@ -122,10 +122,15 @@ function PlantMathLevel:SpawnNumberDirt( block_group, value, w, h )
     return self:InsertBlock (block_group, out)
 end
 
+local function spawn_operator_block (level, block_group, w, h, block_selections)
+    block_selections = block_selections or {1,2,3}
+    local random_op = block_selections[math.random (#block_selections)]
+    local out = dirt_blocks.Operator (random_op, w, h, level)
+    return level:InsertBlock (block_group, out)
+end
 
-function PlantMathLevel:SpawnRandomOpDirt (block_group, w,h)
-    local out = dirt_blocks.Operator(math.random(1,3),w,h,self)
-    return self:InsertBlock (block_group, out)
+function PlantMathLevel:SpawnOperatorBlock (block_group, w, h, block_selections)
+    return spawn_operator_block (self, block_group, w, h, block_selections)
 end
 
 function PlantMathLevel:SpawnGround (x,y,w,h)
@@ -149,7 +154,7 @@ function PlantMathLevel:CreateBlockGroup(grid_width, grid_height, gridx, gridy)
         for j=1,self.gridy do
             local B
             if total_blocks_ct-block_idx <= num_op_blocks or (num_op_blocks>0 and math.random()<=self.op_block_ratio) then
-                B = self:SpawnRandomOpDirt(bgroup1, block_size,block_size)
+                B = spawn_operator_block(self, bgroup1, block_size,block_size)
                 num_op_blocks = num_op_blocks-1
             else
                 B = self:SpawnNumberDirt(bgroup1, math.random(10),block_size,block_size)
@@ -172,6 +177,25 @@ function PlantMathLevel:CreateBlockGroup(grid_width, grid_height, gridx, gridy)
     return bgroup1
 end
 
+-- todo: accept num players
+local function create_goal_displays (self)
+    local gd = require "plant_math.src.display.goal_display"
+    local goal_types = require "plant_math.src.display.goal_display_types"
+    local goal_display = gd(self)
+    goal_display:SetPos(100,100)
+    local num_goals = math.floor(self.gridx*self.gridy/2)
+    goal_display:SetNumGoals ( num_goals )
+    goal_display:CreateHiddenGoalTypes (self,num_goals, goal_types.basic)
+    self.goal_display = goal_display
+end
+
+--todo: accept number of players
+local function setup_block_groups(self)
+    local bg1 = self:CreateBlockGroup(self.height/2, self.height/2, self.gridx, self.gridy)
+    self.block_groups = {bg1}
+    self:SetGoal(bg1)
+end
+
 --called when scene is in view
 function PlantMathLevel:create (event, sceneGroup)
     physics.start()
@@ -185,33 +209,20 @@ function PlantMathLevel:create (event, sceneGroup)
     world_group:insert(self.wall_group)
     
     
-    do
-        local gd = require "plant_math.src.display.goal_display"
-        local goal_types = require "plant_math.src.display.goal_display_types"
-        local goal_display = gd(self)
-        goal_display:SetPos(100,100)
-        local num_goals = math.floor(self.gridx*self.gridy/2)
-        goal_display:SetNumGoals ( num_goals )
-        goal_display:CreateHiddenGoalTypes (self,num_goals, goal_types.basic)
-        self.goal_display = goal_display
-    end
+    --setup for a round
+    create_goal_displays(self)
+    setup_block_groups(self)
     
-    local bg1 = self:CreateBlockGroup(self.height/2, self.height/2, self.gridx, self.gridy)
-    self.block_groups = {bg1}
-    self:SetGoal(bg1)
-    
+    --Create test button to change scene
     local button = display.newRect(self.width-110,10,100,100)
     button:addEventListener('touch', function(e)
         if e.phase=='ended' then
             composer.removeScene('opal.src.levelScene')
         end
     end)
-
-    
 end
 
 function PlantMathLevel:DestroyLevel (event, sceneGroup)
-    
     physics.stop()
     if self.goal_display then 
         self.goal_display:removeSelf()

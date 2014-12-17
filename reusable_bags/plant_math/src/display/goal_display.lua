@@ -43,6 +43,7 @@ function GoalDisplay:RevealNextGoal(...)
     next_goal:SetState(next_goal.state_ids.REVEAL, next_goal, unpack(arg))
 end
 
+--TODO
 function GoalDisplay:GetCurrentGoal()
     return 
 end
