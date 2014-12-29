@@ -220,7 +220,7 @@ end)
 u:Test ("Operator Selections", function(self)
     local level_mock, b_group = default_setup (nil, nil, nil, true)
     
-    local ops = {1}
+    local ops = {1,2,3}
     
     local op = level_mock:SpawnOperatorBlock(b_group, 2, 2, ops)
     
