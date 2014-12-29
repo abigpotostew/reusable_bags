@@ -19,7 +19,8 @@ u:Test ("Setup_custom_module", function(self)
     local function m(name,path)
         return {name=name,path=path}
     end
-    opal:Setup({skip_scene_creation=true, modules = {m('OpalTestGlobal', 'opal.src.opal')}})
+    local options = opal:GetOptions():Set("skip_scene_creation",true):Set("modules", {m('OpalTestGlobal', 'opal.src.opal')})
+    opal:Setup(options)
     self:ASSERT_TRUE (_G.OpalTestGlobal)
 end)
 

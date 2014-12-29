@@ -3,6 +3,7 @@
 -- Require this once in setup.
 ----------------------------------------------------------------------------------------
 local _ = require "opal.libs.underscore"
+local oUtil = require 'opal.src.utils.util'
 
 local function opal_assert(condition, error_msg)
     assert (condition, error_msg)
@@ -21,7 +22,7 @@ local function opal_assert_multi_type(obj_type, error_msg, ...)
     return true
 end
 
-local on_device = not (system.getInfo("environment") == "device" )
+local on_device = (system.getInfo("environment") == "device" )
 if on_device then
     opal_assert, opal_assert_type = function()end, function()end
 end

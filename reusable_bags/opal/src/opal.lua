@@ -4,6 +4,7 @@ local _ = require "opal.libs.underscore"
 
 function Opal:init(name)
     self:super("init", name or "Opal Instance")
+    self:GetOptions()
 end
 
 local function run_tests(setup, teardown)
@@ -29,44 +30,55 @@ local function load_modules(module_paths_and_name)
 end
 
 function Opal:Setup(options)
-    options = options or {}
     self.options = options
-    load_modules(options.modules)
+    load_modules(self:Option('modules'))
     
-    math.randomseed(options.random_seed or os.time())
+    math.randomseed(self:Option('random_seed') or os.time())
     
     Runtime:addEventListener("enterFrame", oTime)
     
-    oLog.SetLogLevel (options.log_level or oLog.DEBUG)
+    oLog.SetLogLevel (self:Option('log_level') or oLog.DEBUG)
     
-    if options.multitouch then
+    if self:Option('multitouch') then
         system.activate( "multitouch" )
     end
     
 end
 
+function Opal:Option(name)
+    return self.options:Get(name)
+end
+
 --Kick off unit tests and game
 function Opal:Begin()
-    if self.options.run_all_tests or self.options.tests_only then
-        run_tests(self.options.global_test_setup,self.options.global_test_teardown)
-        if self.options.tests_only then
+    if self:Option('run_all_tests') or self.options:Get('tests_only') then
+        run_tests(self:Option('global_test_setup'),self:Option('global_test_teardown'))
+        if self:Option('tests_only') then
             os.exit(0)
             return
         end
     end
     
-    
-    
-    if self.options.skip_scene_creation then
+    if self:Option('skip_scene_creation') then
         return
     end
     
     local composer = require "composer"
-    composer.gotoScene('opal.src.levelScene', self.options.game)
+    local entry_scene = self:Option('entry_scene')
+    local game_parms = {params=self:Option("game")}
+    composer.gotoScene (entry_scene, game_parms)
+    --composer.gotoScene('opal.src.levelScene', self.options.game)
 end
 
 function Opal:Destroy()
     --cleanup code
+end
+
+function Opal:GetOptions()
+    if not self.options then
+        self.options = require 'opal.src.utils.chain' ()
+    end
+    return self.options
 end
 
 return Opal
