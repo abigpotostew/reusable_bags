@@ -217,4 +217,21 @@ u:Test ("Display goal", function(self)
     level_mock:DestroyLevel()
 end)
 
+u:Test ("Operator Selections", function(self)
+    local level_mock, b_group = default_setup (nil, nil, nil, true)
+    
+    local ops = {1}
+    
+    local op = level_mock:SpawnOperatorBlock(b_group, 2, 2, ops)
+    
+    local op_spawned = _.detect( ops, function(op_type)
+            return op.operator == op_type
+        end)
+    if not op_spawned then
+        self:ASSERT_TRUE (false)
+    end
+    
+    level_mock:DestroyLevel()
+end)
+
 return u

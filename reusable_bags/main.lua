@@ -33,22 +33,7 @@ local game_options = opal:GetOptions()
     :Set('entry_scene', "plant_math.menu.main_menu")
     :Set('game', {level="plant_math.levels.level1"})
     :Set("debug_draw", true)
-    
-local old_game_options = {
-        run_all_tests=true,
-        tests_only = false, -- runs only tests
-        global_test_setup = test_setup,
-        global_test_teardown = test_teardown,
-        game = {
-            params={
---                level = "plant_seed.levels.level1", --initial level of game
-                entry_scene="plant_math.menu.main_menu",
-                  level="plant_math.levels.level1",
-                debug_draw = true
-                }
-            }
-        
-    }
+
 
 
 
