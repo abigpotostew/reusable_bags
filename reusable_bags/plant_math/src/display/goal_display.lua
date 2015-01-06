@@ -23,8 +23,8 @@ function GoalDisplay:CreateHiddenGoalTypes(level,num_goals,goal_type)
     self.goals = {}
     for i=1,num_goals do
         -- create goal type
-        local goal_display_object = goal_type(level)
-        goal_display_object:SetState(goal_display_object.state_ids.HIDDEN)
+        local goal_display_object = goal_type(level, i)
+        goal_display_object:SetState(goal_display_object.state_ids.HIDDEN, goal_display_object)
         self.sprite:insert(goal_display_object.sprite)
         table.insert(self.goals, goal_display_object)
     end

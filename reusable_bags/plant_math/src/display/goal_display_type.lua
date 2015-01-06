@@ -10,9 +10,10 @@ local state_ids = {HIDDEN=1, REVEAL=2, DESTROY=3}
 
 local GoalDisplayType = Actor:extends({state_ids=state_ids})
 
-function GoalDisplayType:init (level)
+function GoalDisplayType:init (level, id)
     self:super("init", {typeName="GoalDisplayType"}, level)
     
+    self.id = id
     self.sprite = display.newGroup()
     self.state_machine = stateMachine.Create()
 end

@@ -1,18 +1,29 @@
 local GoalDisplayType = require "plant_math.src.display.goal_display_type"
 
-local function basic(level)
-    local t = GoalDisplayType(level)
+local function basic(level, id)
+    local t = GoalDisplayType(level, id)
+    local width = 45
+    local radius = 15
     local hidden = {}
     
-    hidden.enter = function()end
+    hidden.enter = function (self)
+        self.circle = display.newCircle( self.id * width, 0, radius )      
+        
+        self.sprite:insert(
+            self.circle
+            )
+    end
     
     local reveal = {}
     
-    reveal.enter = function(self,goal_text)
-        local text = display.newText{text = tostring(goal_text), x=0,y=0,fontSize=24,parent=self.sprite, font=native.systemFont}
+    reveal.enter = function (self, goal_text)
+        local text = display.newText{text = tostring(goal_text), x= self.id * width,y=0,fontSize=24,parent=self.sprite, font=native.systemFont}
         text:setFillColor (1,1,1)
         text.anchorX = 0
         self.text = text
+        
+        transition.to(self.circle, {xScale=0.0001, yScale=0.0001, time=300, transition=easing.inOutCubic, onComplete=function()
+                self.circle:removeSelf() end}) 
     end
     local destroy = {}
     destroy.enter = function(self)
