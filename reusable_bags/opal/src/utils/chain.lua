@@ -28,9 +28,13 @@ function Chain:Get(property_id)
 end
 
 --Allows chaining
-function Chain:Set(property_id, value)
+function Chain:Set (property_id_or_table, value)
     local copy = Chain(self)
-    copy.properties[property_id] = value
+    if type(property_id_or_table)=='table' then
+        _.extend (copy.properties, property_id_or_table)
+    else
+        copy.properties[property_id_or_table] = value
+    end
     return copy
 end
     

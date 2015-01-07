@@ -12,6 +12,8 @@ local Actor = require 'opal.src.actor'
 local dirt_blocks = require "plant_math.src.dirt_types"
 local BlockGroup = require "plant_math.src.block_group"
 
+local Chain = require 'opal.src.utils.chain'
+
 local composer = require 'composer'
 
 local collision_groups = require "opal.src.collision"
@@ -42,18 +44,38 @@ function PlantMathLevel:init (size_w, size_h)
     self:super('init')
     self.collision_groups = collision_groups
     
-    self.num_players = 1
+    local settings_default = {
+        num_players = 1,
+        round = 0,
+        grid_columns = 6,
+        grid_rows = 6,
+        
+    }
     
-    self.round = 0
     
-    self.gridx, self.gridy = size_w or 6, size_h or 6
     self.op_block_ratio = 1/3
+    
+    --self.num_players = 1
+    
+    --self.round = 0
+    
+    --self.gridx, self.gridy = size_w or 6, size_h or 6
+    --self.op_block_ratio = 1/3
     self.width, self.height = self:GetWorldViewSize()
     
     self.player_goals = {}
     
+    self.settings = Chain():Set(settings_default)
     
-    
+end
+
+function PlantMathLevel:Setting(k, v)
+    self.settings = self.settings:Set(k, v)
+    return self
+end
+
+function PlantMathLevel:GetSetting(s)
+    return self.settings:Get(s)
 end
 
 -- called after levelX.lua setup
@@ -87,7 +109,8 @@ function PlantMathLevel:queue_update (event)
 end
 
 function PlantMathLevel:UpdateGoalDisplay()
-    for i=1, self.num_players do
+    local num_players = self.settings:Get('num_players')
+    for i=1, num_players do
         --local 
     end
 end
@@ -140,18 +163,19 @@ function PlantMathLevel:SpawnGround (x,y,w,h)
     g:addPhysics({bodyType="static", category='all',colliders={'all'},friction=1})
 end
 
-function PlantMathLevel:CreateBlockGroup(grid_width, grid_height, gridx, gridy)
-    local grid_block_width = grid_width/gridx
+function PlantMathLevel:CreateBlockGroup(grid_width, grid_height, grid_cols, grid_rows, op_block_ratio)
+    local grid_block_width = grid_width/grid_cols
     local spacing = 1
-    local block_size = (grid_width-spacing*gridx)/gridx
-    local total_blocks_ct = gridx*gridy
-    local num_op_blocks = math.floor(total_blocks_ct *self.op_block_ratio)
+    local block_size = (grid_width-spacing*grid_cols)/grid_cols
+    local total_blocks_ct = grid_cols*grid_rows
+    local num_op_blocks = math.floor(total_blocks_ct *op_block_ratio)
     local block_idx = 1
     local bgroup1 = BlockGroup(self)
     bgroup1.group = self:GetWorldGroup()
     local x, y = self.width/2-grid_width/2, self.height/2-grid_height/2
-    for i=1,self.gridx do
-        for j=1,self.gridy do
+    --local gridx, gridy = self.settings:Get('grid_width'), self.settings:Get('grid_height')
+    for i=1,grid_cols do
+        for j=1,grid_rows do
             local B
             if total_blocks_ct-block_idx <= num_op_blocks or (num_op_blocks>0 and math.random()<=self.op_block_ratio) then
                 B = spawn_operator_block(self, bgroup1, block_size,block_size)
@@ -183,7 +207,8 @@ local function create_goal_displays (self)
     local goal_types = require "plant_math.src.display.goal_display_types"
     local goal_display = gd(self)
     goal_display:SetPos(100,100)
-    local num_goals = math.floor(self.gridx*self.gridy/2)
+    local grid_columns, grid_rows = self.settings:Get ('grid_columns'), self.settings:Get('grid_rows')
+    local num_goals = math.floor (grid_columns * grid_rows/2)
     goal_display:SetNumGoals ( num_goals )
     goal_display:CreateHiddenGoalTypes (self,num_goals, goal_types.basic)
     self.goal_display = goal_display
@@ -191,7 +216,7 @@ end
 
 --todo: accept number of players
 local function setup_block_groups(self)
-    local bg1 = self:CreateBlockGroup(self.height/2, self.height/2, self.gridx, self.gridy)
+    local bg1 = self:CreateBlockGroup(self.height/2, self.height/2, self.settings:Get('grid_columns'), self.settings:Get('grid_rows'), self.op_block_ratio )
     self.block_groups = {bg1}
     self:SetGoal(bg1)
 end
@@ -228,11 +253,6 @@ function PlantMathLevel:DestroyLevel (event, sceneGroup)
         self.goal_display:removeSelf()
     end
     self:super("DestroyLevel")
-end
-
-
-function PlantMathLevel:SetNumPlayer (count)
-    self.num_players = count
 end
 
 function PlantMathLevel:WorldOffsetX()
