@@ -140,20 +140,20 @@ function PlantMathLevel:InsertBlock (block_group, block)
     return block
 end
 
-function PlantMathLevel:SpawnNumberDirt( block_group, value, w, h )
+function PlantMathLevel:SpawnNumberDirt( block_group, value, w, h, number_selections )
     local out = dirt_blocks.Number(value,w,h,self)
     return self:InsertBlock (block_group, out)
 end
 
-local function spawn_operator_block (level, block_group, w, h, block_selections)
-    block_selections = block_selections or {1,2,3}
-    local random_op = block_selections[math.random (#block_selections)]
+local function spawn_operator_block (level, block_group, w, h, operator_selections)
+    operator_selections = operator_selections or {1,2,3}
+    local random_op = operator_selections[math.random (#operator_selections)]
     local out = dirt_blocks.Operator (random_op, w, h, level)
     return level:InsertBlock (block_group, out)
 end
 
-function PlantMathLevel:SpawnOperatorBlock (block_group, w, h, block_selections)
-    return spawn_operator_block (self, block_group, w, h, block_selections)
+function PlantMathLevel:SpawnOperatorBlock (block_group, w, h, operator_selections)
+    return spawn_operator_block (self, block_group, w, h, operator_selections)
 end
 
 function PlantMathLevel:SpawnGround (x,y,w,h)
@@ -163,7 +163,8 @@ function PlantMathLevel:SpawnGround (x,y,w,h)
     g:addPhysics({bodyType="static", category='all',colliders={'all'},friction=1})
 end
 
-function PlantMathLevel:CreateBlockGroup(grid_width, grid_height, grid_cols, grid_rows, op_block_ratio)
+function PlantMathLevel:CreateBlockGroup(grid_width, grid_height, grid_cols, grid_rows, op_block_ratio, number_selections, operator_selections)
+    number_selections = number_selections or {1,2,3,4,5,6,7,8,9}
     local grid_block_width = grid_width/grid_cols
     local spacing = 1
     local block_size = (grid_width-spacing*grid_cols)/grid_cols
@@ -178,10 +179,10 @@ function PlantMathLevel:CreateBlockGroup(grid_width, grid_height, grid_cols, gri
         for j=1,grid_rows do
             local B
             if total_blocks_ct-block_idx <= num_op_blocks or (num_op_blocks>0 and math.random()<=self.op_block_ratio) then
-                B = spawn_operator_block(self, bgroup1, block_size,block_size)
+                B = spawn_operator_block (self, bgroup1,  block_size, block_size, operator_selections)
                 num_op_blocks = num_op_blocks-1
             else
-                B = self:SpawnNumberDirt(bgroup1, math.random(10),block_size,block_size)
+                B = self:SpawnNumberDirt(bgroup1, number_selections[math.random(#number_selections)],block_size,block_size)
             end
             local x, y = grid_block_width*(i-1)+x+block_size/2, grid_block_width*(j-1)+y+block_size/2
             B:SetPos (x, y) 
@@ -215,8 +216,8 @@ local function create_goal_displays (self)
 end
 
 --todo: accept number of players
-local function setup_block_groups(self)
-    local bg1 = self:CreateBlockGroup(self.height/2, self.height/2, self.settings:Get('grid_columns'), self.settings:Get('grid_rows'), self.op_block_ratio )
+local function setup_block_groups(self, op_block_ratio, number_selections, operator_selections)
+    local bg1 = self:CreateBlockGroup(self.height/2, self.height/2, self.settings:Get('grid_columns'), self.settings:Get('grid_rows'), op_block_ratio, number_selections, operator_selections )
     self.block_groups = {bg1}
     self:SetGoal(bg1)
 end
@@ -236,7 +237,7 @@ function PlantMathLevel:create (event, sceneGroup)
     
     --setup for a round
     create_goal_displays(self)
-    setup_block_groups(self)
+    setup_block_groups(self, self.op_block_ratio, self:GetSetting ('number_selections'), self:GetSetting ('operator_selections'))
     
     --Create test button to change scene
     local button = display.newRect(self.width-110,10,100,100)
