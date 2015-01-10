@@ -4,21 +4,23 @@
 ----------------------------------------------------------------------------------
 
 local LCS = require "opal.libs.LCS"
+local oEvent = require "opal.src.event"
 
-local oTime = LCS.class.abstract({
+local oTime = oEvent:extends({
         fps             = display.fps,          -- constant
         s_per_frame     = 1/display.fps,        --constant
         ms_per_frame    = 1/display.fps * 1000, -- constant
         elapsed_time    = system.getTimer(),    -- initial time, mutable
         frame_count     = 0,                    -- number of frame since app started
-        ms_per_frame    = 0,
+        --ms_per_frame    = 0,
         last_frame_time = system.getTimer(),
         initial_time    = system.getTimer(),    -- never changed
         delta_time      = 0
     })
 
 function oTime:init()
-    -- Intentionally left blank, Time is an static class.
+    -- blank object to create event listeners against
+    self.phony_subject = display.newGroup()
 end
 
 function oTime:describe()

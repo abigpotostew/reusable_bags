@@ -18,6 +18,7 @@ local _ = require 'opal.libs.underscore'
 local collision = require "opal.src.collision"
 local Vector2 = require 'opal.src.vector2'
 local oEvent = require "opal.src.event"
+local Chain = require 'opal.src.utils.chain'
 
 local Actor = require 'opal.src.actor'
 
@@ -51,6 +52,8 @@ function Level:init()
 	self.timers = {}
 	self.transitions = {}
 	self.listeners = {}
+    
+    self.settings = Chain()
 
 end
 
@@ -103,8 +106,6 @@ function Level:show (event, sceneGroup)
     elseif event.phase == 'did' then 
         physics.start()
         Runtime:addEventListener("enterFrame", self)
-        self:ProcessTimeline()
-        self:PeriodicCheck()
     end
 end
 
@@ -239,6 +240,14 @@ end
 -------------------------------------------------------------------------------
 
 
+function Level:Setting(k, v)
+    self.settings = self.settings:Set(k, v)
+    return self
+end
+
+function Level:GetSetting(s)
+    return self.settings:Get(s)
+end
 
 function Level:GetWorldGroup ()
 	return self.world_group
@@ -264,10 +273,6 @@ function Level:GetWorldViewSize ()
 	return self.width, self.height
 end
 
-function Level:CreateTimer (secondsDelay, onTimer)
-	table.insert(self.timers, timer.performWithDelay(secondsDelay * 1000, onTimer))
-end
-
 function Level:CreateListener (object, name, listener)
 	table.insert(self.listeners, {object = object, name = name, listener = listener})
 	object:addEventListener(name, listener)
@@ -281,10 +286,36 @@ end
 -----------------------------------------------------------------------------------------
 -- Timeline functions
 ----------------------------------------------------------------------------------------
-function Level:TimelineWait (seconds)
-	table.insert(self.timeline, function() return seconds end)
+
+local function timeline_insert_back (timeline, callback)
+    table.insert(timeline, callback)
 end
 
+local function timeline_insert_front (timeline, callback)
+    table.insert(timeline, 1, callback)
+end
+
+local function timeline_add_wait_event (timeline, event, insert_func, seconds)
+    if seconds and type(seconds)=='number' then
+        insert_func (timeline,function() return seconds end)
+    end
+    event and type(event)=='function' and insert_func (timeline, event)
+end
+
+function Level:TimelineWait (seconds)
+    timeline_add_wait_event (self.timeline, nil, seconds, timeline_insert_back)
+end
+
+-- Queues an event in timeline, with optional wait time before event is triggered in timeline
+function Level:TimelineAddEvent (onTimer, seconds)
+    timeline_add_wait_event ( self.timeline, onTimer, seconds, timeline_insert_back)
+end
+
+function Level:TimelineAddEventFront (onTimer, seconds)
+    timeline_add_wait_event (self.timeline, onTimer, seconds, timeline_insert_front)
+end
+
+--stops processing timeline if timeline is empty
 function Level:ProcessTimeline ()
 	while #self.timeline ~= 0 do
 		local event = table.remove(self.timeline, 1)
@@ -294,6 +325,11 @@ function Level:ProcessTimeline ()
 			break
 		end
 	end
+end
+
+-- creates and begins timer immediately
+function Level:CreateTimer (secondsDelay, onTimer)
+	table.insert(self.timers, timer.performWithDelay(secondsDelay * 1000, onTimer))
 end
 
 

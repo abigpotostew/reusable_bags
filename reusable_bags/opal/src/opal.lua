@@ -21,7 +21,7 @@ local function load_modules(module_paths_and_name)
     --standard opal setup
     oUtil = require "opal.src.utils.util"
     oLog = require "opal.src.utils.log"
-    oTime = require "opal.src.utils.time"
+    oTime = require "opal.src.utils.time"() --instance of time
     oAssert = require "opal.src.utils.assert"
     oMath = require "opal.src.utils.math"
     -- Put GLOBAL table in _G

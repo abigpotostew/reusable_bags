@@ -12,8 +12,6 @@ local Actor = require 'opal.src.actor'
 local dirt_blocks = require "plant_math.src.dirt_types"
 local BlockGroup = require "plant_math.src.block_group"
 
-local Chain = require 'opal.src.utils.chain'
-
 local composer = require 'composer'
 
 local collision_groups = require "opal.src.collision"
@@ -51,31 +49,14 @@ function PlantMathLevel:init (size_w, size_h)
         grid_rows = 6,
         
     }
-    
-    
     self.op_block_ratio = 1/3
     
-    --self.num_players = 1
-    
-    --self.round = 0
-    
-    --self.gridx, self.gridy = size_w or 6, size_h or 6
-    --self.op_block_ratio = 1/3
     self.width, self.height = self:GetWorldViewSize()
     
     self.player_goals = {}
     
-    self.settings = Chain():Set(settings_default)
+    self:Setting(settings_default)
     
-end
-
-function PlantMathLevel:Setting(k, v)
-    self.settings = self.settings:Set(k, v)
-    return self
-end
-
-function PlantMathLevel:GetSetting(s)
-    return self.settings:Get(s)
 end
 
 -- called after levelX.lua setup
@@ -209,7 +190,7 @@ local function create_goal_displays (self)
     local goal_display = gd(self)
     goal_display:SetPos(100,100)
     local grid_columns, grid_rows = self.settings:Get ('grid_columns'), self.settings:Get('grid_rows')
-    local num_goals = math.floor (grid_columns * grid_rows/2)
+    local num_goals = self:GetSetting ("num_goals")
     goal_display:SetNumGoals ( num_goals )
     goal_display:CreateHiddenGoalTypes (self,num_goals, goal_types.basic)
     self.goal_display = goal_display
@@ -220,6 +201,22 @@ local function setup_block_groups(self, op_block_ratio, number_selections, opera
     local bg1 = self:CreateBlockGroup(self.height/2, self.height/2, self.settings:Get('grid_columns'), self.settings:Get('grid_rows'), op_block_ratio, number_selections, operator_selections )
     self.block_groups = {bg1}
     self:SetGoal(bg1)
+end
+
+
+-- level is on screen
+function PlantMathLevel:show (event, sceneGroup)
+    self:super("create", event, sceneGroup)
+    self:ProcessTimeline()
+    self:PeriodicCheck()
+    
+    local function block_timer()
+        
+    end
+    self:TimelineAddEvent( 10, block_timer )
+    --oTime:AddEventListener (oTime.phony_subject, "enterFrame", function(event)
+        
+    --end)
 end
 
 --called when scene is in view
@@ -246,6 +243,7 @@ function PlantMathLevel:create (event, sceneGroup)
             composer.removeScene('opal.src.levelScene')
         end
     end)
+
 end
 
 function PlantMathLevel:DestroyLevel (event, sceneGroup)
