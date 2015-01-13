@@ -226,13 +226,14 @@ end
 --
 function Actor:AddTransition( data, target )
     assert(data and data.time, "Actor:AddTransition(): requires data and time params")
+
+    local ref = transition.to ( target or self.sprite, data )
+    table.insert ( self._transitions, ref )
     local complete_listener = data.onComplete
     data.onComplete = function(event)
         _.reject ( self._transitions, function(i) return i==ref end )
         if complete_listener then complete_listener(event) end
     end
-    local ref = transition.to ( target or self.sprite, data )
-    table.insert ( self._transitions, ref )
     return ref
 end 
 

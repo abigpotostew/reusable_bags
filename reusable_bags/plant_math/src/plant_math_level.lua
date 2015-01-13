@@ -11,6 +11,7 @@ local _ = require 'opal.libs.underscore'
 local Actor = require 'opal.src.actor'
 local dirt_blocks = require "plant_math.src.dirt_types"
 local BlockGroup = require "plant_math.src.block_group"
+local BackgroundTimer = require "plant_math.src.display.background_timer"
 
 local composer = require 'composer'
 
@@ -50,12 +51,10 @@ function PlantMathLevel:init (size_w, size_h)
         
     }
     self.op_block_ratio = 1/3
-    
     self.width, self.height = self:GetWorldViewSize()
-    
     self.player_goals = {}
-    
     self:Setting(settings_default)
+    
     
 end
 
@@ -206,17 +205,34 @@ end
 
 -- level is on screen
 function PlantMathLevel:show (event, sceneGroup)
-    self:super("create", event, sceneGroup)
+    self:super("show", event, sceneGroup)
+
+    if event.phase == 'will' then
+        sceneGroup:insert(self.world_group)
+        return
+    end
+    
+    -- All code after here is run when the scene has come on screen.
+    physics.start()
+    Runtime:addEventListener("enterFrame", self)
+    
+    local timer_seconds = 3
+    local timer_ms = 3000
+    self.background_timer = timer_ms
+    self.background:ResetProgress (1.0, timer_ms)
+    
+    local i = 1
+    local function block_timer()
+        oLog ("hello "..tostring(i))
+        i=i+1
+        self:TimelineAddEvent( block_timer, timer_seconds )
+    end
+    self:TimelineAddEvent( block_timer, timer_seconds )
+    
+    
+    --should be called last to kick off game event timeline.
     self:ProcessTimeline()
     self:PeriodicCheck()
-    
-    local function block_timer()
-        
-    end
-    self:TimelineAddEvent( 10, block_timer )
-    --oTime:AddEventListener (oTime.phony_subject, "enterFrame", function(event)
-        
-    --end)
 end
 
 --called when scene is in view
@@ -224,9 +240,11 @@ function PlantMathLevel:create (event, sceneGroup)
     physics.start()
     self:super("create", event, sceneGroup)
     local world_group = self.world_group
+    self.background_group = display.newGroup()
     self.ground_group = display.newGroup()
     self.dirt_group = display.newGroup()
     self.wall_group = display.newGroup()
+    world_group:insert (self.background_group)
     world_group:insert(self.ground_group)
     world_group:insert(self.dirt_group)
     world_group:insert(self.wall_group)
@@ -243,6 +261,10 @@ function PlantMathLevel:create (event, sceneGroup)
             composer.removeScene('opal.src.levelScene')
         end
     end)
+
+    self.background = BackgroundTimer (self, self.width, self.height)
+    self.background_group:insert (self.background.sprite)
+    self:InsertActor (self.background)
 
 end
 
@@ -281,6 +303,13 @@ function PlantMathLevel:DisplayEquationQueue (num_a_value, operator_text, num_b_
     
     return text
 end
+
+--[[
+function PlantMathLevel:enterFrame (event)
+    self:super("enterFrame", event)
+    self.background:UpdateTime (oTime:DeltaTime())
+end
+--]]
     
 
 return PlantMathLevel

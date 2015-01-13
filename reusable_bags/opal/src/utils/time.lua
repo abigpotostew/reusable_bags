@@ -32,13 +32,12 @@ end
 ----------------------------------------------------------------------------------
 function oTime:enterFrame()
     
-    local temp_time = self:TotalRuntime()  --Get current game time in ms
-    self.delta_time = (temp_time-self.last_frame_time) / (self.ms_per_frame) 
-    
-    self.frame_count = self.frame_count + self.fps * self.delta_time/1000
-    
+    local temp_time_ms = self:TotalRuntime()  --Get current game time in ms
+    local dt_ms = (temp_time_ms-self.last_frame_time) / (self.ms_per_frame)
+    self.delta_time = dt_ms
+    self.frame_count = self.frame_count + self.fps * dt_ms/1000
     --60fps(16.666666667) or 30fps(33.333333333) as base
-    self.last_frame_time = temp_time  --Store game time
+    self.last_frame_time = temp_time_ms  --Store game time
 end
 
 ----------------------------------------------------------------------------------
@@ -47,6 +46,11 @@ end
 -- Delta time in milliseconds since last frame.
 function oTime:DeltaTime()
     return self.delta_time
+end
+
+-- Delta time in seconds since last frame.
+function oTime:DeltaTimeSeconds()
+    return self.delta_time / 1000
 end
 
 function oTime:FrameCount()

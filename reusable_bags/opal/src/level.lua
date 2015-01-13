@@ -25,8 +25,11 @@ local Actor = require 'opal.src.actor'
 --Can listen for events
 local Level = oEvent:extends()
 
--------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
 -- Constructor
+-- Use this to initialize data structures and such, but generally don't start
+-- game timers or event listening here.
+----------------------------------------------------------------------------------
 function Level:init()
     --Possibly call super init here
     
@@ -83,6 +86,7 @@ function Level:create (event, sceneGroup)
     
 end
 
+-- Override this in your level subclass. Don't forget to call this with super
 function Level:enterFrame (event)
     local phase = event.phase
     
@@ -299,7 +303,9 @@ local function timeline_add_wait_event (timeline, event, insert_func, seconds)
     if seconds and type(seconds)=='number' then
         insert_func (timeline,function() return seconds end)
     end
-    event and type(event)=='function' and insert_func (timeline, event)
+    if event and type(event)=='function' then
+        insert_func (timeline, event)
+    end
 end
 
 function Level:TimelineWait (seconds)
@@ -308,11 +314,11 @@ end
 
 -- Queues an event in timeline, with optional wait time before event is triggered in timeline
 function Level:TimelineAddEvent (onTimer, seconds)
-    timeline_add_wait_event ( self.timeline, onTimer, seconds, timeline_insert_back)
+    timeline_add_wait_event ( self.timeline, onTimer, timeline_insert_back, seconds)
 end
 
 function Level:TimelineAddEventFront (onTimer, seconds)
-    timeline_add_wait_event (self.timeline, onTimer, seconds, timeline_insert_front)
+    timeline_add_wait_event (self.timeline, onTimer, timeline_insert_front, seconds)
 end
 
 --stops processing timeline if timeline is empty

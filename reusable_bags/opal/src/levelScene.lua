@@ -15,7 +15,7 @@ function scene:create ( event )
 
     local sceneGroup = self.view
    
-    assert (event.params and event.params.level, "LevelScene requires a level.")
+    oAssert (event.params and event.params.level, "LevelScene requires a level.")
    
     local l = require(event.params.level)
     local level, setup = l[1], l[2]
