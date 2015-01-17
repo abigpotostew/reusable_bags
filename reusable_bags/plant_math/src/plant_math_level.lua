@@ -64,8 +64,11 @@ function PlantMathLevel:begin()
 end
 
 function PlantMathLevel:SetGoal(b_group)
+    local last_goal = b_group.goal
     b_group.goal = b_group:GetRandomGoal()
     self.goal_display:RevealNextGoal(b_group.goal)
+    self.background:ResetProgress (1.0, self:GetSetting('solution_timer'))
+    self:DispatchEvent (self:GetWorldGroup(), 'reveal_goal', {goal=b_group.goal,phase='reveal',last_goal = last_goal})
     oLog('Goal = '.. tostring(b_group.goal))
 end
 
@@ -199,7 +202,6 @@ end
 local function setup_block_groups(self, op_block_ratio, number_selections, operator_selections)
     local bg1 = self:CreateBlockGroup(self.height/2, self.height/2, self.settings:Get('grid_columns'), self.settings:Get('grid_rows'), op_block_ratio, number_selections, operator_selections )
     self.block_groups = {bg1}
-    self:SetGoal(bg1)
 end
 
 
@@ -216,10 +218,10 @@ function PlantMathLevel:show (event, sceneGroup)
     physics.start()
     Runtime:addEventListener("enterFrame", self)
     
-    local timer_seconds = 3
-    local timer_ms = 3000
-    self.background_timer = timer_ms
-    self.background:ResetProgress (1.0, timer_ms)
+    
+    self:SetGoal(self.block_groups[1])
+    
+    local timer_seconds = self:GetSetting('solution_timer')/1000
     
     local i = 1
     local function block_timer()

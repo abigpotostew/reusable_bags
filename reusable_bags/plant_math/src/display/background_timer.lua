@@ -30,7 +30,7 @@ function BackgroundTimer:ResetProgress (progress, time_ms)
     self.time = time_ms
     
     --local scale = (self.time - self.timer)/self.time 
-    --self.foreground.xScale = scale
+    self.foreground.xScale = 1.0
     
     self:AddTransition ({onComplete=function()end, xScale=0.0001,time=time_ms*progress}, self.foreground)
 end

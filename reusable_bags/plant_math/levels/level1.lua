@@ -13,12 +13,13 @@ local blocks = {
         
         }
 
-l:Setting('num_players', players)
-     :Setting('grid_columns', grid_w)
-     :Setting('grid_rows', grid_h)
-     :Setting('num_goals', num_goals)
+l:Setting     ('num_players', players)
+     :Setting ('grid_columns', grid_w)
+     :Setting ('grid_rows', grid_h)
+     :Setting ('num_goals', num_goals)
      :Setting ('number_selections', {1,2,3})
      :Setting ('operator_selections', {1,2})
+     :Setting ('solution_timer', 10000)
 
 --Called last, just before the level actually apprears on screen
 local function setup()
