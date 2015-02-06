@@ -26,7 +26,7 @@ local Actor = require 'opal.src.actor'
 local Level = oEvent:extends()
 
 ----------------------------------------------------------------------------------
--- Constructor
+--- Constructor
 -- Use this to initialize data structures and such, but generally don't start
 -- game timers or event listening here.
 ----------------------------------------------------------------------------------
@@ -243,12 +243,16 @@ end
 -- Getters and utility functions
 -------------------------------------------------------------------------------
 
-
+--- Set a setting for this level
+-- @param k the setting name/key
+-- @param v the setting value
 function Level:Setting(k, v)
     self.settings = self.settings:Set(k, v)
     return self
 end
 
+--- Set a setting for this level
+-- @param s the setting name/key to be retrieved
 function Level:GetSetting(s)
     return self.settings:Get(s)
 end

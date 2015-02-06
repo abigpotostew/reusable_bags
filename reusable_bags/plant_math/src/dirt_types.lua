@@ -103,9 +103,8 @@ function BaseDirt:BeginTouch(event)
     local c = { unpack (self.draw_data.block_data.fill_color) }
     self.draw_data.block_data.select_color = c
     
-    c[1] = c[1] * 1.3
-    c[2] = c[2] * 1.3
-    c[3] = c[3] * 1.3
+    -- c[1..3]*=1.3
+    c = _.map(c, function(i) return i*1.3 end)
     
     self.block:setFillColor (unpack (c))
 end
@@ -117,7 +116,8 @@ end
 ---------------------------
 -- OPERATOR dirt block
 ---------------------------
-local Operator = BaseDirt:extends({ADD=1,SUB=2,MUL=3,DIV=4})
+local operator_types = {ADD=1,SUB=2,MUL=3,DIV=4}
+local Operator = BaseDirt:extends(operator_types)
 
 function Operator:GetOpColor(operator)
     if operator == Operator.ADD then
@@ -131,6 +131,10 @@ function Operator:GetOpColor(operator)
     else
         return {1,0,1} --error color
     end
+end
+
+function Operator:GetOperatorTypes()
+    return oUtil.DeepCopy(operator_types)
 end
 
 function Operator:init(operator, w, h, level)

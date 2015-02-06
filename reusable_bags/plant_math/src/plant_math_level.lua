@@ -312,6 +312,10 @@ function PlantMathLevel:enterFrame (event)
     self.background:UpdateTime (oTime:DeltaTime())
 end
 --]]
+
+function PlantMathLevel:GetOperatorTypes()
+    return dirt_blocks.Operator.GetOperatorTypes()
+end
     
 
 return PlantMathLevel
