@@ -34,6 +34,7 @@ local game_options = opal:GetOptions()
     :Set('entry_scene', 'clean_ocean.menu.main_menu')
     --:Set('game', {level="plant_math.levels.level1"})
     :Set("debug_draw", true)
+    :Set('composer_debug', true)
 
 
 

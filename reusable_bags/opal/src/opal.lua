@@ -64,10 +64,14 @@ function Opal:Begin()
     end
     
     local composer = require "composer"
+    if self:Option('composer_debug') then
+        composer.isDebug = true -- this isn't working
+    end
+    
+    -- Go to entry scene from game options (set in main)
     local entry_scene = self:Option('entry_scene')
     local game_parms = {params=self:Option("game")}
     composer.gotoScene (entry_scene, game_parms)
-    --composer.gotoScene('opal.src.levelScene', self.options.game)
 end
 
 function Opal:Destroy()
@@ -76,7 +80,7 @@ end
 
 function Opal:GetOptions()
     if not self.options then
-        self.options = require 'opal.src.utils.chain' ()
+        self.options = require 'opal.src.utils.chain' () --create empty chain table
     end
     return self.options
 end

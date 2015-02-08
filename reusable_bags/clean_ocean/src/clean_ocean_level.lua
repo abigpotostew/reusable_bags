@@ -3,6 +3,8 @@ local DebugLevel = require "opal.src.debug.debugLevel"
 local _ = require 'opal.libs.underscore'
 local Actor = require 'opal.src.actor'
 
+local Vector2 = require 'opal.src.vector2'
+
 local OceanGrid = require 'clean_ocean.src.ocean_grid'
 local Boat = require 'clean_ocean.src.boat'
 
@@ -41,8 +43,21 @@ function CleanOceanLevel:init (size_w, size_h)
         
 end
 
+--when player taps a boundary block
+function CleanOceanLevel:boundary_block_touch (event)
+    oLog("Boundary block touch "..event.block:describe())
+end
+
+--when player taps a boundary block
+function CleanOceanLevel:block_touch_release (event)
+    oLog("Boundary block touch release "..event.block:describe())
+end
 
 
+--when player taps an ocean grid block
+function CleanOceanLevel:grid_touch (event)
+    oLog("grid block touch "..event.block:describe())
+end
 
 -- level is on screen
 function CleanOceanLevel:show (event, sceneGroup)
@@ -62,6 +77,7 @@ function CleanOceanLevel:show (event, sceneGroup)
         local m = math.min(self.width,self.height)*0.8
         local n = 8
         self.grid:SpawnGrid(m,m, n,n)
+        self.grid:AddEventListener(self.grid.sprite,'grid_touch', self)
     end
     
     do --spawn the boat
@@ -69,10 +85,18 @@ function CleanOceanLevel:show (event, sceneGroup)
         self:InsertActor (self.boat)
     end
     
+    do -- spawn boat starting positions
+        self.grid:SpawnBoundaryBlocks()
+        self.grid:AddEventListener(self.grid.sprite,'boundary_block_touch', self)
+        self.grid:AddEventListener(self.grid.sprite,'block_touch_release', self)
+    end
     
     --should be called last to kick off game event timeline.
     --self:ProcessTimeline()
     --self:PeriodicCheck()
+    
+    
+    
 end
 
 --called when scene is in view
