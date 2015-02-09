@@ -36,8 +36,5 @@ local game_options = opal:GetOptions()
     :Set("debug_draw", true)
     :Set('composer_debug', true)
 
-
-
-
 opal:Setup(game_options)
 opal:Begin() --kick off game

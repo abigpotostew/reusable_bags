@@ -21,16 +21,6 @@ function TouchBlock:Colliding (x, y)
     local bounds = self.sprite.contentBounds
     local top, bottom, right, left = bounds.yMin + sy, bounds.yMax + sy, bounds.xMax + sx, bounds.xMin + sx
     return not (x > right or x < left or y < top or y > bottom)
-    --[[if x > right then
-        return false
-    elseif x < left then
-        return false
-    elseif y < top then
-        return false
-    elseif y < bottom then 
-        return false
-    end
-    return true--]]
 end
 
 --delegate touch event to 'block_touch'
@@ -51,7 +41,7 @@ local function touch (event)
         --TODO:revamp touch to trigger event on touch release
         -- if the block is the original block touched and is also released on top, call event
         local block_x, block_y = block.sprite:localToContent (0,0)
-        oLog(string.format ("Release Mouse [ %d, %d ], Block [ %d, %d ]", event.x, event.y, block_x, block_y))
+        oLog.Debug(string.format ("Release Mouse [ %d, %d ], Block [ %d, %d ]", event.x, event.y, block_x, block_y))
         if block:Colliding(event.x, event.y) then
             block:DispatchEvent(event.target, "block_touch_release",
             {block = block, phase = event.phase, target = event.target})

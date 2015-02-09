@@ -43,20 +43,50 @@ function CleanOceanLevel:init (size_w, size_h)
         
 end
 
+function CleanOceanLevel:DetermineNextBlock(current_block)
+    local direction = current_block:Direction()
+    local next_position = current_block.grid_position + direction
+    return self.grid:GetBlockFromCoords (next_position:Get())
+end
+
+function CleanOceanLevel:StartBoatSetSail(boat, start_ocean_block)
+    boat:CancelAllTransions() --possible bug, cancel only the known sailing transition
+    boat:SetPos (start_ocean_block:ScreenPos())
+    local next_block = self:DetermineNextBlock (start_ocean_block)
+    if not next_block then return end
+    local nx, ny = next_block:ScreenPos()
+    local function onComplete(event)
+        if next_block:Direction() then
+            self:StartBoatSetSail(boat, next_block)
+        end
+    end
+    boat:AddTransition ({ x=nx, y = ny, time=500, onComplete= onComplete})
+end
+
 --when player taps a boundary block
 function CleanOceanLevel:boundary_block_touch (event)
-    oLog("Boundary block touch "..event.block:describe())
+    oLog.Debug("Boundary block touch "..event.block:describe())
 end
 
 --when player taps a boundary block
 function CleanOceanLevel:block_touch_release (event)
-    oLog("Boundary block touch release "..event.block:describe())
+    oLog.Debug("Boundary release "..event.block:describe())
+    
+    local block = event.block
+    if block.is_boundary_block then
+        --Cancel player boat transitions
+        --move player boat to this block position
+        --determine next block
+        --build callback when boat reaches next block
+        --start transition to next block
+        self:StartBoatSetSail (self.boat, block)
+    end
 end
 
 
 --when player taps an ocean grid block
 function CleanOceanLevel:grid_touch (event)
-    oLog("grid block touch "..event.block:describe())
+    oLog.Debug("grid block touch "..event.block:describe())
 end
 
 -- level is on screen

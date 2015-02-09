@@ -37,8 +37,6 @@ function Opal:Setup(options)
     
     Runtime:addEventListener("enterFrame", oTime)
     
-    oLog.SetLogLevel (self:Option('log_level') or oLog.DEBUG)
-    
     if self:Option('multitouch') then
         system.activate( "multitouch" )
     end

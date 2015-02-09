@@ -306,6 +306,10 @@ function Actor:posVector ()
     return Vector2(self:x(),self:y())
 end
 
+function Actor:ScreenPos ()
+    return self.sprite:localToContent (0,0)
+end
+
 function Actor:Pos ()
     assert(self.sprite,"Sprite mustn't be null when accessing pos")
     return self:x(), self:y()
