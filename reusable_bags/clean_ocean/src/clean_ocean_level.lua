@@ -43,17 +43,27 @@ function CleanOceanLevel:init (size_w, size_h)
         
 end
 
-function CleanOceanLevel:DetermineNextBlock(current_block)
+function CleanOceanLevel:DetermineNextBlock(current_block, boat_prev_direction)
     local direction = current_block:Direction()
     local next_position = current_block.grid_position + direction
-    return self.grid:GetBlockFromCoords (next_position:Get())
+    if next_position == current_block.grid_position then
+        next_position = next_position + boat_prev_direction
+        direction = boat_prev_direction
+    end
+    return self.grid:GetBlockFromCoords (next_position:Get()), direction
 end
 
 function CleanOceanLevel:StartBoatSetSail(boat, start_ocean_block)
     boat:CancelAllTransions() --possible bug, cancel only the known sailing transition
     boat:SetPos (start_ocean_block:ScreenPos())
-    local next_block = self:DetermineNextBlock (start_ocean_block)
+    local next_block, direction = self:DetermineNextBlock (start_ocean_block, boat.previous_direction)
+    boat.previous_direction = boat:Direction()
+    boat:SetDirection (direction)
     if not next_block then return end
+    if next_block.is_boundary_block then
+        -- return some event
+        return
+    end
     local nx, ny = next_block:ScreenPos()
     local function onComplete(event)
         if next_block:Direction() then
@@ -61,6 +71,7 @@ function CleanOceanLevel:StartBoatSetSail(boat, start_ocean_block)
         end
     end
     boat:AddTransition ({ x=nx, y = ny, time=500, onComplete= onComplete})
+    oLog.Verbose ("Boat moving in direction "..tostring(direction))
 end
 
 --when player taps a boundary block
@@ -105,9 +116,11 @@ function CleanOceanLevel:show (event, sceneGroup)
     do -- spawn the ocean
         self.grid = OceanGrid(self)
         local m = math.min(self.width,self.height)*0.8
-        local n = 8
-        self.grid:SpawnGrid(m,m, n,n)
+        local w,h = self:GetSetting('grid_columns'), self:GetSetting('grid_rows')
+        self.grid:SpawnGrid(m,m, w,h)
         self.grid:AddEventListener(self.grid.sprite,'grid_touch', self)
+        self.grid:AddEventListener(self.grid.sprite,'boundary_block_touch', self)
+        self.grid:AddEventListener(self.grid.sprite,'block_touch_release', self)
     end
     
     do --spawn the boat
@@ -115,18 +128,23 @@ function CleanOceanLevel:show (event, sceneGroup)
         self:InsertActor (self.boat)
     end
     
-    do -- spawn boat starting positions
-        self.grid:SpawnBoundaryBlocks()
-        self.grid:AddEventListener(self.grid.sprite,'boundary_block_touch', self)
-        self.grid:AddEventListener(self.grid.sprite,'block_touch_release', self)
-    end
     
     --should be called last to kick off game event timeline.
     --self:ProcessTimeline()
     --self:PeriodicCheck()
     
-    
-    
+end
+
+function CleanOceanLevel:SetOceanVectors(vectors2d)
+    for x=1,#vectors2d do
+        for y=1,#vectors2d do
+            -- offset by 1 because of border blocks
+            local block = self.grid:GetBlockFromCoords (x+1,y+1)
+            if block then
+                block:SetDirection(vectors2d[x][y])
+            end
+        end
+    end
 end
 
 --called when scene is in view

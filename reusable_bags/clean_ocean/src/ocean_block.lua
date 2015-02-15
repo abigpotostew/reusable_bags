@@ -18,5 +18,9 @@ function OceanBlock:Direction()
     return self.direction
 end
 
+function OceanBlock:SetDirection(dir)
+    self.direction = dir
+    return dir
+end
 
 return OceanBlock

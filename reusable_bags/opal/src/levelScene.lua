@@ -20,8 +20,8 @@ function scene:create ( event )
     local l = require(event.params.level)
     local level, setup = l[1], l[2]
     self.level = level
+    self.level_setup = setup
     level:create (event, sceneGroup)
-    setup()
 end
 
 -- "scene:show()"
@@ -30,7 +30,9 @@ function scene:show ( event )
    local sceneGroup = self.view
    
    self.level:show (event, sceneGroup)
-   
+   if event.phase == 'did' then
+       self.level_setup()
+    end
 end
 
 -- "scene:hide()"

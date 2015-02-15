@@ -22,4 +22,8 @@ function Boat:Direction()
     return self.direction
 end
 
+function Boat:SetDirection(d)
+    self.direction = d
+end
+
 return Boat

@@ -25,7 +25,7 @@ local function spawn_block(self, block_idx, ix, iy, grid_block_width, block_size
     --first_block_id = math.min(B.id, first_block_id)
     self.sprite:insert(B.sprite)
     B.grid_id = block_idx
-    self:InsertBlock(B, block_idx)
+    self:InsertBlock(B, block_idx, ix, iy)
     local x, y = grid_block_width*(ix-1)+block_size/2, grid_block_width*(iy-1)+block_size/2
     B:SetPos (x, y)
     B.grid_position:Set (ix, iy)
@@ -54,10 +54,13 @@ function OceanGrid:SpawnBoundaryBlocks()
             for i=1, n do
                 local ix, iy = lerp:Get()
                 local b = spawn_block (self, block_idx, ix, iy, self.grid_block_width, self.block_size)
+                
                 b.is_boundary_block = true
                 b.direction = start_finish[3]
                 b:AddEventListener(b.sprite, 'block_touch_release', self)
                 b:SetBlockColor(0.1,0.1,0.9)
+                
+                boundary_blocks[block_idx] = b
                 table.insert (boundary_blocks, b)
                 block_idx = block_idx+1
                 if isX then
@@ -74,6 +77,8 @@ end
 
 
 function OceanGrid:SpawnGrid(grid_width, grid_height, grid_cols, grid_rows)
+    grid_cols = grid_cols + 2
+    grid_rows = grid_rows + 2
     self.grid_width, self.grid_height = grid_width, grid_height
     self.grid_cols, self.grid_rows = grid_cols, grid_rows
     local grid_block_width = grid_width/grid_cols
@@ -89,11 +94,30 @@ function OceanGrid:SpawnGrid(grid_width, grid_height, grid_cols, grid_rows)
     local x, y = w/2-grid_width/2, h/2-grid_height/2
     self:SetPos(x,y)
     x, y = 0, 0
-    for j=1,grid_rows do
-        for i=1,grid_cols do
-            local B = spawn_block(self, block_idx, i, j, grid_block_width, block_size)
-            B.direction = BoatDirection.LEFT
-            B:AddEventListener (B.sprite, "block_touch", self)
+    local blocks = self.blocks
+    for x=1,grid_cols do
+        table.insert(blocks, {})
+        for y=1,grid_rows do
+            local B = spawn_block(self, block_idx, x, y, grid_block_width, block_size)
+            local is_boundary_block = x==1 or x==grid_cols or y==1 or y==grid_rows
+            if not is_boundary_block then
+                B.direction = BoatDirection.NONE
+                B:AddEventListener (B.sprite, "block_touch", self)
+            else
+                B.is_boundary_block = true
+                B.direction = x==2 and BoatDirection.RIGHT or x==grid_cols and BoatDirection.LEFT or y==1 and BoatDirection.DOWN or y==grid_rows and BoatDirection.UP
+                if x==1 then
+                    B.direction = BoatDirection.RIGHT
+                elseif x==grid_cols then
+                    B.direction = BoatDirection.LEFT
+                elseif y==1 then
+                    B.direction = BoatDirection.UP
+                elseif y==grid_rows then
+                    B.direction = BoatDirection.DOWN
+                end
+                B:AddEventListener(B.sprite, 'block_touch_release', self)
+                B:SetBlockColor(0.1,0.1,0.9)
+            end
             block_idx = block_idx+1
         end
     end
@@ -119,26 +143,34 @@ function OceanGrid:block_touch_release(event)
         {block = block, phase = event.phase, target = event.target})
 end
 
-function OceanGrid:InsertBlock (block, block_idx)
+function OceanGrid:InsertBlock (block, block_idx, gx, gy)
     self.sprite:insert(block.sprite)
     
-    self.blocks[block_idx] = block
+    self.blocks[gx][gy] = block
     return block
 end
 
+--Does not delete the block
 function OceanGrid:RemoveBlock (block)
-    self.blocks[block.grid_id] = nil
+    self.blocks[block.grid_position.x][block.grid_position.y] = nil
     return block
 end
 
+--unused
 function OceanGrid:GetID(x, y)
     return self.grid_cols*(y-1)+x
 end
 
+--use this
 function OceanGrid:GetBlockFromCoords (x, y)
-    return self.blocks[self:GetID(x, y)]
+    local is_boundary_block = x<1 or x>self.grid_cols or y<1 or y>self.grid_rows
+    if is_boundary_block then
+        return nil
+    end
+    return self.blocks[x][y]
 end
 
+--unused
 function OceanGrid:GetBlockCoords (id)
     local x = id%self.grid_cols
     local y = math.floor(id/self.grid_rows)+1
@@ -149,6 +181,7 @@ function OceanGrid:OffsetCoords (x,y, direction_offset)
     return (Vector2(x,y) + direction_offset):Get()
 end
 
+-- unused??
 function OceanGrid:GetBlock (id, direction_offset)
     local b = self.blocks[id]
     if b and direction_offset then
@@ -157,6 +190,7 @@ function OceanGrid:GetBlock (id, direction_offset)
     return self:GetBlockCoords(b.grid_id)
 end
 
+-- unused.??
 function OceanGrid:GetBlockPosition (id)
     local x, y = self:GetBlockCoords (id)
     x = x * self.block_w
@@ -164,6 +198,7 @@ function OceanGrid:GetBlockPosition (id)
     return x, y
 end
 
+--unused?
 function OceanGrid:GetBlockWorldPosition (id)
     local x, y = self:GetBlockPosition (id)
     x = x + self:x()

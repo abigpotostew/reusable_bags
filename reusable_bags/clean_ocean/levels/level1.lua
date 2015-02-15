@@ -1,7 +1,9 @@
 --PLANT_MATH level 1
 local clean_ocean_level = require "clean_ocean.src.clean_ocean_level"
 
-local grid_w, grid_h = 4, 4
+local BoatDirection = require 'clean_ocean.src.boat_direction'
+
+local grid_w, grid_h = 8, 8
 local total_num_block = grid_w * grid_h
 local num_goals = 3
 
@@ -21,7 +23,21 @@ local function setup()
     
     physics.setDrawMode("normal")
 
+    local U, D, L, R, _ = BoatDirection.UP, BoatDirection.DOWN,
+                          BoatDirection.LEFT, BoatDirection.RIGHT,
+                          BoatDirection.NONE
     
+    local ocean = {
+    {R,_,_,_,_,_,D,D},
+    {_,R,_,_,_,D,_,_},
+    {_,_,R,_,D,_,_,_},
+    {_,_,_,R,_,_,_,_},
+    {_,_,_,U,L,_,_,_},
+    {_,_,U,_,_,L,_,_},
+    {_,U,_,_,_,_,L,_},
+    {U,_,_,_,_,_,_,L}
+        }
+    l:SetOceanVectors(ocean)
 
 end
 return {l, setup}
