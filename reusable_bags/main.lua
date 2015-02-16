@@ -19,7 +19,7 @@ local function test_setup()
 end
 
 local function test_teardown()
-    oLog.SetLogLevel(oLog.VERBOSE)
+    oLog.SetLogLevel(oLog.DEBUG)
     physics = corona_physics
 end
 

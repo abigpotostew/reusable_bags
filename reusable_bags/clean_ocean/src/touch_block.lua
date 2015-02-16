@@ -54,10 +54,13 @@ end
 function TouchBlock:init ( level, gridw, gridh, typeName)
     self:super("init", {typeName=(typeName or "TouchBlock")}, level)
     
-    self.sprite = display.newRect(0,0,gridw,gridh)
-    self.draw_data={block_data={fill_color={0.5,0.25,0.33
-}}}
-    self.sprite:setFillColor(unpack(self.draw_data.block_data.fill_color))
+    self.draw_data={block_data={fill_color={0.5,0.25,0.33} }}
+    self.sprite = display.newGroup ()
+    local block = display.newRect(0,0,gridw,gridh)
+    block:setFillColor(unpack(self.draw_data.block_data.fill_color))
+    self.sprite:insert(block)
+    self.block_sprite = block
+    
     self.sprite.owner = self
     
     self:AddEvent("block_touch")
@@ -67,7 +70,7 @@ end
 
 function TouchBlock:SetBlockColor(r,g,b)
     self.draw_data.block_data.fill_color = {r,g,b}
-    self.sprite:setFillColor(unpack(self.draw_data.block_data.fill_color))
+    self.block_sprite:setFillColor(unpack(self.draw_data.block_data.fill_color))
 end
 
 
@@ -80,11 +83,11 @@ function TouchBlock:BeginTouch(event)
     -- c[1..3]*=1.3
     c = _.map(c, function(i) return i*1.3 end)
     
-    self.sprite:setFillColor (unpack (c))
+    self.block_sprite:setFillColor (unpack (c))
 end
 
 function TouchBlock:EndTouch(event)
-    self.sprite:setFillColor (unpack (self.draw_data.block_data.fill_color))
+    self.block_sprite:setFillColor (unpack (self.draw_data.block_data.fill_color))
 end
 
 

@@ -7,6 +7,7 @@ local Vector2 = require 'opal.src.vector2'
 
 local OceanGrid = require 'clean_ocean.src.ocean_grid'
 local Boat = require 'clean_ocean.src.boat'
+local BoatDirection = require 'clean_ocean.src.boat_direction'
 
 local composer = require 'composer'
 
@@ -56,8 +57,10 @@ end
 function CleanOceanLevel:StartBoatSetSail(boat, start_ocean_block)
     boat:CancelAllTransions() --possible bug, cancel only the known sailing transition
     boat:SetPos (start_ocean_block:ScreenPos())
-    local next_block, direction = self:DetermineNextBlock (start_ocean_block, boat.previous_direction)
     boat.previous_direction = boat:Direction()
+    local previous_direction = boat.previous_direction or BoatDirection.NONE
+    
+    local next_block, direction = self:DetermineNextBlock (start_ocean_block, previous_direction)
     boat:SetDirection (direction)
     if not next_block then return end
     if next_block.is_boundary_block then
@@ -71,7 +74,7 @@ function CleanOceanLevel:StartBoatSetSail(boat, start_ocean_block)
         end
     end
     boat:AddTransition ({ x=nx, y = ny, time=500, onComplete= onComplete})
-    oLog.Verbose ("Boat moving in direction "..tostring(direction))
+    oLog.Debug ("Boat moving in direction "..tostring(direction))
 end
 
 --when player taps a boundary block
@@ -136,12 +139,15 @@ function CleanOceanLevel:show (event, sceneGroup)
 end
 
 function CleanOceanLevel:SetOceanVectors(vectors2d)
-    for x=1,#vectors2d do
-        for y=1,#vectors2d do
+    local direction = nil
+    for x=1, #vectors2d do
+        for y=1, #vectors2d[x] do
             -- offset by 1 because of border blocks
             local block = self.grid:GetBlockFromCoords (x+1,y+1)
             if block then
-                block:SetDirection(vectors2d[x][y])
+                --transpose to display on screen the same as level data
+                direction = vectors2d[y][x]
+                block:SetDirection (direction)
             end
         end
     end
