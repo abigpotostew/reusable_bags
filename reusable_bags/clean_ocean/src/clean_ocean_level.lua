@@ -24,7 +24,7 @@ add_collision('all', 'all', {'all'})
 
 local CleanOceanLevel = DebugLevel:extends()
 
-function CleanOceanLevel:init (size_w, size_h)
+function CleanOceanLevel:init ()
     self:super('init')
     self.collision_groups = collision_groups
     
@@ -44,10 +44,10 @@ function CleanOceanLevel:init (size_w, size_h)
         
 end
 
-function CleanOceanLevel:DetermineNextBlock(current_block, boat_prev_direction)
-    local direction = current_block:Direction()
-    local next_position = current_block.grid_position + direction
-    if next_position == current_block.grid_position then
+function CleanOceanLevel:DetermineNextBlock(current_block_direction, current_block_grid_position, boat_prev_direction)
+    local direction = current_block_direction
+    local next_position = current_block_grid_position + direction
+    if next_position == current_block_grid_position then
         next_position = next_position + boat_prev_direction
         direction = boat_prev_direction
     end
@@ -60,7 +60,7 @@ function CleanOceanLevel:StartBoatSetSail(boat, start_ocean_block)
     boat.previous_direction = boat:Direction()
     local previous_direction = boat.previous_direction or BoatDirection.NONE
     
-    local next_block, direction = self:DetermineNextBlock (start_ocean_block, previous_direction)
+    local next_block, direction = self:DetermineNextBlock (start_ocean_block.direction, start_ocean_block.grid_position, previous_direction)
     boat:SetDirection (direction)
     if not next_block then return end
     if next_block.is_boundary_block then
@@ -158,6 +158,13 @@ function CleanOceanLevel:create (event, sceneGroup)
     physics.start()
     self:super("create", event, sceneGroup)
     local world_group = self.world_group
+end
+
+function CleanOceanLevel:DestroyLevel ()
+    if self.grid then 
+        self.grid:removeSelf()
+    end
+    self:super("DestroyLevel")
 end
 
 

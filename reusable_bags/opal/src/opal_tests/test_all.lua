@@ -10,8 +10,6 @@ local test_suites = {
                                'test_level',
                                'test_chain',
         },
-    ['plant_seed.tests.']={'plant_tests'},
-    ['plant_math.tests.']={'plant_math_tests'}
 }
 
 local function load_tests (test_paths)
@@ -38,7 +36,10 @@ local function get_test_paths(prefix,tests_list)
     return out
 end
 
-test_all.Run = function(setup, teardown)
+test_all.Run = function(setup, teardown, additional_tests)
+    if additional_tests then
+        _.extend (test_suites, additional_tests)
+    end
     Tests:RunAll ( load_tests(get_test_paths(nil, test_suites)), setup, teardown )
 end
 

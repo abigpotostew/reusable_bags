@@ -25,6 +25,12 @@ end
 
 local opal = require"opal.src.opal"() --new instance of opal framework
 
+local additional_tests = {
+    ['plant_seed.tests.']={'plant_tests'},
+    ['plant_math.tests.']={'plant_math_tests'},
+    ['clean_ocean.tests.']={'clean_ocean_tests'},
+    }
+
 local game_options = opal:GetOptions()
     :Set('run_all_tests', true)
     :Set('tests_only', false)
@@ -35,6 +41,7 @@ local game_options = opal:GetOptions()
     --:Set('game', {level="plant_math.levels.level1"})
     :Set("debug_draw", true)
     :Set('composer_debug', true) --doesn't work?
+    :Set('tests', additional_tests)
 
 opal:Setup(game_options)
 opal:Begin() --kick off game

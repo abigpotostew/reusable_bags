@@ -7,8 +7,8 @@ function Opal:init(name)
     self:GetOptions()
 end
 
-local function run_tests(setup, teardown)
-    require "opal.src.opal_tests.test_all".Run(setup, teardown)
+local function run_tests(setup, teardown, additional_tests)
+    require "opal.src.opal_tests.test_all".Run(setup, teardown, additional_tests)
 end
 
 local function load_modules(module_paths_and_name)
@@ -50,7 +50,7 @@ end
 --Kick off unit tests and game
 function Opal:Begin()
     if self:Option('run_all_tests') or self.options:Get('tests_only') then
-        run_tests(self:Option('global_test_setup'),self:Option('global_test_teardown'))
+        run_tests(self:Option('global_test_setup'),self:Option('global_test_teardown'),self:Option('tests'))
         if self:Option('tests_only') then
             os.exit(0)
             return

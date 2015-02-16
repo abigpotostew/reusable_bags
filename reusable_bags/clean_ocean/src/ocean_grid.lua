@@ -105,16 +105,19 @@ function OceanGrid:SpawnGrid(grid_width, grid_height, grid_cols, grid_rows)
                 B:AddEventListener (B.sprite, "block_touch", self)
             else
                 B.is_boundary_block = true
-                B.direction = x==2 and BoatDirection.RIGHT or x==grid_cols and BoatDirection.LEFT or y==1 and BoatDirection.DOWN or y==grid_rows and BoatDirection.UP
+                
+                local direction = nil
                 if x==1 then
-                    B.direction = BoatDirection.RIGHT
+                    direction = BoatDirection.RIGHT
                 elseif x==grid_cols then
-                    B.direction = BoatDirection.LEFT
+                    direction = BoatDirection.LEFT
                 elseif y==1 then
-                    B.direction = BoatDirection.UP
+                    direction = BoatDirection.DOWN
                 elseif y==grid_rows then
-                    B.direction = BoatDirection.DOWN
+                    direction = BoatDirection.UP
                 end
+                B:SetDirection (direction)
+                
                 B:AddEventListener(B.sprite, 'block_touch_release', self)
                 B:SetBlockColor(0.1,0.1,0.9)
             end
@@ -214,6 +217,15 @@ end
 --returns pixel size of grid
 function OceanGrid:Bounds()
     return self.grid_width, self.grid_height
+end
+
+function OceanGrid:removeSelf ()
+    for x=1,self.grid_cols do
+        for y=1,self.grid_rows do
+            self.blocks[x][y]:removeSelf()
+        end
+    end 
+    self:super('removeSelf')
 end
 
 return OceanGrid
