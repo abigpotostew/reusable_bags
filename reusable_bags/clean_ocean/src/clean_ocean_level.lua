@@ -44,14 +44,15 @@ function CleanOceanLevel:init ()
         
 end
 
-function CleanOceanLevel:DetermineNextBlock(current_block_direction, current_block_grid_position, boat_prev_direction)
+function CleanOceanLevel:DetermineNextGridPosition(current_block_direction, current_block_grid_position, boat_prev_direction)
     local direction = current_block_direction
     local next_position = current_block_grid_position + direction
     if next_position == current_block_grid_position then
         next_position = next_position + boat_prev_direction
         direction = boat_prev_direction
     end
-    return self.grid:GetBlockFromCoords (next_position:Get()), direction
+    return next_position, direction
+    --return self.grid:GetBlockFromCoords (next_position:Get()), direction
 end
 
 function CleanOceanLevel:StartBoatSetSail(boat, start_ocean_block)
@@ -60,7 +61,8 @@ function CleanOceanLevel:StartBoatSetSail(boat, start_ocean_block)
     boat.previous_direction = boat:Direction()
     local previous_direction = boat.previous_direction or BoatDirection.NONE
     
-    local next_block, direction = self:DetermineNextBlock (start_ocean_block.direction, start_ocean_block.grid_position, previous_direction)
+    local next_position, direction = self:DetermineNextGridPosition (start_ocean_block.direction, start_ocean_block.grid_position, previous_direction)
+    local next_block = self.grid:GetBlockFromCoords (next_position:Get())
     boat:SetDirection (direction)
     if not next_block then return end
     if next_block.is_boundary_block then

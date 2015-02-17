@@ -13,6 +13,9 @@ add_index ('RIGHT', Vector2(1,0))
 add_index ('DOWN', Vector2(0,1))
 add_index ('LEFT', Vector2(-1,0))
 add_index ('UP', Vector2(0,-1))
+add_index ("AllDirections", function()
+        return {UP=boat_direction.UP,DOWN=boat_direction.DOWN,LEFT=boat_direction.LEFT,RIGHT=boat_direction.RIGHT,NONE=boat_direction.NONE}
+        end)
 
 _.each (boat_direction, function(d) oUtil.lockObjectProperties(d) end)
 

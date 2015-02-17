@@ -45,21 +45,24 @@ u:Test ( "Next Block, No Previous", function(self)
     level_mock:Setting ('grid_columns', 4)
         :Setting ('grid_rows', 4)
     level_mock:show({phase='did'})
-    local U,D,L,R,N = BoatDirection:AllDirections()
+    local AD = BoatDirection:AllDirections()
+    local U,D,L,R,N = AD.UP, AD.DOWN, AD.LEFT, AD.RIGHT, AD.NONE
     level_mock:SetOceanVectors({{R,D},
                                 {U,L}})
     
-    local right = level_mock:DetermineNextBlock(R, Vector2(1,1), nil)
-    self:ASSERT_TRUE (right==Vector2(1,2), "incorrectly determining direction")
+    local start = Vector2(1,1)
     
-    local down = level_mock:DetermineNextBlock(D, right, nil)
-    self:ASSERT_TRUE (right==Vector2(1,2), "incorrectly determining direction")
-    
-    local left = level_mock:DetermineNextBlock(L, down, nil)
-    self:ASSERT_TRUE (right==Vector2(2,2), "incorrectly determining direction")
-    
-    local up = level_mock:DetermineNextBlock(U, left, nil)
+    local right = level_mock:DetermineNextGridPosition(R, start, nil)
     self:ASSERT_TRUE (right==Vector2(2,1), "incorrectly determining direction")
+    
+    local down = level_mock:DetermineNextGridPosition(D, right, nil)
+    self:ASSERT_TRUE (down==Vector2(2,2), "incorrectly determining direction")
+    
+    local left = level_mock:DetermineNextGridPosition(L, down, nil)
+    self:ASSERT_TRUE (left==Vector2(1,2), "incorrectly determining direction")
+    
+    local up = level_mock:DetermineNextGridPosition(U, left, nil)
+    self:ASSERT_TRUE (up==start, "incorrectly determining direction")
     
     
     
