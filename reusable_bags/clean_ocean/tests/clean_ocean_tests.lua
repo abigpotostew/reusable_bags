@@ -24,19 +24,32 @@ u:Test ("BoatDirection", function(self)
     local dirs = {up=BoatDirection.UP,
         down=BoatDirection.DOWN, left=BoatDirection.LEFT, right=BoatDirection.RIGHT}
     _.each(_.keys(dirs), function (k) 
-            self:ASSERT_TRUE (dirs[k], 
-                tostring(k).." is not a correct direction") 
+            --k is not a valid direction
+            self:ASSERT_TRUE (dirs[k]) 
         end)
 end)
 
---u:Test ("ALLBoatDirection", function(self)
---    local U,D,L,R,N = BoatDirection:AllDirections()
---    local dirs = {U,D,L,R,N}
---    _.each(_.keys(dirs), function (k) 
---            self:ASSERT_TRUE (dirs[k], 
---                tostring(k).." is not a correct direction") 
---        end)
---end)
+u:Test ("ALLBoatDirection", function(self)
+    local dirs = BoatDirection.AllDirections()
+    _.each(_.keys(dirs), function (k) 
+            self:ASSERT_TRUE (dirs[k]) 
+        end)
+end)
+
+u:Test ("ValidDirection", function(self)
+    local valid_dirs = BoatDirection.AllDirections()
+    valid_dirs.NONE = nil
+    local invalid_dirs = {1, "lame", {}, {x=1, tumblr='hub'}, function()end}
+        
+    _.each(_.keys(valid_dirs), function(dk)
+            self:ASSERT_TRUE ( BoatDirection.ValidDirection(valid_dirs[dk]) )
+    end)
+
+    _.each(_.keys(invalid_dirs), function(idk)
+            self:ASSERT_FALSE ( BoatDirection.ValidDirection(valid_dirs[idk]) )
+    end)
+end)
+    
 
 u:Test ( "Next Block, No Previous", function(self)
     

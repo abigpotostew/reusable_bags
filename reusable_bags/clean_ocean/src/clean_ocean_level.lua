@@ -24,6 +24,11 @@ add_collision('all', 'all', {'all'})
 
 local CleanOceanLevel = DebugLevel:extends()
 
+local ocean_objects = {
+    EMPTY=0,
+    TRASH=1,
+}
+
 function CleanOceanLevel:init ()
     self:super('init')
     self.collision_groups = collision_groups
@@ -55,13 +60,31 @@ function CleanOceanLevel:DetermineNextGridPosition(current_block_direction, curr
     --return self.grid:GetBlockFromCoords (next_position:Get()), direction
 end
 
-function CleanOceanLevel:StartBoatSetSail(boat, start_ocean_block)
+local sail_boat_from = nil
+
+local function resolve_block_action(self, boat, block)
+    if block.action then
+        
+    end
+    
+    --if BoatDirection.ValidDirection (block:Direction()) then
+    sail_boat_from(self, boat, block)
+    --end
+end
+
+--Cancel player boat transitions
+--move player boat to this block position
+--determine next block
+--build callback when boat reaches next block
+--start transition to next block
+function sail_boat_from(self, boat, start_ocean_block)
     boat:CancelAllTransions() --possible bug, cancel only the known sailing transition
     boat:SetPos (start_ocean_block:ScreenPos())
     boat.previous_direction = boat:Direction()
     local previous_direction = boat.previous_direction or BoatDirection.NONE
     
     local next_position, direction = self:DetermineNextGridPosition (start_ocean_block.direction, start_ocean_block.grid_position, previous_direction)
+    
     local next_block = self.grid:GetBlockFromCoords (next_position:Get())
     boat:SetDirection (direction)
     if not next_block then return end
@@ -71,12 +94,18 @@ function CleanOceanLevel:StartBoatSetSail(boat, start_ocean_block)
     end
     local nx, ny = next_block:ScreenPos()
     local function onComplete(event)
-        if next_block:Direction() then
-            self:StartBoatSetSail(boat, next_block)
-        end
+        --if next_block:Direction() then
+            --self:StartBoatSetSail(boat, next_block)
+            resolve_block_action (self, boat, next_block)
+        --end
     end
     boat:AddTransition ({ x=nx, y = ny, time=500, onComplete= onComplete})
     oLog.Debug ("Boat moving in direction "..tostring(direction))
+    
+end
+
+function CleanOceanLevel:StartBoatSetSail(boat, start_ocean_block)
+
 end
 
 --when player taps a boundary block
@@ -90,12 +119,9 @@ function CleanOceanLevel:block_touch_release (event)
     
     local block = event.block
     if block.is_boundary_block then
-        --Cancel player boat transitions
-        --move player boat to this block position
-        --determine next block
-        --build callback when boat reaches next block
-        --start transition to next block
-        self:StartBoatSetSail (self.boat, block)
+        
+        --self:StartBoatSetSail (self.boat, block)
+        resolve_block_action (self, self.boat, block)
     end
 end
 
@@ -141,6 +167,7 @@ function CleanOceanLevel:show (event, sceneGroup)
 end
 
 function CleanOceanLevel:SetOceanVectors(vectors2d)
+    local object = nil
     local direction = nil
     for x=1, #vectors2d do
         for y=1, #vectors2d[x] do
@@ -148,8 +175,12 @@ function CleanOceanLevel:SetOceanVectors(vectors2d)
             local block = self.grid:GetBlockFromCoords (x+1,y+1)
             if block then
                 --transpose to display on screen the same as level data
-                direction = vectors2d[y][x]
-                block:SetDirection (direction)
+                object = vectors2d[y][x]
+                if Vector2.isVector2(object) then
+                    block:SetDirection (object)
+                elseif type(object) == 'number' then
+                    block.block_type = ocean_objects.TRASH
+                end
             end
         end
     end
@@ -167,6 +198,10 @@ function CleanOceanLevel:DestroyLevel ()
         self.grid:removeSelf()
     end
     self:super("DestroyLevel")
+end
+
+function CleanOceanLevel:GetOceanObjects()
+    return _.extend({}, ocean_objects)
 end
 
 

@@ -26,7 +26,8 @@ local function setup()
     local U, D, L, R, _ = BoatDirection.UP, BoatDirection.DOWN,
                           BoatDirection.LEFT, BoatDirection.RIGHT,
                           BoatDirection.NONE
-    
+    local ocean_objects = l:GetOceanObjects()
+    local T = ocean_objects.TRASH
     local ocean = {
     --[[{D,R,D,_,_,_,D,D},
     {R,U,_,_,_,D,_,_},
@@ -36,7 +37,7 @@ local function setup()
     {_,_,U,_,_,L,_,_},
     {_,U,_,_,_,_,L,_},
     {_,_,_,_,_,_,_,L} --]]
-    {R,_,_,_,_,_,D,D},
+    {R,T,_,_,_,_,D,D},
     {_,R,_,_,_,D,_,_},
     {_,_,R,_,D,_,_,_},
     {_,_,_,R,D,_,_,_},
