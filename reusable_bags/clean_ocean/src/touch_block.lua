@@ -69,8 +69,9 @@ function TouchBlock:init ( level, gridw, gridh, typeName)
 end
 
 function TouchBlock:SetBlockColor(r,g,b)
-    self.draw_data.block_data.fill_color = {r,g,b}
-    self.block_sprite:setFillColor(unpack(self.draw_data.block_data.fill_color))
+    local c = {r,g,b}
+    self.draw_data.block_data.fill_color = c
+    self.block_sprite:setFillColor(r,g,b)
 end
 
 

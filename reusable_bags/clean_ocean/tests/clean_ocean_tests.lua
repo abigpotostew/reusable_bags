@@ -4,6 +4,7 @@ local Vector2 = require 'opal.src.vector2'
 
 --local dirt_types = require "clean_ocean.src.dirt_types"
 local BoatDirection = require "clean_ocean.src.boat_direction"
+local OceanBlock = require "clean_ocean.src.ocean_block"
 
 local CleanOceanLevel = require "clean_ocean.src.clean_ocean_level"
 
@@ -81,6 +82,12 @@ u:Test ( "Next Block, No Previous", function(self)
     
     level_mock:DestroyLevel()
     level_mock = nil
+end)
+
+u:Test ("Ocean_Block_Do_Action", function(self)
+    local level_mock = default_setup()
+    local block = OceanBlock(level_mock, 10, 10)
+    self:ASSERT_FALSE (block:HasAction())
 end)
 
 return u

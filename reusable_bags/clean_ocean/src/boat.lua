@@ -15,7 +15,6 @@ function Boat:init (level, radius)
     self.sprite.owner = self
     
     self.direction = BoatDirection.NONE
-    
 end
 
 function Boat:Direction()
@@ -24,6 +23,12 @@ end
 
 function Boat:SetDirection(d)
     self.direction = d
+end
+
+function Boat:CleanTrashAction(trash_block)
+    local event = {phase='began', boat=self, block=trash_block}
+    self:DispatchEvent (self.sprite, 'action_clean_trash', event)
+    
 end
 
 return Boat

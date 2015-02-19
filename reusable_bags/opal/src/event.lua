@@ -26,6 +26,9 @@ function Event:AddEvent (event_name)
     self.events[event_name] = {}
 end
 
+--- Notify all listeners for event_name, calling respective events.
+-- @tparam displayobject object display object that will dispatch the corona event
+-- @
 function Event:DispatchEvent (object, event_name, event)
     oAssert (object, "oEvent:DispatchEvent requries an object to as the subject to listen to.")
     oAssert.type (event_name, "string", "oEvent:DispatchEvent requires that name be a string.")

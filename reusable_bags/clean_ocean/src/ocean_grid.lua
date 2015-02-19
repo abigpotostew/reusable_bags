@@ -159,10 +159,10 @@ function OceanGrid:RemoveBlock (block)
     return block
 end
 
---unused
-function OceanGrid:GetID(x, y)
-    return self.grid_cols*(y-1)+x
-end
+----unused
+--function OceanGrid:GetID(x, y)
+--    return self.grid_cols*(y-1)+x
+--end
 
 --use this
 function OceanGrid:GetBlockFromCoords (x, y)
@@ -173,41 +173,41 @@ function OceanGrid:GetBlockFromCoords (x, y)
     return self.blocks[x][y]
 end
 
---unused
-function OceanGrid:GetBlockCoords (id)
-    local x = id%self.grid_cols
-    local y = math.floor(id/self.grid_rows)+1
-    return x, y
-end
+----unused
+--function OceanGrid:GetBlockCoords (id)
+--    local x = id%self.grid_cols
+--    local y = math.floor(id/self.grid_rows)+1
+--    return x, y
+--end
 
 function OceanGrid:OffsetCoords (x,y, direction_offset)
     return (Vector2(x,y) + direction_offset):Get()
 end
 
--- unused??
-function OceanGrid:GetBlock (id, direction_offset)
-    local b = self.blocks[id]
-    if b and direction_offset then
-        return self:OffsetCoords(self:GetBlockCoords(id),direction_offset)
-    end
-    return self:GetBlockCoords(b.grid_id)
-end
+---- unused??
+--function OceanGrid:GetBlock (id, direction_offset)
+--    local b = self.blocks[id]
+--    if b and direction_offset then
+--        return self:OffsetCoords(self:GetBlockCoords(id),direction_offset)
+--    end
+--    return self:GetBlockCoords(b.grid_id)
+--end
 
--- unused.??
-function OceanGrid:GetBlockPosition (id)
-    local x, y = self:GetBlockCoords (id)
-    x = x * self.block_w
-    y = y * self.block_h
-    return x, y
-end
+---- unused.??
+--function OceanGrid:GetBlockPosition (id)
+--    local x, y = self:GetBlockCoords (id)
+--    x = x * self.block_w
+--    y = y * self.block_h
+--    return x, y
+--end
 
---unused?
-function OceanGrid:GetBlockWorldPosition (id)
-    local x, y = self:GetBlockPosition (id)
-    x = x + self:x()
-    y = y + self:y()
-    return x, y
-end
+----unused?
+--function OceanGrid:GetBlockWorldPosition (id)
+--    local x, y = self:GetBlockPosition (id)
+--    x = x + self:x()
+--    y = y + self:y()
+--    return x, y
+--end
 
 --returns number of blocks across and down
 function OceanGrid:Dimensions()

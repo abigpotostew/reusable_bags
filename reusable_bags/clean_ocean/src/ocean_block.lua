@@ -6,11 +6,13 @@ do
     OceanBlock = Block:extends()
 end
 
-function OceanBlock:init (level, gridw, gridh)
-    self:super("init", level, gridw, gridh, 'OceanBlock')
+function OceanBlock:init (level, block_w, block_h)
+    self:super("init", level, block_w, block_h, 'OceanBlock')
 
     self.grid_position = Vector2()
     self.direction = Vector2()
+    self.object_type = nil
+    self.action = nil
 end
 
 --in future when there are more block types, instead assign blocks commands
@@ -19,11 +21,6 @@ function OceanBlock:Direction()
     return self.direction
 end
 
---[[
-{0,-gh*.45, 
-        gw*0.1,gh*.45,
-        -gw*0.1,gh*.45}
---]]
 function OceanBlock:SetDirection(dir)
     self.direction = dir
     if dir ~= BoatDirection.NONE then
@@ -37,6 +34,20 @@ function OceanBlock:SetDirection(dir)
         self.arrow = arrow
     end
     return dir
+end
+
+function OceanBlock:HasAction()
+    return (self.action and true) or false
+end
+
+function OceanBlock:SetAction(action)
+    self.action = action
+end
+
+function OceanBlock:DoAction(level, boat)
+    oLog.Debug ( string.format ("Doing action %s for %s",
+                                tostring(self.action), self:describe()))
+    self.action(self, level, boat)
 end
 
 return OceanBlock

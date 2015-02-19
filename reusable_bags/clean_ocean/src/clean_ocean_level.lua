@@ -57,19 +57,19 @@ function CleanOceanLevel:DetermineNextGridPosition(current_block_direction, curr
         direction = boat_prev_direction
     end
     return next_position, direction
-    --return self.grid:GetBlockFromCoords (next_position:Get()), direction
 end
 
 local sail_boat_from = nil
 
 local function resolve_block_action(self, boat, block)
+    local set_sail = true
     if block.action then
-        
+        local action_output = block:DoAction(self, boat)
     end
     
-    --if BoatDirection.ValidDirection (block:Direction()) then
-    sail_boat_from(self, boat, block)
-    --end
+    if set_sail then
+        sail_boat_from(self, boat, block)
+    end
 end
 
 --Cancel player boat transitions
@@ -166,6 +166,37 @@ function CleanOceanLevel:show (event, sceneGroup)
     
 end
 
+local function valid_ocean_object (object, ocean_objects)
+    return _.any (ocean_objects, function(o) return o==object end)
+end
+
+local function trash_action(block, level, boat)
+    oLog.Debug ( string.format ("Doing trash action for %s", block:describe()))
+    
+    boat:CleanTrashAction (block)
+end
+
+local function apply_object_type (self, block, object)
+    oAssert (valid_ocean_object (object, ocean_objects), tostring(object).." is not a valid ocean object, please use a valid ocean object.")
+    
+    if object == ocean_objects.TRASH then
+        block:SetBlockColor(76,153,0)
+        
+        block:SetAction(trash_action)
+    end
+end
+
+-- Resolve object type and apply actions to block
+local function set_block_object_type (self, block, object)
+    -- Set block as a direction vector
+    if Vector2.isVector2(object) then
+        block:SetDirection (object)
+    --set block as an object
+    elseif type(object) == 'number' then
+        apply_object_type (self, block, object)
+    end
+end
+
 function CleanOceanLevel:SetOceanVectors(vectors2d)
     local object = nil
     local direction = nil
@@ -176,11 +207,8 @@ function CleanOceanLevel:SetOceanVectors(vectors2d)
             if block then
                 --transpose to display on screen the same as level data
                 object = vectors2d[y][x]
-                if Vector2.isVector2(object) then
-                    block:SetDirection (object)
-                elseif type(object) == 'number' then
-                    block.block_type = ocean_objects.TRASH
-                end
+                -- resolve object type and setup block
+                set_block_object_type (self, block, object)
             end
         end
     end
