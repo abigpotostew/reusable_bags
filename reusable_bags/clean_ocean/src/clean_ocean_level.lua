@@ -176,9 +176,12 @@ function CleanOceanLevel:DecrementTrashCount(n)
     self.trash_count = self.trash_count - n
 end
 
+--event for when boat interacts with trash on the grid
+function CleanOceanLevel:trash_action_event(event)
+    
+end
 
-
-local function trash_action(block, level, boat)
+local function boat_action_trash(block, level, boat)
     oLog.Debug ( string.format ("Doing trash action for %s", block:describe()))
     --boat:CleanTrashAction (block)
     
@@ -186,7 +189,7 @@ local function trash_action(block, level, boat)
     block:ClearAction()
     block:SetBlockColor (unpack (oColor.OCEAN))
     level:DecrementTrashCount(1)
-    level:DispatchEvent (level.world_group, 'trash_action', {phase='ended', block=block, remaining = level.trash_count})
+    boat:DispatchEvent (boat.sprite, 'trash_action_event', {phase='ended', block=block, remaining = level.trash_count})
 end
 
 local function apply_object_type (self, block, object)
@@ -195,7 +198,7 @@ local function apply_object_type (self, block, object)
     if object == ocean_objects.TRASH then
         block:SetBlockColor (unpack (oColor.TRASH))
         self:DecrementTrashCount(-1) --equivalent to adding 1. yea, it's dumb
-        block:SetAction(trash_action)
+        block:SetAction(boat_action_trash)
     end
 end
 
