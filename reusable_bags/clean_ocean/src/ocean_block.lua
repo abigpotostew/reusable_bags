@@ -53,7 +53,7 @@ end
 function OceanBlock:DoAction(level, boat)
     oLog.Debug ( string.format ("Doing action %s for %s",
                                 tostring(self.action), self:describe()))
-    self.action(self, level, boat)
+    return self.action(self, level, boat)
 end
 
 return OceanBlock

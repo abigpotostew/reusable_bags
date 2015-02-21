@@ -66,10 +66,17 @@ local sail_boat_from = nil
 local function resolve_block_action(self, boat, block)
     local set_sail = true
     if block.action then
+        --somehow control whether we set sail
         local action_output = block:DoAction(self, boat)
+        if not action_output then
+            set_sail = false
+        end
     end
     
-    if set_sail then
+    local can_boat_sail = boat:CanSail()
+    
+    if set_sail and can_boat_sail then
+        boat:IncrementRemainingSails(-1)
         sail_boat_from(self, boat, block)
     end
 end
@@ -121,7 +128,7 @@ function CleanOceanLevel:block_touch_release (event)
     local block = event.block
     if block.is_boundary_block then
         
-        --self:StartBoatSetSail (self.boat, block)
+        self.boat:SetRemainingSails(5)
         resolve_block_action (self, self.boat, block)
     end
 end
@@ -176,6 +183,15 @@ function CleanOceanLevel:DecrementTrashCount(n)
     self.trash_count = self.trash_count - n
 end
 
+--perhaps this will be time based in the future
+function CleanOceanLevel:CheckLevelComplete(trash_count)
+    if trash_count <= 0 then
+        --do other level complete stuff
+        self:DispatchEvent (self:GetWorldGroup(), 'level_progress', {phase='ended'})
+        return true
+    end
+end
+
 --event for when boat interacts with trash on the grid
 function CleanOceanLevel:trash_action_event(event)
     
@@ -189,7 +205,8 @@ local function boat_action_trash(block, level, boat)
     block:ClearAction()
     block:SetBlockColor (unpack (oColor.OCEAN))
     level:DecrementTrashCount(1)
-    boat:DispatchEvent (boat.sprite, 'trash_action_event', {phase='ended', block=block, remaining = level.trash_count})
+    level:CheckLevelComplete (level.trash_count)
+    return true, boat:DispatchEvent (boat.sprite, 'trash_action_event', {phase='ended', block=block, remaining = level.trash_count})
 end
 
 local function apply_object_type (self, block, object)
