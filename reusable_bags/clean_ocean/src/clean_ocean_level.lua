@@ -46,6 +46,7 @@ function CleanOceanLevel:init ()
     
     self.boat = nil
     self.grid = nil
+    self.trash_count = 0
         
 end
 
@@ -61,6 +62,7 @@ end
 
 local sail_boat_from = nil
 
+-- TODO make some sort of formal command system
 local function resolve_block_action(self, boat, block)
     local set_sail = true
     if block.action then
@@ -94,19 +96,18 @@ function sail_boat_from(self, boat, start_ocean_block)
     end
     local nx, ny = next_block:ScreenPos()
     local function onComplete(event)
-        --if next_block:Direction() then
-            --self:StartBoatSetSail(boat, next_block)
-            resolve_block_action (self, boat, next_block)
-        --end
+            boat:DispatchEvent (boat.sprite, 'sail_event', {phase="ended", boat=boat, start=start_ocean_block, destination=next_block})
+            return resolve_block_action (self, boat, next_block)
     end
     boat:AddTransition ({ x=nx, y = ny, time=500, onComplete= onComplete})
-    oLog.Debug ("Boat moving in direction "..tostring(direction))
+    oLog.Debug ("Boat sailing in direction "..tostring(direction))
+    boat:DispatchEvent (boat.sprite, 'sail_event', {phase="began", boat=boat, start=start_ocean_block, destination=next_block})
     
 end
 
-function CleanOceanLevel:StartBoatSetSail(boat, start_ocean_block)
+--function CleanOceanLevel:StartBoatSetSail(boat, start_ocean_block)
 
-end
+--end
 
 --when player taps a boundary block
 function CleanOceanLevel:boundary_block_touch (event)
@@ -170,18 +171,30 @@ local function valid_ocean_object (object, ocean_objects)
     return _.any (ocean_objects, function(o) return o==object end)
 end
 
+function CleanOceanLevel:DecrementTrashCount(n)
+    n = n or 1
+    self.trash_count = self.trash_count - n
+end
+
+
+
 local function trash_action(block, level, boat)
     oLog.Debug ( string.format ("Doing trash action for %s", block:describe()))
+    --boat:CleanTrashAction (block)
     
-    boat:CleanTrashAction (block)
+    --remove trash from the block
+    block:ClearAction()
+    block:SetBlockColor (unpack (oColor.OCEAN))
+    level:DecrementTrashCount(1)
+    level:DispatchEvent (level.world_group, 'trash_action', {phase='ended', block=block, remaining = level.trash_count})
 end
 
 local function apply_object_type (self, block, object)
     oAssert (valid_ocean_object (object, ocean_objects), tostring(object).." is not a valid ocean object, please use a valid ocean object.")
     
     if object == ocean_objects.TRASH then
-        block:SetBlockColor(76,153,0)
-        
+        block:SetBlockColor (unpack (oColor.TRASH))
+        self:DecrementTrashCount(-1) --equivalent to adding 1. yea, it's dumb
         block:SetAction(trash_action)
     end
 end
@@ -190,7 +203,7 @@ end
 local function set_block_object_type (self, block, object)
     -- Set block as a direction vector
     if Vector2.isVector2(object) then
-        block:SetDirection (object)
+        block:SetDirection (object, 0.5)
     --set block as an object
     elseif type(object) == 'number' then
         apply_object_type (self, block, object)

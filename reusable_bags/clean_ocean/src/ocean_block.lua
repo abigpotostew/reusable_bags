@@ -21,14 +21,15 @@ function OceanBlock:Direction()
     return self.direction
 end
 
-function OceanBlock:SetDirection(dir)
+function OceanBlock:SetDirection(dir, scale)
+    local s = scale or 1.0
     self.direction = dir
     if dir ~= BoatDirection.NONE then
         local gw, gh = self.block_sprite.contentWidth, self.block_sprite.contentHeight
         local arrow = display.newPolygon (self.sprite, 0,0, 
-            {gw*.45,0, 
-            -gw*.45, gh*.1,
-            -gw*.45, -gh*.1})
+            {gw*.45 * s,0, 
+            -gw*.45 * s, gh*.1 * s,
+            -gw*.45 * s, -gh*.1 * s})
         local rotation = dir:Angle()*180/math.pi - 180
         arrow:rotate (rotation)
         self.arrow = arrow
@@ -42,6 +43,11 @@ end
 
 function OceanBlock:SetAction(action)
     self.action = action
+end
+
+function OceanBlock:ClearAction()
+    oLog.Debug ( string.format ("Clearing action for %s", self:describe()))
+    self.action = nil
 end
 
 function OceanBlock:DoAction(level, boat)

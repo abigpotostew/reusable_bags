@@ -32,49 +32,6 @@ local function spawn_block(self, block_idx, ix, iy, grid_block_width, block_size
     return B
 end
 
-function OceanGrid:SpawnBoundaryBlocks()
-    local boundary_blocks = {}
-    local gw, gh = self:Bounds()
-    local gc, gr = self:Dimensions()
-    local x, y, size = self:Pos(), self.block_size
-    local block_idx = #self.blocks+1
-    _.map({
-        {Vector2(1,0),Vector2(gc,0), BoatDirection.DOWN}, --TOP ROW
-        {Vector2(gc+1,1),Vector2(gc+1,gr), BoatDirection.LEFT}, --right column
-        {Vector2(1,gr+1),Vector2(gc,gr+1), BoatDirection.UP}, --bottom row
-        {Vector2(0,1),Vector2(0,gr), BoatDirection.RIGHT} --left column
-        },
-        function(start_finish)
-            local start = start_finish[1]
-            local finish = start_finish[2]
-            
-            local isX = finish.x-start.x ~= 0
-            local n = isX and gc or gr
-            local lerp =  start:Copy()
-            for i=1, n do
-                local ix, iy = lerp:Get()
-                local b = spawn_block (self, block_idx, ix, iy, self.grid_block_width, self.block_size)
-                
-                b.is_boundary_block = true
-                b.direction = start_finish[3]
-                b:AddEventListener(b.sprite, 'block_touch_release', self)
-                b:SetBlockColor(0.1,0.1,0.9)
-                
-                boundary_blocks[block_idx] = b
-                table.insert (boundary_blocks, b)
-                block_idx = block_idx+1
-                if isX then
-                    lerp:Set(lerp.x + 1, lerp.y)
-                else
-                    lerp:Set(lerp.x, lerp.y+1)
-                end
-            end
-            return start_finish
-        end
-    )
-end
-
-
 
 function OceanGrid:SpawnGrid(grid_width, grid_height, grid_cols, grid_rows)
     grid_cols = grid_cols + 2
@@ -102,6 +59,7 @@ function OceanGrid:SpawnGrid(grid_width, grid_height, grid_cols, grid_rows)
             local is_boundary_block = x==1 or x==grid_cols or y==1 or y==grid_rows
             if not is_boundary_block then
                 B.direction = BoatDirection.NONE
+                B:SetBlockColor(unpack (oColor.OCEAN))
                 B:AddEventListener (B.sprite, "block_touch", self)
             else
                 B.is_boundary_block = true
@@ -119,7 +77,7 @@ function OceanGrid:SpawnGrid(grid_width, grid_height, grid_cols, grid_rows)
                 B:SetDirection (direction)
                 
                 B:AddEventListener(B.sprite, 'block_touch_release', self)
-                B:SetBlockColor(0.1,0.1,0.9)
+                B:SetBlockColor(unpack (oColor.GREEN))
             end
             block_idx = block_idx+1
         end

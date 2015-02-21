@@ -24,6 +24,7 @@ local function load_modules(module_paths_and_name)
     oTime = require "opal.src.utils.time"() --instance of time
     oAssert = require "opal.src.utils.assert"
     oMath = require "opal.src.utils.math"
+    oColor = require 'opal.src.utils.color'
     -- Put GLOBAL table in _G
     --TODO:
     require "opal.src.globals"

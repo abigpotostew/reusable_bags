@@ -35,7 +35,7 @@ local current_log_level = oLog.VERBOSE
 local function debug_print(...)
     local info = debug.getinfo(5) -- Back up frames in stack
     local source_file = info.source
-    local debug_path = source_file:match('%a+.lua')
+    local debug_path = source_file:match('[^/]+$') --'%a+.lua')
     if debug_path then
         debug_path = string.format("%s [%d]", debug_path, info.currentline)
     end

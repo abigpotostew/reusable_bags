@@ -158,8 +158,9 @@ function Actor:removeSelf ()
     for _, _listener in ipairs(self._listeners) do
         _listener.object:removeEventListener(_listener.name, _listener.callback)
     end
-    self._timers = {}
+    self._listener = {}
 
+    self:super("removeSelf")
 
 end
 

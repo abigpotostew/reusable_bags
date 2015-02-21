@@ -54,7 +54,7 @@ end
 function TouchBlock:init ( level, gridw, gridh, typeName)
     self:super("init", {typeName=(typeName or "TouchBlock")}, level)
     
-    self.draw_data={block_data={fill_color={0.5,0.25,0.33} }}
+    self.draw_data={block_data={fill_color={0.5,0.25,0.33},fill_colors={}  }}
     self.sprite = display.newGroup ()
     local block = display.newRect(0,0,gridw,gridh)
     block:setFillColor(unpack(self.draw_data.block_data.fill_color))

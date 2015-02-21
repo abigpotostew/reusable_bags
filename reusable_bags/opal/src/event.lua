@@ -63,4 +63,16 @@ function Event:RemoveEventListener (event_name, callback)
     end)
 end
 
+function Event:removeSelf ()
+    _.each (_.keys(self.events), function(event_name)
+        _.each (self.events[event_name], function(e)
+                e.object:removeEventListener (event_name, e.callback)
+                --self:RemoveEventListener (event_name, e.callback)
+            --e.object:removeEventListener(event_name, e.callback)
+        end)
+        self.events[event_name] = nil
+    end)
+    self.events = nil
+end
+
 return Event
