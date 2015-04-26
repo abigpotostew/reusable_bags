@@ -78,6 +78,8 @@ local function resolve_block_action(self, boat, block)
     if set_sail and can_boat_sail then
         boat:IncrementRemainingSails(-1)
         sail_boat_from(self, boat, block)
+        oLog.Debug ("Finished sailing, "..boat:RemainingSails().." RemainingSails.")
+        return
     end
 end
 
@@ -107,7 +109,7 @@ function sail_boat_from(self, boat, start_ocean_block)
             return resolve_block_action (self, boat, next_block)
     end
     boat:AddTransition ({ x=nx, y = ny, time=500, onComplete= onComplete})
-    oLog.Debug ("Boat sailing in direction "..tostring(direction))
+    oLog.Debug ("Boat sailing in direction "..tostring(direction).." to "..tostring(next_block))
     boat:DispatchEvent (boat.sprite, 'sail_event', {phase="began", boat=boat, start=start_ocean_block, destination=next_block})
     
 end
