@@ -3,7 +3,7 @@ local clean_ocean_level = require "clean_ocean.src.clean_ocean_level"
 
 local BoatDirection = require 'clean_ocean.src.boat_direction'
 
-local grid_w, grid_h = 8, 8
+local grid_w, grid_h = 4, 4
 local total_num_block = grid_w * grid_h
 local num_goals = 3
 
@@ -37,14 +37,20 @@ local function setup()
     {_,_,U,_,_,L,_,_},
     {_,U,_,_,_,_,L,_},
     {_,_,_,_,_,_,_,L} --]]
-    {R,T,_,1,_,_,D,D},
+    
+    {_,_,_,_},
+    {_,_,_,_},
+    {_,_,_,_},
+    {_,_,_,_}
+    
+    --[[{R,T,_,1,_,_,D,D},
     {_,R,_,_,_,D,_,20},
     {_,_,R,_,D,_,_,_},
     {_,2,_,R,D,_,T,_},
     {_,T,_,U,L,T,_,_},
     {5,_,U,3,T,L,_,_},
     {_,U,_,_,T,_,L,_},
-    {U,_,_,_,T,_,_,L} 
+    {U,_,_,_,T,_,_,L} --]]
         }
     l:SetOceanVectors(ocean)
 

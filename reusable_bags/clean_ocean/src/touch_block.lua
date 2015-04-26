@@ -74,6 +74,13 @@ function TouchBlock:SetBlockColor(r,g,b)
     self.block_sprite:setFillColor(r,g,b)
 end
 
+function TouchBlock:AddLabel (text, color)
+    local text_obj = display.newText ({ parent = self.sprite, text = text, font=native.systemFont, fontSize=12 })
+    if color then
+        text_obj:setFillColor(unpack(color))
+    end
+end
+
 
 function TouchBlock:BeginTouch(event)
     if not self.sprite or (not self.draw_data and not self.draw_data.block) then return end

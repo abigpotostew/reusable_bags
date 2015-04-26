@@ -37,6 +37,10 @@ function Boat:SetRemainingSails(n)
     self.remaining_sails = n
 end
 
+function Boat:RemainingSails()
+    return self.remaining_sails
+end
+
 function Boat:IncrementRemainingSails(n)
     self.remaining_sails = self.remaining_sails + n
 end

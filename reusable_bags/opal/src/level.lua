@@ -120,7 +120,11 @@ function Level:hide (event)
     if event.phase == 'will' then
         
     elseif event.phase == 'did' then
-        self:Destroy()
+        if self.Destroy then
+            self:Destroy()
+        else
+            oLog.Debug("WARNING: you haven't implemented the Destroy method for you level scene.")
+        end
     end
     
 end

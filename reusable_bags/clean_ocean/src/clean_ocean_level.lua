@@ -25,8 +25,8 @@ add_collision('all', 'all', {'all'})
 local CleanOceanLevel = DebugLevel:extends()
 
 local ocean_objects = {
-    EMPTY=0,
-    TRASH=1,
+    EMPTY='EMPTY',
+    TRASH='TRASH',
 }
 
 function CleanOceanLevel:init ()
@@ -81,7 +81,7 @@ local function resolve_block_action(self, boat, block)
         oLog.Debug ("Finished sailing, "..boat:RemainingSails().." RemainingSails.")
         return
     end
-end
+end 
 
 --Cancel player boat transitions
 --move player boat to this block position
@@ -211,29 +211,44 @@ local function boat_action_trash(block, level, boat)
     return true, boat:DispatchEvent (boat.sprite, 'trash_action_event', {phase='ended', block=block, remaining = level.trash_count})
 end
 
-local function apply_object_type (self, block, object)
-    oAssert (valid_ocean_object (object, ocean_objects), tostring(object).." is not a valid ocean object, please use a valid ocean object.")
+local function boat_action_add_sail (block, level, boat)
+    local sails = boat:RemainingSails()
+    boat:IncrementRemainingSails (block.sails)
+    return true
+end
+
+local function apply_level_object_type (self, block, level_object)
+    oAssert (valid_ocean_object (level_object, ocean_objects), tostring(level_object).." is not a valid ocean object, please use a valid ocean object.")
     
-    if object == ocean_objects.TRASH then
+    if level_object == ocean_objects.TRASH then
         block:SetBlockColor (unpack (oColor.TRASH))
         self:DecrementTrashCount(-1) --equivalent to adding 1. yea, it's dumb
         block:SetAction(boat_action_trash)
+        
+    elseif type(level_object) =='number' then
+        block:SetBlockColor ( unpack(oColor.LIGHT_BLUE) )
+        block.sails = level_object
+        block:SetAction (boat_action_add_sail)
+        block:AddLabel (string.format("%d",level_object))
     end
 end
 
 -- Resolve object type and apply actions to block
-local function set_block_object_type (self, block, object)
+local function set_block_object_type (self, block, level_object)
     -- Set block as a direction vector
-    if Vector2.isVector2(object) then
-        block:SetDirection (object, 0.5)
+    local obj_type = type(level_object)
+    
+    if Vector2.isVector2(level_object) then
+        block:SetDirection (level_object, 0.5)
+        
     --set block as an object
-    elseif type(object) == 'number' then
-        apply_object_type (self, block, object)
+    else 
+        apply_level_object_type (self, block, level_object)
     end
 end
 
 function CleanOceanLevel:SetOceanVectors(vectors2d)
-    local object = nil
+    local level_object = nil
     local direction = nil
     for x=1, #vectors2d do
         for y=1, #vectors2d[x] do
@@ -241,9 +256,9 @@ function CleanOceanLevel:SetOceanVectors(vectors2d)
             local block = self.grid:GetBlockFromCoords (x+1,y+1)
             if block then
                 --transpose to display on screen the same as level data
-                object = vectors2d[y][x]
+                level_object = vectors2d[y][x]
                 -- resolve object type and setup block
-                set_block_object_type (self, block, object)
+                set_block_object_type (self, block, level_object)
             end
         end
     end
