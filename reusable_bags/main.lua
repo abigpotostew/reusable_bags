@@ -4,6 +4,8 @@
 -- By Stewart Bracken
 --
 -----------------------------------------------------------------------------------------
+local fps = require "opal.libs.fps"
+
 display.setStatusBar( display.HiddenStatusBar )
 
 require("mobdebug").start()
@@ -42,6 +44,9 @@ local game_options = opal:GetOptions()
     :Set("debug_draw", true)
     :Set('composer_debug', true) --doesn't work?
     :Set('tests', additional_tests)
+
+local performance = fps.new()
+performance.group.alpha = 0.7
 
 opal:Setup(game_options)
 opal:Begin() --kick off game

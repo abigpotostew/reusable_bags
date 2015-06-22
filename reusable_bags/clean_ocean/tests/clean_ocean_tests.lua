@@ -88,6 +88,11 @@ u:Test ("Ocean_Block_Do_Action", function(self)
     local level_mock = default_setup()
     local block = OceanBlock(level_mock, 10, 10)
     self:ASSERT_FALSE (block:HasAction())
-end)
+    
+    block:removeSelf()
+    block=nil
+    level_mock:DestroyLevel()
+    level_mock = nil
+end)--
 
 return u

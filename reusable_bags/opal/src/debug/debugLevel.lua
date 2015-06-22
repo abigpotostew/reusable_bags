@@ -7,7 +7,7 @@
 
 -----------------------------------------------------------------------------]]
 local Level = require "opal.src.level"
-local fps = require "opal.libs.fps"
+
 
 local DebugLevel = Level:extends()
 
@@ -86,9 +86,6 @@ function DebugLevel:create (event, scene_group)
         
     self:EnableDebugKeys()
     self:EnableDebugPhysicsShake(debug_draw_state)
-    
-    local performance = fps.new()
-	performance.group.alpha = 0.7
 end
 
 
