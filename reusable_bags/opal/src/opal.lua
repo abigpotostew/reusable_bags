@@ -1,6 +1,6 @@
 local Opal = require "opal.src.event":extends()
 local _ = require "opal.libs.underscore"
-
+local composer = require 'composer'
 
 function Opal:init(name)
     self:super("init", name or "Opal Instance")
@@ -82,6 +82,17 @@ function Opal:GetOptions()
         self.options = require 'opal.src.utils.chain' () --create empty chain table
     end
     return self.options
+end
+
+function Opal:GoToLevelScene (level_scene_path, params)
+    if params then
+        oAssert.type (params, 'table', 'plz use table for params. k.')
+    end
+    
+    params = params or {}
+    params.level = level_scene_path
+
+    composer.gotoScene('opal.src.levelScene',{params=params})
 end
 
 return Opal
