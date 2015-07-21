@@ -4,6 +4,8 @@
 -- By Stewart Bracken
 --
 -----------------------------------------------------------------------------------------
+local fps = require "opal.libs.fps"
+
 display.setStatusBar( display.HiddenStatusBar )
 
 require("mobdebug").start()
@@ -29,6 +31,7 @@ local additional_tests = {
     ['plant_seed.tests.']={'plant_tests'},
     ['plant_math.tests.']={'plant_math_tests'},
     ['clean_ocean.tests.']={'clean_ocean_tests'},
+    --['ocean_pinball.tests.']={'ocean_pinball_tests'},
     }
 
 local game_options = O:GetOptions()
@@ -36,13 +39,22 @@ local game_options = O:GetOptions()
     :Set('tests_only', false)
     :Set('global_test_setup', test_setup)
     :Set('global_test_teardown', test_teardown)
+    --:Set('entry_scene', 'opal.src.levelScene')
+    :Set('entry_scene', 'ride_the_snake.menu.main_menu')
     --:Set('entry_scene', "plant_math.menu.main_menu")
     --:Set('entry_scene', 'clean_ocean.menu.main_menu')
     --:Set('game', {level="plant_math.levels.level1"})
-    :Set('entry_scene', 'ride_the_snake.menu.main_menu')
+    --:Set('game', {level="plant_math.levels.level1"})
+    --:Set('entry_scene', 'clean_ocean.menu.main_menu')
+    --:Set('entry_scene', "reusable_bags.menu.main_menu")
+    --:Set('game', {level="plant_seed.levels.level1"})
+    
     :Set("debug_draw", true)
     :Set('composer_debug', true) --doesn't work?
     :Set('tests', additional_tests)
+
+local performance = fps.new()
+performance.group.alpha = 0.7
 
 O:Setup(game_options)
 O:Begin() --kick off game

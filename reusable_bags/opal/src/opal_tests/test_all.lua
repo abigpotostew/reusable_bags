@@ -40,7 +40,7 @@ test_all.Run = function(setup, teardown, additional_tests)
     if additional_tests then
         _.extend (test_suites, additional_tests)
     end
-    Tests:RunAll ( load_tests(get_test_paths(nil, test_suites)), setup, teardown )
+    Tests:RunAll ( load_tests (get_test_paths(nil, test_suites)), setup, teardown )
 end
 
 return test_all

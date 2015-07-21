@@ -1,6 +1,7 @@
 local composer = require 'composer'
 local scene = composer.newScene()
 
+local button_group
 
 local function create_button(x,y,w,h, view, name, level_file)
     local button = display.newGroup(view)
@@ -10,9 +11,12 @@ local function create_button(x,y,w,h, view, name, level_file)
     button:insert(rect)
     
     local label = display.newText({parent=button, text=name, font=native.systemFont, fontSize=14})
+    label.x = x
+    label.y = y
     label:setFillColor(1,1,1)
     
     button.touch = function(self,event)
+        button_group:removeSelf()
         composer.gotoScene('opal.src.levelScene',{params={level=level_file}})
     end
     
@@ -33,6 +37,7 @@ local function add_buttons(view, buttons)
         create_button (vw/2, vh*0.25 + (i-1)*h, w, h-5, view, btn[1],btn[2])
     end
     
+    return grp
 end
 
 function scene:show ( event )
@@ -46,7 +51,7 @@ function scene:show ( event )
         return {name,level_file}
     end
     
-    add_buttons (sceneGroup, {btn('Level 1',"clean_ocean.levels.level1" ), btn('Level 2',"clean_ocean.levels.level2" )})
+    button_group = add_buttons (sceneGroup, {btn('Level 1',"clean_ocean.levels.level1" ), btn('Level 2',"clean_ocean.levels.level2" )})
 
 end
 

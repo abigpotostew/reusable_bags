@@ -69,8 +69,8 @@ function Opal:Begin()
     
     -- Go to entry scene from game options (set in main)
     local entry_scene = self:Option('entry_scene')
-    local game_parms = {params=self:Option("game")}
-    composer.gotoScene (entry_scene, game_parms)
+    --local game_parms = {params=self:Option("game")}
+    self:GoToScene (entry_scene)
 end
 
 function Opal:Destroy()
@@ -84,6 +84,17 @@ function Opal:GetOptions()
     return self.options
 end
 
+function Opal:GoToScene (scene_path, params)
+    if params then
+        oAssert.type (params, 'table', 'plz use table for params. k.')
+    end
+    
+    --params = params or {}
+    --params.level = level_scene_path
+
+    composer.gotoScene (scene_path,params)
+end
+
 function Opal:GoToLevelScene (level_scene_path, params)
     if params then
         oAssert.type (params, 'table', 'plz use table for params. k.')
@@ -92,7 +103,7 @@ function Opal:GoToLevelScene (level_scene_path, params)
     params = params or {}
     params.level = level_scene_path
 
-    composer.gotoScene('opal.src.levelScene',{params=params})
+    self:GoToScene ('opal.src.levelScene', {params=params})
 end
 
 return Opal

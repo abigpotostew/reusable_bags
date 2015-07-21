@@ -9,15 +9,15 @@ local function createLayout(self)
         local group = display.newGroup()
 		group.y = 5
 
-        self.build = display.newText("0", 0, 0, "Helvetica", 12)
+        self.lua_mem = display.newText("0", 0, 0, "Helvetica", 12)
         self.memory = display.newText("0", 0, 0, "Helvetica", 12)
         self.framerate = display.newText("0", 0, 0, "Helvetica", 12)
 
-        self.build.anchorX, self.build.anchorY = 0,0 
-		self.build.y = 0
+        self.lua_mem.anchorX, self.lua_mem.anchorY = 0,0 
+		self.lua_mem.y = 0
 
         self.memory.anchorX, self.memory.anchorY = 0,0
-		self.memory.y = self.build.y + self.build.height
+		self.memory.y = self.lua_mem.y + self.lua_mem.height
 
         self.framerate.anchorX, self.framerate.anchorY = 0,0
 		self.framerate.y = self.memory.y + self.memory.height
@@ -25,7 +25,7 @@ local function createLayout(self)
         self.memory:setFillColor(1,1,1)
         self.framerate:setFillColor(1,1,1)
 
-        group:insert(self.build)
+        group:insert(self.lua_mem)
         group:insert(self.memory)
         group:insert(self.framerate)
 
@@ -56,9 +56,9 @@ local function getLabelUpdater(self)
                 if(lastFpsCounter > maxSavedFps) then lastFpsCounter = 1; end
                 local minLastFps = minElement(lastFps)
 
-                self.build.text = string.format("Build: %s", (system.getInfo("build")/1000000))
-                self.build.anchorX, self.build.anchorY = 0,0
-				self.build.x = 0
+                self.lua_mem.text = string.format("Mem: %4.2f %s", collectgarbage("count")/1024,'Mb')
+                self.lua_mem.anchorX, self.lua_mem.anchorY = 0,0
+                self.lua_mem.x = 0
 
                 self.framerate.text = string.format("FPS %.0f (Min %.0f)", fps, minLastFps)
                 self.framerate.anchorX, self.framerate.anchorY = 0,0
