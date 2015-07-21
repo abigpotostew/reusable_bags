@@ -31,6 +31,7 @@ local additional_tests = {
     ['plant_seed.tests.']={'plant_tests'},
     ['plant_math.tests.']={'plant_math_tests'},
     ['clean_ocean.tests.']={'clean_ocean_tests'},
+    ['ocean_pinball.tests.']={'ocean_pinball_tests'},
     }
 
 local game_options = opal:GetOptions()
@@ -39,8 +40,14 @@ local game_options = opal:GetOptions()
     :Set('global_test_setup', test_setup)
     :Set('global_test_teardown', test_teardown)
     --:Set('entry_scene', "plant_math.menu.main_menu")
-    :Set('entry_scene', 'clean_ocean.menu.main_menu')
     --:Set('game', {level="plant_math.levels.level1"})
+    
+    --:Set('entry_scene', 'clean_ocean.menu.main_menu')
+    
+    --:Set('entry_scene', "reusable_bags.menu.main_menu")
+    :Set('entry_scene', 'opal.src.levelScene')
+    :Set('game', {level="plant_seed.levels.level1"})
+    
     :Set("debug_draw", true)
     :Set('composer_debug', true) --doesn't work?
     :Set('tests', additional_tests)

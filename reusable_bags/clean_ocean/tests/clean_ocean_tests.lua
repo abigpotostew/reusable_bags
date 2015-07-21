@@ -9,11 +9,9 @@ local OceanBlock = require "clean_ocean.src.ocean_block"
 local CleanOceanLevel = require "clean_ocean.src.clean_ocean_level"
 
 function u:SetUp()
-    --physics.start()
 end
 
 function u:TearDown()
-    --physics.stop()
 end
 
 local function default_setup()
@@ -78,8 +76,6 @@ u:Test ( "Next Block, No Previous", function(self)
     local up = level_mock:DetermineNextGridPosition(U, left, nil)
     self:ASSERT_TRUE (up==start, "incorrectly determining direction")
     
-    
-    
     level_mock:DestroyLevel()
     level_mock = nil
 end)
@@ -93,6 +89,6 @@ u:Test ("Ocean_Block_Do_Action", function(self)
     block=nil
     level_mock:DestroyLevel()
     level_mock = nil
-end)--
+end)
 
 return u
