@@ -68,6 +68,8 @@ function SnakeLevel:show (event, sceneGroup)
     setup_physics(self)
     --Runtime:addEventListener("enterFrame", self)
     
+    self.snake :StartEvents()
+    
     do -- spawn the ocean
         
         local m = math.min(self.width,self.height)*0.8
@@ -102,10 +104,13 @@ function SnakeLevel:DestroyLevel ()
         --self.grid:removeSelf()
     end
     self:super("DestroyLevel")
+    
+    self.snake = nil
 end
 
 function SnakeLevel:SpawnSnake (x,y)
-    self:InsertActor (Snake(self, self:GetWorldGroup(), x,y))
+    self.snake = Snake(self, self:GetWorldGroup(), x,y)
+    self:InsertActor (self.snake)
 end
 
 

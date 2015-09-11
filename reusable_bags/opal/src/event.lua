@@ -37,7 +37,7 @@ function Event:DispatchEvent (object, event_name, event)
     object:dispatchEvent ( event )
 end
 
--- object       - which corona display object this listener is listens on.
+-- object       - which corona display object this listener is attached to.
 -- event_name   - string name of the listener
 -- callback     - table or function as callback 
 function Event:AddEventListener (object, event_name, callback)
