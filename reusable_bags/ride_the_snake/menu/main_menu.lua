@@ -4,8 +4,9 @@ local scene = composer.newScene()
 
 local function create_button(x,y,w,h, view, name, level_file)
     local button = display.newGroup(view)
+    button.x, button.y = x, y
     
-    local rect = display.newRect(x,y,w,h)
+    local rect = display.newRect(0,0,w,h)
     rect:setFillColor(.6,0,.2)
     button:insert(rect)
     
@@ -13,7 +14,9 @@ local function create_button(x,y,w,h, view, name, level_file)
     label:setFillColor(1,1,1)
     
     button.touch = function(self,event)
-        composer.gotoScene('opal.src.levelScene',{params={level=level_file}})
+        if event.phase == 'ended' then
+            O:GoToLevelScene(level_file)
+        end 
     end
     
     button:addEventListener('touch',self)
@@ -46,9 +49,9 @@ function scene:show ( event )
         return {name,level_file}
     end
     
-    --add_buttons (sceneGroup, {btn('Level 1',"clean_ocean.levels.level1" ), btn('Level 2',"clean_ocean.levels.level2" )})
+    add_buttons (sceneGroup, {btn('SNAAAKE 1',"ride_the_snake.levels.level1" )})
     
-    O:GoToLevelScene ('ride_the_snake.levels.level1')
+    --O:GoToLevelScene ('ride_the_snake.levels.level1')
 end
 
 

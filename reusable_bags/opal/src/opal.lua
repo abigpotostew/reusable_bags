@@ -1,6 +1,7 @@
 local Opal = require "opal.src.event":extends()
 local _ = require "opal.libs.underscore"
 local composer = require 'composer'
+local Chain = require 'opal.src.utils.chain'
 
 function Opal:init(name)
     self:super("init", name or "Opal Instance")
@@ -45,7 +46,9 @@ function Opal:Setup(options)
 end
 
 function Opal:Option(name)
+  if self.options then
     return self.options:Get(name)
+  end
 end
 
 --Kick off unit tests and game
@@ -62,7 +65,6 @@ function Opal:Begin()
         return
     end
     
-    local composer = require "composer"
     if self:Option('composer_debug') then
         composer.isDebug = true -- this isn't working
     end
@@ -79,22 +81,21 @@ end
 
 function Opal:GetOptions()
     if not self.options then
-        self.options = require 'opal.src.utils.chain' () --create empty chain table
+        self.options = Chain () --create empty chain table
     end
     return self.options
 end
 
+--params in this case is composer params table
 function Opal:GoToScene (scene_path, params)
     if params then
         oAssert.type (params, 'table', 'plz use table for params. k.')
     end
-    
-    --params = params or {}
-    --params.level = level_scene_path
 
-    composer.gotoScene (scene_path,params)
+    composer.gotoScene (scene_path, params)
 end
 
+--params is a key value table which gets assigned to the corona corona params table
 function Opal:GoToLevelScene (level_scene_path, params)
     if params then
         oAssert.type (params, 'table', 'plz use table for params. k.')

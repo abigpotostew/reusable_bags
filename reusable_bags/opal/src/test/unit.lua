@@ -82,6 +82,12 @@ function Unit:ASSERT_FALSE (condition, stack_depth)
     end
 end
 
+function Unit:ASSERT_EQ (a,b, stack_depth)
+    if a ~= b then
+        self:FAIL(stack_depth)
+    end
+end
+
 --Protected calls function and asserts it runs without error
 function Unit:FUNC_ASSERT (func)
     local status, err = pcall(func)
@@ -123,7 +129,7 @@ function Unit:Run ( tests_to_run )
         local status, err = pcall(function() t.test(self) end)
         if not status then
             print (err)
-            table.insert (fails, t.name)
+            table.insert (fails, {name=t.name, error_msg=err, traceback=debug.traceback()})
             self:print ("fail", name)
             break
         else

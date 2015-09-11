@@ -2,13 +2,17 @@
 local DebugLevel = require "opal.src.debug.debugLevel"
 local _ = require 'opal.libs.underscore'
 local Actor = require 'opal.src.actor'
+local Snake = require 'ride_the_snake.src.snake'
 
 local Vector2 = require 'opal.src.vector2'
 
 local composer = require 'composer'
 
---[[local collision_groups = require "opal.src.collision"
-collision_groups.SetGroups{'all'}
+-------------------------------------------------------------------------------
+-- Physics filters
+-------------------------------------------------------------------------------
+local collision_groups = require "opal.src.collision"
+collision_groups.SetGroups{'all', 'Snake'}
 
 local filters = {}
 local function add_collision(name, category, colliders)
@@ -16,8 +20,12 @@ local function add_collision(name, category, colliders)
 end
 
 add_collision('all', 'all', {'all'})
---]]
+add_collision('Snake', 'Snake', {'all'})
 
+
+-------------------------------------------------------------------------------
+-- Constructor
+-------------------------------------------------------------------------------
 local SnakeLevel = DebugLevel:extends()
 
 function SnakeLevel:init ()
@@ -30,11 +38,9 @@ function SnakeLevel:init ()
     self.width, self.height = self:GetWorldViewSize()
 
     self:Setting(settings_default)
-    
-    --self.boat = nil
-    --self.grid = nil
-    --self.trash_count = 0
-        
+       
+       
+    self:SetCollisionGroups (collision_groups)
 end
 
 
@@ -78,9 +84,15 @@ end
 
 --called when scene is being built
 function SnakeLevel:create (event, sceneGroup)
-    physics.start()
+    
     self:super("create", event, sceneGroup)
     local world_group = self.world_group
+    
+    self:SpawnSnake(100,100)
+end
+
+function SnakeLevel:show (event, sceneGroup)
+    physics.start()
 end
 
 function SnakeLevel:DestroyLevel ()
@@ -90,6 +102,13 @@ function SnakeLevel:DestroyLevel ()
     self:super("DestroyLevel")
 end
 
+function SnakeLevel:SpawnSnake (x,y)
+    self:InsertActor (Snake(self, self:GetWorldGroup(), x,y))
+end
 
+
+function SnakeLevel:GetFilter(filter_name)
+    return filters[filter_name]
+end
 
 return SnakeLevel

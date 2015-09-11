@@ -26,6 +26,7 @@ function Tests:RunAll(tests_suites, setup_func, teardown_func)
     end
     
     -- Run each test and print results
+    -- fails = {{name="...", error_msg="..."},...}
     local passes, fails = 0, {}
     _.each (tests, function(t)
         self:print ("line", string.format("%d test from %s.", t:TestCount(), t:Name()))
@@ -34,7 +35,10 @@ function Tests:RunAll(tests_suites, setup_func, teardown_func)
             passes = passes + pass
         end
         if suite_fails then
-            _.each(suite_fails, function(s) table.insert(fails,t:Name(s)) end)
+            _.each(suite_fails, function(s) 
+                    s.name = t:Name(s.name)
+                    table.insert(fails,s) 
+                end)
         end
     end)
 
@@ -49,7 +53,9 @@ function Tests:RunAll(tests_suites, setup_func, teardown_func)
     
     if #fails > 0 then
         self:print ('fail', string.format ('%d tests, listed below:',#fails))
-        _.each(fails, function(f)self:print('fail',f)end)
+        _.each(fails, function(f)
+                self:print('fail',string.format("%s %s",f.name, f.error_msg))
+            end)
         print(string.format('%d FAILED TESTS', #fails))
         if not self.do_not_exit_on_failure then 
             os.exit(1) 

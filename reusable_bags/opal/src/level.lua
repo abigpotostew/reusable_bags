@@ -106,8 +106,10 @@ end
 function Level:show (event, sceneGroup)
     
     if event.phase == 'will' then
+        oLog.Debug("Level:show will")
         sceneGroup:insert(self.world_group)
     elseif event.phase == 'did' then 
+        oLog.Debug("Level:show did")
         physics.start()
         Runtime:addEventListener("enterFrame", self)
     end
@@ -115,11 +117,10 @@ end
 
 -- Called when scene is about to move offscreen:
 function Level:hide (event)
-	print("scene:hide")
-	
     if event.phase == 'will' then
-        
+        oLog.Debug("Level:hide will")
     elseif event.phase == 'did' then
+        oLog.Debug("Level:hide did")
         if self.Destroy then
             self:Destroy()
         else
@@ -242,6 +243,13 @@ function Level:collision (event)
     
 end
 
+function Level:SetCollisionGroups (groups)
+    self.collision_groups = groups
+end
+
+function Level:GetCollisionGroups (groups)
+    return self.collision_groups
+end
 
 -------------------------------------------------------------------------------
 -- Getters and utility functions

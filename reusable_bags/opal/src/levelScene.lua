@@ -50,6 +50,8 @@ function scene:destroy( event )
 
    self.level:DestroyLevel( event, sceneGroup )
    
+   sceneGroup.removeSelf()
+   
    self.level = nil
    
 end

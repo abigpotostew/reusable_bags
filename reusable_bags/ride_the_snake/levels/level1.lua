@@ -40,5 +40,11 @@ local function setup()
     
     physics.setDrawMode("debug")
     
+    local scene = l:GetWorldGroup()
+    local rect = display.newCircle (100,100, 100)
+    --scene:insert (rect)
+    local g = display.newGroup()
+    g:insert (rect)
+    
 end
 return {l, setup}

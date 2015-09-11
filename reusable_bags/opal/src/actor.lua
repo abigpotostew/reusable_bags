@@ -14,11 +14,12 @@ local Actor = oEvent:extends()
 function Actor:init(typeInfo, level, group)
     self:super("init")
     assert(level, "Level required to instance an actor")
-    assert (typeInfo and type(typeInfo)=="table", "Actor(): requires typeInfo in constructor")
+    typeInfo = typeInfo or {}
+    --assert (typeInfo and type(typeInfo)=="table", "Actor(): requires typeInfo in constructor")
 
     self.level = level
 
-    self.typeName = typeInfo.typeName or "actor"
+    self.typeName = typeInfo.typeName or self.typeName or "actor"
 
     -- POSITION access through sprite
     self.position = Vector2()
@@ -47,6 +48,10 @@ end
 -- Override in inheriting class for printing
 function Actor:describe()
     return self.typeName .. "$" .. self.id
+end
+
+function Actor:Name()
+    return self.typeName
 end
 
 function Actor:NewTypeInfo()
