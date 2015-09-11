@@ -31,7 +31,7 @@ local additional_tests = {
     ['plant_seed.tests.']={'plant_tests'},
     ['plant_math.tests.']={'plant_math_tests'},
     ['clean_ocean.tests.']={'clean_ocean_tests'},
-    ['ride_the_snake.tests.']={'tests'},
+    ['ride_the_snake.tests.']={'snake_tests'},
     --['ocean_pinball.tests.']={'ocean_pinball_tests'},
     }
 

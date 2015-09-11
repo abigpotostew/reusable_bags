@@ -49,6 +49,12 @@ function SnakeLevel:grid_touch (event)
     oLog.Debug("grid block touch "..event.block:describe())
 end
 
+local function setup_physics(snake_level)
+    physics.setGravity(0,0)
+    
+    physics.start()
+end
+
 -- level is on screen
 function SnakeLevel:show (event, sceneGroup)
     self:super("show", event, sceneGroup)
@@ -59,7 +65,7 @@ function SnakeLevel:show (event, sceneGroup)
     end
     
     -- All code after here is run when the scene has come on screen.
-    --physics.start()
+    setup_physics(self)
     --Runtime:addEventListener("enterFrame", self)
     
     do -- spawn the ocean
@@ -89,10 +95,6 @@ function SnakeLevel:create (event, sceneGroup)
     local world_group = self.world_group
     
     self:SpawnSnake(100,100)
-end
-
-function SnakeLevel:show (event, sceneGroup)
-    physics.start()
 end
 
 function SnakeLevel:DestroyLevel ()
