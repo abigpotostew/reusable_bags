@@ -93,7 +93,8 @@ function Actor:createSprite(animName, x, y, scaleX, scaleY, events)
     return sprite
 end
 
-function Actor:createCircularSprite (radius,x,y,sprite_data)    
+-- INherit from opal.src.debug.debug_actor instead of using this
+--[[function Actor:createCircularSprite (radius,x,y,sprite_data)    
     assert(self.group,"Please initialize this actor's group before creating a sprite")
     sprite_data = sprite_data or {}
     x, y = x or 0, y or 0
@@ -107,7 +108,7 @@ function Actor:createCircularSprite (radius,x,y,sprite_data)
     if sprite_data.stroke_width then sprite.strokeWidth = sprite_data.stroke_width end
     self.sprite = sprite
     return sprite
-end
+end--]]
 
 --???
 function Actor:createRectangleSprite (w,h,x,y,sprite_data)

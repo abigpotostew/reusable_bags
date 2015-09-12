@@ -1,9 +1,10 @@
-local DebugActor = require 'opal.src.actor'
+local DebugActor = require 'opal.src.debug.debug_actor'
 local _ = require "opal.libs.underscore"
 
 local Snake = DebugActor:extends({typeName="Snake"})
 
 local max_tail_length = 100
+local head_radius = 25
 
 function Snake.Name()
     return "Snake"
@@ -16,15 +17,38 @@ end
 
 function Snake:init (level, group, x, y)
     self:super("init", nil, level, group)
-    local radius = 25
-    create_body (self, x,y, radius, level:GetFilter(self:Name()))
+    create_body (self, x,y, head_radius, level:GetFilter(self:Name()))
     
     --tail things
-    self.prev_positions = {} --prev y posiitons
+    self.prev_positions = {} --prev y posiitons, FIFO, idx 1 is closest to snake head
     for i=1,max_tail_length do
-        table.insert(self.prev_positions, self.y())
+        table.insert(self.prev_positions, self:y())
+    end
     self.prev_pos_idx = 1
-    self.tail = display.newLine(
+
+end
+
+function Snake:RedrawTail (height_positions, x_step)
+    if self.tail then
+        self.tail.removeSelf()
+        self.tail = nil
+    end
+    local positions = {} --tmp line vertices array
+    local head_offset = head_radius
+    local x = self:x() - head_offset
+    x_step = x_step or 1 --could be modulated by speed of snake
+    for i=1, #self.prev_positions do
+        table.insert (positions, x)
+        table.insert (positions, self.prev_positions[i])
+        x = x - x_step
+    end
+    
+    --build and color tail line object
+    local tail = display.newLine (self.sprite, unpack(positions) )
+    tail:setStrokeColor(1,1,0)
+    tail.strokeWidth = 5
+    
+    self.tail = tail
 end
 
 function Snake:enterFrame (event)
@@ -34,9 +58,9 @@ function Snake:enterFrame (event)
     if #self.prev_position > max_tail_length then
         table.remove (self.prev_positions)
     end
-    self.prev_pos_idx = (self.prev_pos_idx+1) % (max_tail_length)
+    --self.prev_pos_idx = (self.prev_pos_idx+1) % (max_tail_length)
     
-    
+    self:RedrawTail (self.prev_positions, 1.0)
     
 end
 
@@ -44,7 +68,7 @@ end
 
 function Snake:StartEvents()
     --TODO: probably need a custom event for enter frame only for when game is not paused
-    self:AddEventListener(self.sprite, "enterFrame", self)
+    self:AddEventListener (self.sprite, "enterFrame", self)
 end
 
 return Snake

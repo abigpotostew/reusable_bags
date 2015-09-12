@@ -133,7 +133,7 @@ function Unit:Run ( tests_to_run )
         local status, err = pcall(function() t.test(self) end)
         if not status then
             print (err)
-            table.insert (fails, {name=t.name, error_msg=err})
+            table.insert (fails, {name=t.name, error_msg=err, trace=debug.traceback()})
             self:print ("fail", name)
             break
         else
