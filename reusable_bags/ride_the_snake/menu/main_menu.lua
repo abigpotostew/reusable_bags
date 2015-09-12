@@ -1,5 +1,6 @@
 local composer = require 'composer'
 local scene = composer.newScene()
+local _ = require "opal.libs.underscore"
 
 
 local function create_button(x,y,w,h, view, name, level_file)
@@ -15,7 +16,7 @@ local function create_button(x,y,w,h, view, name, level_file)
     
     button.touch = function(self,event)
         if event.phase == 'ended' then
-            O:GoToLevelScene(level_file)
+            O:GoToLevelScene(level_file, {debug_draw=O:Option("debug_draw")})
         end 
     end
     
@@ -33,9 +34,9 @@ local function add_buttons(view, buttons)
     
     for i=1, #buttons do
         local btn = buttons[i]
-        create_button (vw/2, vh*0.25 + (i-1)*h, w, h-5, view, btn[1],btn[2])
+        buttons[i] = create_button (vw/2, vh*0.25 + (i-1)*h, w, h-5, view, btn[1],btn[2])
     end
-    
+    return buttons
 end
 
 function scene:show ( event )
@@ -49,14 +50,23 @@ function scene:show ( event )
         return {name,level_file}
     end
     
-    add_buttons (sceneGroup, {btn('SNAAAKE 1',"ride_the_snake.levels.level1" )})
+    self.buttons = add_buttons (sceneGroup, {btn('SNAAAKE 1',"ride_the_snake.levels.level1" )})
     
     --O:GoToLevelScene ('ride_the_snake.levels.level1')
 end
 
-
+function scene:hide (event)
+    if event.phase=='did' then
+        _.each (self.buttons, function(b) b:removeSelf(); end)
+        self.buttons = nil
+        self.view:removeSelf()
+        self.view=nil
+    end
+end
 
 
 scene:addEventListener( "show", scene )
+scene:addEventListener( "hide", scene )
+--scene:addEventListener( "destroy", scene )
 
 return scene

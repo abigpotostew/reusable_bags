@@ -26,7 +26,7 @@ add_collision('Snake', 'Snake', {'all'})
 -------------------------------------------------------------------------------
 -- Constructor
 -------------------------------------------------------------------------------
-local SnakeLevel = DebugLevel:extends()
+local SnakeLevel = DebugLevel:extends({name="SnakeLevel"})
 
 function SnakeLevel:init ()
     self:super('init')
@@ -43,6 +43,38 @@ function SnakeLevel:init ()
     self:SetCollisionGroups (collision_groups)
 end
 
+local function CancelTouch(event)
+    local sprite = event.target
+    if sprite.has_focus then
+        display.getCurrentStage():setFocus( nil )
+        sprite.has_focus = false
+    end
+end
+
+local function screen_touch_event (event)
+    event.owner:touch(event)
+end
+
+function SnakeLevel:touch (event)
+    local group = event.target
+    local level = self
+    if event.phase == "began" then
+        display.getCurrentStage():setFocus( event.target )
+        event.target.has_focus = true
+        
+    elseif event.phase == "moved" then
+        
+        self.snake:SetTouchPosition (group:localToContent (0,0))
+    elseif event.phase == "ended" then
+        display.getCurrentStage():setFocus( nil )
+        event.target.has_focus = false
+        --TODO:revamp touch to trigger event on touch release
+        -- if the block is the original block touched and is also released on top, call event
+        local block_x, block_y = block.sprite:localToContent (0,0)
+        oLog.Debug(string.format ("Release Mouse [ %d, %d ]", event.x, event.y))
+    end
+    return true
+end
 
 --when player taps an ocean grid block
 function SnakeLevel:grid_touch (event)
@@ -68,7 +100,8 @@ function SnakeLevel:show (event, sceneGroup)
     setup_physics(self)
     --Runtime:addEventListener("enterFrame", self)
     
-    self.snake :StartEvents()
+    if self.snake then self.snake:StartEvents() end
+    self:AddEventListener (self:GetWorldGroup(), "touch", screen_touch_event)
     
     do -- spawn the ocean
         
@@ -94,15 +127,13 @@ end
 function SnakeLevel:create (event, sceneGroup)
     
     self:super("create", event, sceneGroup)
-    local world_group = self.world_group
+    local world_group = self:GetWorldGroup()
+    world_group.owner = self
     
     self:SpawnSnake(100,100)
 end
 
 function SnakeLevel:DestroyLevel ()
-    if self.grid then 
-        --self.grid:removeSelf()
-    end
     self:super("DestroyLevel")
     
     self.snake = nil
@@ -110,7 +141,7 @@ end
 
 function SnakeLevel:SpawnSnake (x,y)
     self.snake = Snake(self, self:GetWorldGroup(), x,y)
-    self:InsertActor (self.snake)
+    self:InsertActor (self.snake, true)
 end
 
 

@@ -23,7 +23,7 @@ local Chain = require 'opal.src.utils.chain'
 local Actor = require 'opal.src.actor'
 
 --Can listen for events
-local Level = oEvent:extends()
+local Level = oEvent:extends({name="Level"})
 
 ----------------------------------------------------------------------------------
 --- Constructor
@@ -32,6 +32,7 @@ local Level = oEvent:extends()
 ----------------------------------------------------------------------------------
 function Level:init()
     --Possibly call super init here
+    self:super("init")
     
     -- Display constants
     self.screenW    = display.contentWidth 
@@ -60,7 +61,9 @@ function Level:init()
 
 end
 
-
+function Level:describe ()
+    return self.name
+end
 
 -- Called when the scene's view does not exist:
 function Level:create (event, sceneGroup)
@@ -106,10 +109,10 @@ end
 function Level:show (event, sceneGroup)
     
     if event.phase == 'will' then
-        oLog.Debug("Level:show will")
+        oLog.Debug(self:describe()..":show will")
         sceneGroup:insert(self.world_group)
     elseif event.phase == 'did' then 
-        oLog.Debug("Level:show did")
+        oLog.Debug(self:describe()..":show did")
         physics.start()
         Runtime:addEventListener("enterFrame", self)
     end
@@ -118,11 +121,11 @@ end
 -- Called when scene is about to move offscreen:
 function Level:hide (event)
     if event.phase == 'will' then
-        oLog.Debug("Level:hide will")
+        oLog.Debug(self:describe()..":hide will")
     elseif event.phase == 'did' then
-        oLog.Debug("Level:hide did")
-        if self.Destroy then
-            self:Destroy()
+        oLog.Debug(self:describe()..":hide did")
+        if self.DestroyLevel then --always true....
+            self:DestroyLevel()
         else
             oLog.Debug("WARNING: you haven't implemented the Destroy method for you level scene.")
         end

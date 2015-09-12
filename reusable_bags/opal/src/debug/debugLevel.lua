@@ -13,15 +13,13 @@ local DebugLevel = Level:extends()
 
 function DebugLevel:init(...)
     
-    debugTexturesSheetInfo = require("images.debug_image_sheet")
+    --[[debugTexturesSheetInfo = require("images.debug_image_sheet")
     debugTexturesImageSheet = graphics.newImageSheet( "images/debug_image_sheet.png", debugTexturesSheetInfo:getSheet() )
     self.texture_sheet = debugTexturesSheetInfo
-    
+    --]]
     --Construct parent class
 	self:super('init', unpack(arg))
 
-    
-	--return self
 end
 
 function DebugLevel:key (event)
@@ -63,12 +61,12 @@ function DebugLevel:EnableDebugPhysicsShake (initialDrawState)
     physics.setDrawMode(initialDrawState)
     local function jerk(e)
         if (e.isShake) then
-                hybrid_on = not hybrid_on
-                if hybrid_on then
-                        physics.setDrawMode("hybrid")
-                else
-                        physics.setDrawMode("normal")
-                end
+            hybrid_on = not hybrid_on
+            if hybrid_on then
+                physics.setDrawMode("hybrid")
+            else
+                physics.setDrawMode("normal")
+            end
         end
         return true
     end

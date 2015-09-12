@@ -70,6 +70,10 @@ function Opal:Begin()
     end
     
     -- Go to entry scene from game options (set in main)
+    if not self:Option('entry_scene') then
+        oLog.Fatal ("Opal:Begin() - entry_scene required in main game options")
+        return os.exit(1)
+    end
     local entry_scene = self:Option('entry_scene')
     --local game_parms = {params=self:Option("game")}
     self:GoToScene (entry_scene)
