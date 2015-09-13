@@ -77,6 +77,7 @@ function Snake:enterFrame (event)
     
     --self.snake_head.y = math.sin(event.time/1000)*200+300
     --self.snake_head.x = math.cos(event.time/700)*50+100
+    self.snake_head:setLinearVelocity (0,0)
 end
 
 --screen coordinates
