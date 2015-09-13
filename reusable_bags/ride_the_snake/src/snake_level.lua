@@ -52,25 +52,26 @@ local function CancelTouch(event)
 end
 
 local function screen_touch_event (event)
-    event.owner:touch(event)
+    event.target.owner:touch(event)
 end
 
 function SnakeLevel:touch (event)
-    local group = event.target
+    local target = event.target
     local level = self
+    local x, y = target:localToContent (event.x, event.y)
     if event.phase == "began" then
-        display.getCurrentStage():setFocus( event.target )
+        display.getCurrentStage():setFocus( target )
         event.target.has_focus = true
+        self.snake:SetTouchPosition (x,y)
         
     elseif event.phase == "moved" then
         
-        self.snake:SetTouchPosition (group:localToContent (0,0))
+        self.snake:SetTouchPosition (x,y)
     elseif event.phase == "ended" then
         display.getCurrentStage():setFocus( nil )
         event.target.has_focus = false
         --TODO:revamp touch to trigger event on touch release
         -- if the block is the original block touched and is also released on top, call event
-        local block_x, block_y = block.sprite:localToContent (0,0)
         oLog.Debug(string.format ("Release Mouse [ %d, %d ]", event.x, event.y))
     end
     return true
@@ -101,7 +102,9 @@ function SnakeLevel:show (event, sceneGroup)
     --Runtime:addEventListener("enterFrame", self)
     
     if self.snake then self.snake:StartEvents() end
-    self:AddEventListener (self:GetWorldGroup(), "touch", screen_touch_event)
+    local grp = self:GetWorldGroup()
+    grp.owner = self
+    self:AddEventListener (grp, "touch", screen_touch_event)
     
     do -- spawn the ocean
         

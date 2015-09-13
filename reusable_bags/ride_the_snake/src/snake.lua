@@ -3,7 +3,8 @@ local _ = require "opal.libs.underscore"
 
 local Snake = DebugActor:extends({typeName="Snake"})
 
-local max_tail_length = 100
+local max_tail_length = 50 --unused
+local max_tail_count = 10
 local head_radius = 25
 
 function Snake.Name()
@@ -67,7 +68,7 @@ function Snake:enterFrame (event)
     
     --Update tail
     table.insert (self.prev_positions, 1, self.snake_head.y)
-    if #self.prev_positions > max_tail_length then
+    if #self.prev_positions > max_tail_count then
         table.remove (self.prev_positions)
     end
     --self.prev_pos_idx = (self.prev_pos_idx+1) % (max_tail_length)
@@ -80,7 +81,8 @@ end
 
 --screen coordinates
 function Snake:SetTouchPosition (x,y)
-    self.snake_head.y = y
+    local vel_y = (y - self.snake_head.y) * display.fps
+    self.snake_head:setLinearVelocity(0, vel_y)
 end
 
 function Snake:StartEvents()
