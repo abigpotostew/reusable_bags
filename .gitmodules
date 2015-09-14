@@ -1,0 +1,3 @@
+[submodule "reusable_bags/ride_the_snake"]
+	path = reusable_bags/ride_the_snake
+	url = ssh://bracken@bracken.bz:/home/bracken/git/repos/ride_the_snake.git
