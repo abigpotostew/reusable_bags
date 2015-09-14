@@ -94,6 +94,10 @@ function Level:enterFrame (event)
     local phase = event.phase
     
     local dt = oTime:DeltaTime()
+    
+    local enter_frame_data = oUtil.DeepCopy (event)
+    enter_frame_data.dt = oTime:DeltaTime()
+    self:DispatchEvent (self:GetWorldGroup(), "level_enter_frame", enter_frame_data)
 
     if self.physics_to_remove then
         _.each( self.physics_to_remove, function(object)
