@@ -48,6 +48,10 @@ function Level:init()
     self.world_group.yScale = self.world_scale
     self.world_group.owner = self
     
+    -- UI group not child of world group so it stays put
+    self.ui_group = display.newGroup()
+    self.ui_group.owner = self
+    
     --Level actors:
     self.actors = {}
     
@@ -274,6 +278,10 @@ end
 -- @param s the setting name/key to be retrieved
 function Level:GetSetting(s)
     return self.settings:Get(s)
+end
+
+function Level:GetUIGroup()
+    return self.ui_group
 end
 
 function Level:GetWorldGroup ()
