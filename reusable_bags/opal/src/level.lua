@@ -96,8 +96,8 @@ function Level:enterFrame (event)
     local dt = oTime:DeltaTime()
 
     if self.physics_to_remove then
-        _.each( self.physics_to_remove, function(actor)
-            physics.removeBody(actor.sprite)
+        _.each( self.physics_to_remove, function(object)
+            physics.removeBody(object)
         end)
         self.physics_to_remove = nil
     end
@@ -113,7 +113,7 @@ function Level:show (event, sceneGroup)
         sceneGroup:insert(self.world_group)
     elseif event.phase == 'did' then 
         oLog.Debug(self:describe()..":show did")
-        physics.start()
+        --physics.start() -- start manually in your level
         Runtime:addEventListener("enterFrame", self)
     end
 end
@@ -212,11 +212,11 @@ function Level:RemoveActor (actor)
 
 end
 
-function Level:RemoveActorPhysics (actor)
+function Level:RemovePhysics (sprite)
     if not self.physics_to_remove then
         self.physics_to_remove = {}
     end
-    table.insert(self.physics_to_remove, actor)
+    table.insert(self.physics_to_remove, sprite)
 end
 
 function Level:InsertActor (a, add_to_level_group)

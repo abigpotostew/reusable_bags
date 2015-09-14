@@ -59,7 +59,7 @@ function Actor:describe()
 end
 
 function Actor:Type()
-    return self.typeName
+    return self and self.typeName or "Actor"
 end
 
 function Actor:NewTypeInfo()

@@ -46,7 +46,7 @@ function Food:SetupStates ()
                 target.x, target.y = self:pos()
             end
             --cancel physics
-            self.level:RemoveActorPhysics(self)
+            self.level:RemovePhysics(self.sprite)
             --transition sprite using velocity towards bag.
             local on_complete = function(event)
                 self.level:RemoveActor(self)

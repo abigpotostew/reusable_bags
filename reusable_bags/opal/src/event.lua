@@ -54,24 +54,40 @@ function Event:AddEventListener (object, event_name, callback)
     object:addEventListener (event_name, callback)
 end
 
+local function remove_event (event_table, event_name)
+    event_table.object:removeEventListener(event_name, event_table.callback)
+end
+
 function Event:RemoveEventListener (event_name, callback)
     _.reject(self.events[event_name], function(l) 
         if l.callback == callback then
-            l.object:removeEventListener(event_name, callback)
+            remove_event (event_name, l)
             return true
         end
     end)
 end
 
+--private
+local function remove_all_events (events)
+    _.each (_.keys(events), 
+        function(event_name)
+            _.each (events[event_name], 
+                function(ev_table) 
+                    remove_event (ev_table, event_name) 
+                end)
+            events[event_name] = nil
+        end
+    )
+end
+
+function Event:RemoveAllEventListeners ()
+    remove_all_events (self.events)
+    self.events = nil
+    self.events = {}
+end
+
 function Event:removeSelf ()
-    _.each (_.keys(self.events), function(event_name)
-        _.each (self.events[event_name], function(e)
-                e.object:removeEventListener (event_name, e.callback)
-                --self:RemoveEventListener (event_name, e.callback)
-            --e.object:removeEventListener(event_name, e.callback)
-        end)
-        self.events[event_name] = nil
-    end)
+    remove_all_events (self.events)
     self.events = nil
 end
 
