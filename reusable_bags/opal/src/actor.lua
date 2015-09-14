@@ -360,6 +360,11 @@ function Actor:SetAngularVelocity (av)
     self.sprite.angularVelocity = av
 end
 
+function Actor:ApplyTorque (av)
+    assert(self.sprite,"Sprite mustn't be null when applying force.")
+    self.sprite:applyTorque (av)
+end
+
 
 function Actor:Dimensions ()
     oAssert (self.sprite, "Actor:Dimensions(): requires a sprite.")
