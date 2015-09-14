@@ -2,7 +2,9 @@
 local DebugLevel = require "opal.src.debug.debugLevel"
 local _ = require 'opal.libs.underscore'
 local Actor = require 'opal.src.actor'
+
 local Snake = require 'ride_the_snake.src.snake'
+local Obstacle = require 'ride_the_snake.src.obstacle'
 
 local Vector2 = require 'opal.src.vector2'
 
@@ -11,17 +13,30 @@ local composer = require 'composer'
 -------------------------------------------------------------------------------
 -- Physics filters
 -------------------------------------------------------------------------------
-local collision_groups = require "opal.src.collision"
-collision_groups.SetGroups{'all', 'Snake'}
+local collision_groups = require "opal.src.collision" -- new collisision instance
 
-local filters = {}
-local function add_collision(name, category, colliders)
-    filters[name] = collision_groups.MakeFilter( category, colliders )
+-- COllider categories
+local ALL = 'all'
+local SNAKE = Snake.Name()
+local OBSTACLE = Obstacle.Name()
+local all_collision_categories = {ALL, SNAKE, OBSTACLE}
+collision_groups.SetGroups (all_collision_categories)
+
+local filters = {} --access all filters from this
+do -- add all categories here
+    
+    local function add_collision(name, category, colliders)
+        colliders = colliders or {}
+        if not _.detect(colliders, function(i) return i==ALL end) then 
+            table.insert (colliders, 'all') end
+        filters[name] = collision_groups.MakeFilter( category, colliders )
+    end
+
+    -- setup new filters here
+    add_collision (SNAKE, SNAKE)
+    add_collision (OBSTACLE, OBSTACLE, {SNAKE})
+    add_collision (ALL, ALL, all_collision_categories)
 end
-
-add_collision('all', 'all', {'all'})
-add_collision('Snake', 'Snake', {'all'})
-
 
 -------------------------------------------------------------------------------
 -- Constructor

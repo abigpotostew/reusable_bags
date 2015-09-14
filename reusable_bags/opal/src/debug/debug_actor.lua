@@ -4,10 +4,8 @@ local DebugActor = Actor:extends()
 
 function DebugActor:init(...)
     --Construct parent class
-	self:super('init', unpack(arg))
-
-    
-	--return self
+    --unpack isn't working for me at the moment, not sure why
+	self:super('init', arg[1],arg[2],arg[3],arg[4]) 
 end
 
 --copy next few methods from actor. still haven't refactored it out.
@@ -34,6 +32,7 @@ function DebugActor:createRectangleSprite (w,h,x,y,sprite_data)
     return self.sprite
 end
 
+-- sprite_data = {fill_color={1,0,1}, stroke_color={1,0,1}, anchorX = .5, anchorY = .5, stroke_width=1}
 function DebugActor:buildRectangleSprite (group,w,h,x,y, sprite_data)
     assert(group,"DebugActor:buildRectangleSprite(): Please initialize group before creating a sprite rectangle")
     sprite_data = sprite_data or {}

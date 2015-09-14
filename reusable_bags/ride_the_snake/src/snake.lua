@@ -43,6 +43,7 @@ function Snake:RedrawTail (height_positions, x_step)
         self.tail:removeSelf()
         self.tail = nil
     end
+    --TODO could be optimized to not recreate a table each frame
     local positions = {} --tmp line vertices array
     local head_offset = head_radius
     local x = self.snake_head.x - head_offset
@@ -57,7 +58,7 @@ function Snake:RedrawTail (height_positions, x_step)
     --build and color tail line object
     local tail = display.newLine ( unpack(positions) )
     tail:setStrokeColor (1,0,1)
-    tail.strokeWidth = 5
+    tail.strokeWidth = 1
     self.sprite:insert (tail)
     
     self.tail = tail
@@ -75,15 +76,15 @@ function Snake:enterFrame (event)
     
     self:RedrawTail (self.prev_positions, 1.0)
     
-    --self.snake_head.y = math.sin(event.time/1000)*200+300
-    --self.snake_head.x = math.cos(event.time/700)*50+100
+     --stop snake from moving after finger stops dragging
     self.snake_head:setLinearVelocity (0,0)
 end
 
 --screen coordinates
 function Snake:SetTouchPosition (x,y)
+    local vel_x = (x - self.snake_head.x) * display.fps
     local vel_y = (y - self.snake_head.y) * display.fps
-    self.snake_head:setLinearVelocity(0, vel_y)
+    self.snake_head:setLinearVelocity(vel_x, vel_y)
 end
 
 function Snake:StartEvents()

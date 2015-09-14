@@ -331,6 +331,30 @@ function Actor:SetPos (x, y)
     end
 end
 
+--set sprite rotation in degrees
+function Actor:SetRotation (a)
+    assert(self.sprite,"Sprite mustn't be null when accessing angle")
+    self.sprite.rotation = a
+end
+
+-- Roate by da 
+function Actor:Rotate (da)
+    assert(self.sprite,"Sprite mustn't be null when accessing angle")
+    self.sprite:rotate (da)
+end
+
+function Actor:SetLinearVelocity (x,y)
+    assert(self.sprite,"Sprite mustn't be null when accessing angle")
+    self.sprite:setLinearVelocity (x,y)
+end
+
+-- In degrees per second
+function Actor:SetAngularVelocity (av)
+    assert(self.sprite,"Sprite mustn't be null when accessing angle")
+    self.sprite.angularVelocity = av
+end
+
+
 function Actor:Dimensions ()
     oAssert (self.sprite, "Actor:Dimensions(): requires a sprite.")
     local scale = self.phys_body_scale
