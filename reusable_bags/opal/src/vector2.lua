@@ -94,15 +94,15 @@ function Vector2:Dot (other)
 end
 
 function Vector2:Length()
-    return math.sqrt(self:dot(self))
+    return math.sqrt(self:Dot(self))
 end
 
 function Vector2:Length2()
-    return self:dot(self)
+    return self:Dot(self)
 end
 
 function Vector2:Normalized()
-    local mag = self:length()
+    local mag = self:Length()
 	return self / mag, mag
 end
 

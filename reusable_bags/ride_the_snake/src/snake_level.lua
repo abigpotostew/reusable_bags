@@ -33,8 +33,8 @@ do -- add all categories here
     end
 
     -- setup new filters here
-    add_collision (SNAKE, SNAKE)
-    add_collision (OBSTACLE, OBSTACLE, {SNAKE})
+    add_collision (SNAKE, SNAKE, {OBSTACLE} )
+    add_collision (OBSTACLE, OBSTACLE, {SNAKE} )
     add_collision (ALL, ALL, all_collision_categories)
 end
 

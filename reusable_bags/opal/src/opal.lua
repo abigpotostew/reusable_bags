@@ -59,6 +59,7 @@ function Opal:Begin()
             os.exit(0)
             return
         end
+        (require "opal.src.actor").ClearTypenames()
     end
     
     if self:Option('skip_scene_creation') then

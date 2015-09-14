@@ -52,7 +52,7 @@ function scene:show ( event )
     
     self.buttons = add_buttons (sceneGroup, {btn('SNAAAKE 1',"ride_the_snake.levels.level1" )})
     
-    --O:GoToLevelScene ('ride_the_snake.levels.level1')
+    O:GoToLevelScene ('ride_the_snake.levels.level1')
 end
 
 function scene:hide (event)

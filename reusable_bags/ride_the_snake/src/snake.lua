@@ -91,6 +91,21 @@ function Snake:StartEvents()
     --TODO: probably need a custom event for enter frame only for when game is not paused
     --self:AddEventListener (self.sprite, "enterFrame", enterFrame)
     Runtime:addEventListener("enterFrame", self)
+    self:AddEventListener (self.snake_head, 'collision', self)
+    --self.snake_head:addEventListener ('collision', onCollide)
+end
+
+function Snake:collision (event)
+    local snake_head = event.target
+    local other = event.other 
+    local other_owner = other.owner
+    local other_type = other_owner:Type()
+    if event.phase == "began"  then
+        print( self.myName .. ": collision began with " .. event.other.myName )
+
+    elseif event.phase == "ended" then
+        print( self.myName .. ": collision ended with " .. event.other.myName )
+    end
 end
 
 return Snake

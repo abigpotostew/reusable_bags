@@ -11,6 +11,14 @@ local Vector2 = require 'opal.src.vector2'
 
 local Actor = oEvent:extends()
 
+-- static global table for id's for each actor type
+local actor_typenames = {}
+
+function Actor.ClearTypenames()
+    actor_typenames = nil
+    actor_typenames = {}
+end
+
 function Actor:init(typeInfo, level, group)
     self:super("init")
     assert(level, "Level required to instance an actor")
@@ -50,16 +58,13 @@ function Actor:describe()
     return self.typeName .. "$" .. self.id
 end
 
-function Actor:Name()
+function Actor:Type()
     return self.typeName
 end
 
 function Actor:NewTypeInfo()
     return {physics={}, anims={}, sounds={}}
 end
-
--- Single global table for id's for each actor type
-local actor_typenames = {}
 
 function Actor:GetActorID ()
     if actor_typenames[self.typeName] == nil then
@@ -343,6 +348,7 @@ function Actor:Rotate (da)
     self.sprite:rotate (da)
 end
 
+-- in pixels per second
 function Actor:SetLinearVelocity (x,y)
     assert(self.sprite,"Sprite mustn't be null when accessing angle")
     self.sprite:setLinearVelocity (x,y)
