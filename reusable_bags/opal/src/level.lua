@@ -81,7 +81,6 @@ function Level:create (event, sceneGroup)
 	self.height = self.width * self.aspect
     
     self.world_scale = 1--display.contentWidth / self.width
-	self.world_offset = { x = 0, y = 0}
     
     self.world_group = display.newGroup()
 	sceneGroup:insert(self.world_group)

@@ -49,7 +49,7 @@ local game_options = O:GetOptions()
     --:Set('entry_scene', 'clean_ocean.menu.main_menu')
     --:Set('entry_scene', "reusable_bags.menu.main_menu")
     --:Set('game', {level="plant_seed.levels.level1"})
-    :Set("random_seed", 0)
+    --:Set("random_seed", 0)
     
     :Set("debug_draw", true)
     :Set('composer_debug', true) --doesn't work?
