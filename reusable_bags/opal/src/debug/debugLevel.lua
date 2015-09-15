@@ -86,5 +86,30 @@ function DebugLevel:create (event, scene_group)
     self:EnableDebugPhysicsShake(debug_draw_state)
 end
 
+function DebugLevel:CreateBackgroundGrid (parent_group, spacing, width, height)
+    spacing = spacing or 100
+    width = width or 10000
+    height = height or 10000
+    
+    local group = display.newGroup()
+    local w2, h2 = width/2, height/2
+    local start_x, start_y = -math.floor(w2), -math.floor(h2)
+    local line = nil
+    
+    local function create_line (x1,y1,x2,y2)
+        line = display.newLine (group, x1,y1, x2,y2)
+        line:setStrokeColor (1,1,1,.5)
+        line.strokeWidth = 2
+    end
+    
+    for x=start_x, w2, spacing do
+        create_line (x,-h2, x,h2)
+    end
+    for y=start_y, h2, spacing do
+        create_line (-w2,y, w2,y)            
+    end
+    parent_group:insert (1, group)
+    return group
+end
 
 return DebugLevel
