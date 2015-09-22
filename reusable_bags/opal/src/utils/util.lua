@@ -219,6 +219,20 @@ Util.arrayNot = function(A,B)
     return notSet
 end
 
+--returns true if indexed table a
+Util.ArrayEqual = function(A,B)
+    local A_len, B_len = #A, #B
+    if A_len ~= B_len then 
+        return false 
+    end
+    for i=1, A_len do
+        if A[i] ~=  B[i] then
+            return false
+        end
+    end
+    return true
+end
+
 
 --------------------------------------------------------------
 -- Color Utilities

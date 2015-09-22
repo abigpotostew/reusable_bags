@@ -2,6 +2,7 @@
 
 local LCS = require "opal.libs.LCS"
 local _ = require "opal.libs.underscore"
+local Util = require "opal.src.utils.util"
 
 local Unit = LCS.class({PASS=1, FAIL=-1, FATAL_FAIL=0})
 
@@ -94,6 +95,12 @@ function Unit:ASSERT_NEQ (a,b, stack_depth)
     end
 end
 
+function Unit:ASSERT_ARRAY_EQ (a,b, stack_depth)
+    if not Util.ArrayEqual(a,b) then
+        self:FAIL(stack_depth)
+    end
+end
+
 --Protected calls function and asserts it runs without error
 function Unit:FUNC_ASSERT (func)
     local status, err = pcall(func)
@@ -116,7 +123,7 @@ end
 -- this suite.
 function Unit:Run ( tests_to_run )
     
-    self:SetUp()
+    
     
     --run tests
     local passes, fails = 0, {}
@@ -130,7 +137,11 @@ function Unit:Run ( tests_to_run )
         local name = self:Name(t.name)
         self.current_test = name
         self:print("run",name)
+        
+        self:SetUp()
         local status, err = pcall(function() t.test(self) end)
+        self:TearDown()
+        
         if not status then
             print (err)
             table.insert (fails, {name=t.name, error_msg=err, trace=debug.traceback()})
@@ -143,7 +154,7 @@ function Unit:Run ( tests_to_run )
         setfenv (1, _G)
     end
     
-    self:TearDown()
+    
     
     return passes, fails
 end

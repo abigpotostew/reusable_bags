@@ -97,6 +97,11 @@ function Vector2:Length()
     return math.sqrt(self:Dot(self))
 end
 
+function Vector2:Distance(other)
+    assert(isVector2Equivalent(other), "Can't perform Vector2 distance on dissimilar object of type " .. type(b))
+    return math.sqrt(math.pow(other.x-self.x,2) + math.pow(other.y-self.y,2))
+end
+
 function Vector2:Length2()
     return self:Dot(self)
 end
